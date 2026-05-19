@@ -34,8 +34,11 @@ const NAV_ITEMS = [
 export function Header() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const cartCount = useCartStore((s) => s.itemCount())
   const wishlistCount = useWishlistStore((s) => s.count())
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -79,28 +82,28 @@ export function Header() {
 
           {/* ── Logo (centred absolutely on desktop) ── */}
           <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-            {/* Desktop: full lockup */}
-            <Link href="/" aria-label="The Possah — Home" className="hidden md:flex flex-col items-center">
+            {/* Desktop: image + name */}
+            <Link href="/" aria-label="The Possah — Home" className="hidden md:flex items-center">
               <Image
                 src="/images/logo-gradient.png"
                 alt="The Possah"
-                width={120}
-                height={48}
+                width={200}
+                height={80}
                 priority
                 className="object-contain"
-                style={{ height: '48px', width: 'auto' }}
+                style={{ height: '120px', width: 'auto' }}
               />
             </Link>
-            {/* Mobile: symbol only */}
-            <Link href="/" aria-label="The Possah — Home" className="flex md:hidden items-center">
+            {/* Mobile: symbol + name */}
+            <Link href="/" aria-label="The Possah — Home" className="flex md:hidden items-center gap-2">
               <Image
                 src="/images/logo-symbol.png"
                 alt="The Possah"
-                width={36}
-                height={36}
+                width={52}
+                height={52}
                 priority
                 className="object-contain"
-                style={{ height: '36px', width: 'auto' }}
+                style={{ height: '120px', width: 'auto' }}
               />
             </Link>
           </div>
@@ -135,7 +138,7 @@ export function Header() {
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10 17.5S2 12.5 2 6.5a4 4 0 018-1.3A4 4 0 0118 6.5c0 6-8 11-8 11z" />
               </svg>
-              {wishlistCount > 0 && (
+              {mounted && wishlistCount > 0 && (
                 <span
                   className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] rounded-full px-1"
                   style={{ backgroundColor: 'var(--color-orange)', color: 'var(--color-white)', fontFamily: 'var(--font-mono)' }}
@@ -167,7 +170,7 @@ export function Header() {
                 <path d="M6 7V5a4 4 0 018 0v2" />
                 <rect x="2" y="7" width="16" height="12" rx="1" />
               </svg>
-              {cartCount > 0 && (
+              {mounted && cartCount > 0 && (
                 <span
                   className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] rounded-full px-1"
                   style={{ backgroundColor: 'var(--color-orange)', color: 'var(--color-white)', fontFamily: 'var(--font-mono)' }}
