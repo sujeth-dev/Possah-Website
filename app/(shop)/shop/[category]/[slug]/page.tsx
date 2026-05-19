@@ -1,0 +1,268 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { createServerClient } from '@/lib/supabase/server'
+import { formatPrice } from '@/lib/utils'
+import { ProductGallery } from '@/components/pdp/ProductGallery'
+import { ProductInfo } from '@/components/pdp/ProductInfo'
+import { CraftBehind } from '@/components/pdp/CraftBehind'
+import { CompleteTheLook } from '@/components/pdp/CompleteTheLook'
+import { ReviewsSection } from '@/components/pdp/ReviewsSection'
+import { YouMightAlsoLike } from '@/components/shop/YouMightAlsoLike'
+import type { ProductCardData } from '@/app/(shop)/page'
+
+// Keep formatPrice import used in structured data below
+void formatPrice
+
+interface PageProps {
+  params: { category: string; slug: string }
+}
+
+async function getProductData(slug: string) {
+  try {
+    const supabase = createServerClient()
+
+    const { data: product } = await supabase
+      .from('products')
+      .select(`
+        id, slug, name, fabric, description, care_instructions,
+        drape_guide, craft_story_body, craft_story_image,
+        price, compare_price, is_new_arrival, is_top_selling,
+        is_active, audio_url, sub_line, category_id,
+        categories (slug, name),
+        product_images (url, alt, position),
+        product_tags (tag)
+      `)
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single()
+
+    if (!product) return null
+
+    const { data: variants } = await supabase
+      .from('product_variants')
+      .select('id, colour_name, colour_hex, size, stock_qty')
+      .eq('product_id', product.id)
+      .gt('stock_qty', 0)
+      .order('colour_name')
+      .order('size')
+
+    const { data: reviews } = await supabase
+      .from('reviews')
+      .select('id, reviewer_name, rating, body, created_at')
+      .eq('product_id', product.id)
+      .eq('is_approved', true)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    const { data: categoryProducts } = await supabase
+      .from('products')
+      .select(`
+        id, slug, name, fabric, price, compare_price,
+        is_new_arrival, is_top_selling,
+        categories (slug),
+        product_images (url, alt, position),
+        product_tags (tag)
+      `)
+      .eq('category_id', product.category_id)
+      .eq('is_active', true)
+      .neq('id', product.id)
+      .order('created_at', { ascending: false })
+      .limit(4)
+
+    const { data: related } = await supabase
+      .from('products')
+      .select(`
+        id, slug, name, fabric, price, compare_price,
+        is_new_arrival, is_top_selling,
+        categories (slug),
+        product_images (url, alt, position),
+        product_tags (tag)
+      `)
+      .eq('is_active', true)
+      .neq('category_id', product.category_id)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    const mapProductCard = (raw: typeof categoryProducts): ProductCardData[] =>
+      (raw ?? []).map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        category_slug: ((p.categories as unknown) as { slug: string } | null)?.slug ?? categorySlug,
+        name: p.name,
+        fabric: p.fabric,
+        price: p.price,
+        compare_price: p.compare_price ?? null,
+        is_new_arrival: p.is_new_arrival,
+        is_top_selling: p.is_top_selling,
+        images: ((p.product_images as { url: string; alt: string | null; position: number }[]) ?? [])
+          .sort((a, b) => a.position - b.position)
+          .map((img) => ({ url: img.url, alt: img.alt })),
+        tags: ((p.product_tags as { tag: string }[]) ?? []).map((t) => t.tag),
+      }))
+
+    const sortedImages = ((product.product_images as { url: string; alt: string | null; position: number }[]) ?? [])
+      .sort((a, b) => a.position - b.position)
+      .map((img) => ({ url: img.url, alt: img.alt }))
+
+    const reviewList = (reviews ?? []) as {
+      id: string
+      reviewer_name: string
+      rating: number
+      body: string
+      created_at: string
+    }[]
+
+    const avgRating = reviewList.length > 0
+      ? reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length
+      : 0
+
+    const categorySlug = ((product.categories as unknown) as { slug: string; name: string } | null)?.slug ?? ''
+    const categoryName = ((product.categories as unknown) as { slug: string; name: string } | null)?.name ?? ''
+
+    return {
+      product: {
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        fabric: product.fabric,
+        description: product.description,
+        care_instructions: product.care_instructions,
+        drape_guide: product.drape_guide,
+        craft_story_body: product.craft_story_body,
+        craft_story_image: product.craft_story_image,
+        price: product.price,
+        compare_price: product.compare_price ?? null,
+        is_new_arrival: product.is_new_arrival,
+        is_top_selling: product.is_top_selling,
+        audio_url: product.audio_url,
+        sub_line: product.sub_line,
+        category_slug: categorySlug,
+        images: sortedImages,
+        tags: ((product.product_tags as { tag: string }[]) ?? []).map((t) => t.tag),
+      },
+      categoryName,
+      variants: (variants ?? []).map((v) => ({
+        id: v.id,
+        colour: v.colour_name,
+        colour_hex: v.colour_hex,
+        size: v.size,
+        stock_qty: v.stock_qty,
+      })),
+      reviews: reviewList,
+      avgRating,
+      categoryProducts: mapProductCard(categoryProducts),
+      relatedProducts: mapProductCard(related),
+    }
+  } catch {
+    return null
+  }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const data = await getProductData(params.slug)
+  if (!data) return { title: 'Product — The Possah' }
+  const { product, categoryName } = data
+  const firstImage = product.images[0]?.url
+  return {
+    title: `${product.name} — The Possah`,
+    description: product.description
+      ?? `${product.name} — ${product.fabric ?? categoryName} at The Possah. Handcrafted luxury Indian fashion.`,
+    alternates: { canonical: `https://thepossah.com/shop/${product.category_slug}/${product.slug}` },
+    openGraph: firstImage
+      ? { images: [{ url: firstImage, width: 800, height: 1067, alt: product.name }] }
+      : undefined,
+  }
+}
+
+export default async function ProductDetailPage({ params }: PageProps) {
+  const data = await getProductData(params.slug)
+  if (!data) notFound()
+
+  const { product, categoryName, variants, reviews, avgRating, categoryProducts, relatedProducts } = data
+
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description ?? undefined,
+    image: product.images.map((img) => img.url),
+    sku: product.id,
+    brand: { '@type': 'Brand', name: 'The Possah' },
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: 'INR',
+      availability: variants.length > 0
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      url: `https://thepossah.com/shop/${product.category_slug}/${product.slug}`,
+    },
+    ...(reviews.length > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: avgRating.toFixed(1),
+        reviewCount: reviews.length,
+      },
+    }),
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://thepossah.com' },
+      { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://thepossah.com/shop/sarees' },
+      { '@type': 'ListItem', position: 3, name: categoryName, item: `https://thepossah.com/shop/${product.category_slug}` },
+      { '@type': 'ListItem', position: 4, name: product.name, item: `https://thepossah.com/shop/${product.category_slug}/${product.slug}` },
+    ],
+  }
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+
+      {/* Breadcrumb */}
+      <div className="container-site py-3">
+        <nav aria-label="Breadcrumb">
+          <ol className="flex items-center gap-2 flex-wrap"
+            style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+            <li><Link href="/" className="hover:opacity-70">Home</Link></li>
+            <li aria-hidden="true">›</li>
+            <li><Link href="/shop/sarees" className="hover:opacity-70">Shop</Link></li>
+            <li aria-hidden="true">›</li>
+            <li><Link href={`/shop/${product.category_slug}`} className="hover:opacity-70">{categoryName}</Link></li>
+            <li aria-hidden="true">›</li>
+            <li aria-current="page" style={{ color: 'var(--color-text)' }}>{product.name}</li>
+          </ol>
+        </nav>
+      </div>
+
+      {/* PDP grid */}
+      <div className="container-site pb-20">
+        <div className="grid md:grid-cols-[1fr_480px] lg:grid-cols-[1fr_520px] gap-10 lg:gap-16 xl:gap-20">
+          <ProductGallery images={product.images} productName={product.name} />
+          <ProductInfo product={product} variants={variants} />
+        </div>
+      </div>
+
+      {/* Craft Behind */}
+      {product.craft_story_body && (
+        <CraftBehind
+          craftStory={product.craft_story_body}
+          imageUrl={product.craft_story_image ?? product.images[1]?.url}
+          productName={product.name}
+        />
+      )}
+
+      <CompleteTheLook products={categoryProducts} />
+
+      {reviews.length > 0 && (
+        <ReviewsSection reviews={reviews} averageRating={avgRating} totalCount={reviews.length} />
+      )}
+
+      <YouMightAlsoLike products={relatedProducts} heading="You might also like" />
+    </>
+  )
+}

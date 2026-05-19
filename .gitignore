@@ -1,0 +1,27 @@
+# Planning docs
+POSSAH_BUILD_GUIDE.md
+POSSAH_CREATIVE_DIRECTION.md
+POSSAH_KICKOFF_PROMPT.md
+POSSAH_PROJECT_PLAN.md
+SETUP.md
+
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+build/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Claude Code
+.claude/
+
+# Misc
+.DS_Store
+*.pem
+tsconfig.tsbuildinfo

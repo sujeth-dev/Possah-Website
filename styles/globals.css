@@ -1,0 +1,227 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ─── Colours ───────────────────────────────────────────── */
+    --color-bg:           #F4ECDF;   /* Warm Ivory — DEFAULT background */
+    --color-green:        #1F3A2D;   /* Deep Forest Green */
+    --color-rose:         #C99A99;   /* Dusty Rose Pink */
+    --color-orange:       #B35A2B;   /* Burnt Orange */
+    --color-gold:         #C8973A;   /* Muted Mustard Gold */
+    --color-text:         #1A1A1A;
+    --color-text-muted:   #6B6B6B;
+    --color-border:       #E2D9CC;
+    --color-white:        #FFFFFF;
+    --color-overlay:      rgba(26, 26, 26, 0.55);
+    --color-error:        #C0392B;
+    --color-success:      #27AE60;
+
+    /* ─── Typography ────────────────────────────────────────── */
+    --font-display:       var(--font-playfair), Georgia, serif;
+    --font-body:          var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono:          var(--font-jetbrains), 'Courier New', monospace;
+
+    /* ─── Type Scale (fluid) ────────────────────────────────── */
+    --text-h1:            clamp(48px, 8vw, 96px);
+    --text-h2:            clamp(32px, 5vw, 64px);
+    --text-h3:            clamp(20px, 3vw, 34px);
+    --text-body-lg:       clamp(16px, 2vw, 24px);
+    --text-body:          16px;
+    --text-caption:       13px;
+    --text-label:         11px;
+
+    /* ─── Spacing ───────────────────────────────────────────── */
+    --space-xs:           4px;
+    --space-sm:           8px;
+    --space-md:           16px;
+    --space-lg:           32px;
+    --space-xl:           64px;
+    --space-2xl:          96px;
+    --space-3xl:          128px;
+
+    /* ─── Borders ───────────────────────────────────────────── */
+    --radius-btn:         2px;
+    --radius-card:        4px;
+    --radius-img:         0px;
+    --radius-input:       2px;
+  }
+
+  /* ─── Base reset ──────────────────────────────────────────── */
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    min-height: 100dvh;
+  }
+
+  /* ─── Typography base ─────────────────────────────────────── */
+  h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 1.0;
+    letter-spacing: 0.02em;
+  }
+
+  h3, h4, h5, h6 {
+    font-family: var(--font-body);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  /* ─── Focus ring ──────────────────────────────────────────── */
+  *:focus-visible {
+    outline: 2px solid var(--color-green);
+    outline-offset: 2px;
+  }
+
+  /* ─── Selection ───────────────────────────────────────────── */
+  ::selection {
+    background-color: var(--color-green);
+    color: var(--color-bg);
+  }
+
+  /* ─── Inputs — prevent zoom on mobile (font-size ≥ 16px) ─── */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+@layer components {
+  /* ─── Container ───────────────────────────────────────────── */
+  .container-site {
+    width: 100%;
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  @media (min-width: 768px) {
+    .container-site {
+      padding-left: var(--space-lg);
+      padding-right: var(--space-lg);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container-site {
+      padding-left: 80px;
+      padding-right: 80px;
+    }
+  }
+
+  /* ─── Section spacing ─────────────────────────────────────── */
+  .section-gap {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  @media (min-width: 768px) {
+    .section-gap {
+      padding-top: 64px;
+      padding-bottom: 64px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .section-gap {
+      padding-top: 96px;
+      padding-bottom: 96px;
+    }
+  }
+
+  /* ─── Section label (GT Mono style) ──────────────────────── */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  /* ─── Logo gradient ───────────────────────────────────────── */
+  .logo-gradient {
+    background: linear-gradient(135deg, var(--color-orange), var(--color-gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@layer utilities {
+  /* ─── Text truncation ─────────────────────────────────────── */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* ─── Hairline border ─────────────────────────────────────── */
+  .border-hairline {
+    border-width: 0.5px;
+  }
+
+  /* ─── Aspect ratios for product images ───────────────────── */
+  .aspect-product {
+    aspect-ratio: 4 / 5;
+  }
+
+  /* ─── Transition standard ────────────────────────────────── */
+  .transition-possah {
+    transition: all 0.25s ease;
+  }
+
+  /* ─── Image hover scale ──────────────────────────────────── */
+  .img-hover-scale {
+    overflow: hidden;
+  }
+  .img-hover-scale img {
+    transition: transform 0.4s ease;
+  }
+  .img-hover-scale:hover img {
+    transform: scale(1.03);
+  }
+
+  /* ─── Overlay ────────────────────────────────────────────── */
+  .overlay-dark::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-overlay);
+  }
+}
+
+/* ─── Swiper overrides ────────────────────────────────────────── */
+.swiper-pagination-bullet {
+  background-color: var(--color-white) !important;
+  opacity: 0.5 !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1 !important;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  color: var(--color-white) !important;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 18px !important;
+}
