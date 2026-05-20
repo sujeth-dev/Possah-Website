@@ -55,18 +55,27 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // column: type = 'percent' | 'flat' | 'free_shipping', value = number
-    const discountType: 'percent' | 'fixed' =
-      coupon.type === 'percent' ? 'percent' : 'fixed'
+    // Return correct discount_type for all three coupon types
+    // 'percent'       → percentage off subtotal
+    // 'flat'          → fixed ₹ amount off
+    // 'free_shipping' → zero out shipping cost (handled client-side)
+    const discountType: 'percent' | 'flat' | 'free_shipping' = coupon.type as 'percent' | 'flat' | 'free_shipping'
     const discountValue: number = coupon.value
+
+    let message: string
+    if (discountType === 'percent') {
+      message = `${discountValue}% off applied!`
+    } else if (discountType === 'flat') {
+      message = `₹${discountValue.toLocaleString('en-IN')} off applied!`
+    } else {
+      message = 'Free shipping applied!'
+    }
 
     return NextResponse.json({
       valid: true,
       discount_type: discountType,
       discount_value: discountValue,
-      message: discountType === 'percent'
-        ? `${discountValue}% off applied!`
-        : `₹${discountValue.toLocaleString('en-IN')} off applied!`,
+      message,
     })
   } catch {
     return NextResponse.json({ valid: false, message: 'Something went wrong. Please try again.' }, { status: 500 })

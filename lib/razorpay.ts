@@ -6,14 +6,19 @@ export function verifyRazorpayWebhookSignature(
   signature: string,
   secret: string
 ): boolean {
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(body)
-    .digest('hex')
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSignature, 'hex'),
-    Buffer.from(signature, 'hex')
-  )
+  try {
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(body)
+      .digest('hex')
+    const a = Buffer.from(expectedSignature, 'hex')
+    const b = Buffer.from(signature, 'hex')
+    // timingSafeEqual throws RangeError if buffers differ in length
+    if (a.length !== b.length) return false
+    return crypto.timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
 }
 
 /** Verify Razorpay payment signature (post-payment client callback) */
@@ -28,15 +33,19 @@ export function verifyRazorpayPaymentSignature({
   signature: string
   secret: string
 }): boolean {
-  const body = `${orderId}|${paymentId}`
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(body)
-    .digest('hex')
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSignature, 'hex'),
-    Buffer.from(signature, 'hex')
-  )
+  try {
+    const body = `${orderId}|${paymentId}`
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(body)
+      .digest('hex')
+    const a = Buffer.from(expectedSignature, 'hex')
+    const b = Buffer.from(signature, 'hex')
+    if (a.length !== b.length) return false
+    return crypto.timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
 }
 
 /** Create Razorpay order via the Orders API */

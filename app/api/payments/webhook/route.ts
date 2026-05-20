@@ -99,21 +99,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: false }, { status: 500 })
     }
 
+    // ─── Decrement stock for every line item (atomic, parallel) ───────────────
+    // decrement_variant_stock returns FALSE if stock_qty would go negative (oversell).
+    // We log oversells for manual reconciliation but do NOT fail the webhook —
+    // Razorpay would retry and attempt double-decrement.
+    const lineItemsRaw = (order.line_items as {
+      variant_id: string
+      name: string
+      colour: string
+      size: string
+      qty: number
+      price: number
+    }[]) ?? []
+
+    await Promise.all(
+      lineItemsRaw.map(async (item) => {
+        const { data: decremented, error: stockErr } = await supabase
+          .rpc('decrement_variant_stock', {
+            p_variant_id: item.variant_id,
+            p_qty: item.qty,
+          })
+
+        if (stockErr) {
+          console.error(
+            `[webhook] Stock RPC error for variant ${item.variant_id} (order ${order.order_number}):`,
+            stockErr
+          )
+        } else if (!decremented) {
+          // Oversell — stock hit 0 before this decrement could run
+          console.error(
+            `[webhook] OVERSELL: variant ${item.variant_id} ("${item.name}") ` +
+              `qty=${item.qty} order=${order.order_number} — manual reconciliation required`
+          )
+        }
+      })
+    )
+
     // Send confirmation email (best-effort — never fail webhook for email errors)
     try {
-      const lineItems = (order.line_items as {
-        name: string
-        colour: string
-        size: string
-        qty: number
-        price: number
-      }[]) ?? []
-
       await sendOrderConfirmationEmail({
         to: order.customer_email,
         customerName: order.customer_name,
         orderNumber: order.order_number,
-        items: lineItems,
+        items: lineItemsRaw,
         subtotal: order.subtotal,
         shippingFee: order.shipping_fee ?? 0,
         discountAmount: order.discount_amount ?? 0,

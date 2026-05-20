@@ -118,6 +118,7 @@ export function CheckoutForm() {
   const couponCode = searchParams.get('coupon') ?? ''
   const hasGiftWrap = searchParams.get('gift') === '1'
   const [couponDiscount, setCouponDiscount] = useState(0)
+  const [isFreeShippingCoupon, setIsFreeShippingCoupon] = useState(false)
 
   const sub = subtotal()
   const count = items.reduce((s, i) => s + i.qty, 0)
@@ -133,12 +134,12 @@ export function CheckoutForm() {
   })
 
   const deliveryOption = watch('delivery_option')
-  const freeShipping = sub >= SHIPPING_THRESHOLD
+  const freeShipping = sub >= SHIPPING_THRESHOLD || isFreeShippingCoupon
   const shippingCost = freeShipping ? 0 : deliveryOption === 'express' ? EXPRESS_COST : STANDARD_COST
   const giftCost = hasGiftWrap ? GIFT_WRAP_COST : 0
   const total = sub + shippingCost + giftCost - couponDiscount
 
-  // Re-validate coupon amount from URL param
+  // Re-validate coupon from URL param
   useEffect(() => {
     if (!couponCode) return
     fetch('/api/coupons/validate', {
@@ -149,11 +150,14 @@ export function CheckoutForm() {
       .then((r) => r.json())
       .then((data) => {
         if (data.valid) {
-          const disc =
-            data.discount_type === 'percent'
-              ? Math.round((sub * data.discount_value) / 100)
-              : data.discount_value ?? 0
-          setCouponDiscount(disc)
+          if (data.discount_type === 'free_shipping') {
+            setIsFreeShippingCoupon(true)
+            setCouponDiscount(0)
+          } else if (data.discount_type === 'percent') {
+            setCouponDiscount(Math.round((sub * data.discount_value) / 100))
+          } else {
+            setCouponDiscount(data.discount_value ?? 0)
+          }
         }
       })
       .catch(() => {})

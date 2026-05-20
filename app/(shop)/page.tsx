@@ -88,28 +88,28 @@ async function getHomepageData() {
   try {
     const supabase = createServerClient()
 
-    // Fetch homepage config
-    const { data: config } = await supabase
-      .from('homepage_config')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single()
+    const [{ data: config }, { data: products }] = await Promise.all([
+      supabase
+        .from('homepage_config')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single(),
 
-    // Fetch new arrival products
-    const { data: products } = await supabase
-      .from('products')
-      .select(`
-        id, slug, name, fabric, price, compare_price,
-        is_new_arrival, is_top_selling,
-        categories (slug),
-        product_images (url, alt, position),
-        product_tags (tag)
-      `)
-      .eq('is_active', true)
-      .eq('is_new_arrival', true)
-      .order('created_at', { ascending: false })
-      .limit(12)
+      supabase
+        .from('products')
+        .select(`
+          id, slug, name, fabric, price, compare_price,
+          is_new_arrival, is_top_selling,
+          categories (slug),
+          product_images (url, alt, position),
+          product_tags (tag)
+        `)
+        .eq('is_active', true)
+        .eq('is_new_arrival', true)
+        .order('created_at', { ascending: false })
+        .limit(12),
+    ])
 
     return { config, products }
   } catch {

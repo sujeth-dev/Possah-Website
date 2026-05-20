@@ -7,13 +7,14 @@ import { generateOrderNumber } from '@/lib/utils'
 
 const orderItemSchema = z.object({
   product_id: z.string().uuid(),
-  variant_id: z.string(),
+  variant_id: z.string().uuid(),
   name: z.string().min(1).max(200),
-  image: z.string(),
-  price: z.number().positive(),
+  image: z.string().min(1),
   qty: z.number().int().positive().max(10),
   colour: z.string().min(1).max(60),
   size: z.string().min(1).max(40),
+  // price accepted from client for reference only — server always re-fetches from DB
+  price: z.number().positive(),
 })
 
 const createOrderSchema = z.object({
@@ -35,12 +36,14 @@ const createOrderSchema = z.object({
   gift_wrap: z.boolean().default(false),
   coupon_code: z.string().nullable().optional(),
   notes: z.string().max(500).optional().default(''),
-  subtotal: z.number().positive(),
+  // client shipping submitted for reference only — server re-derives
   shipping: z.number().min(0),
-  coupon_discount: z.number().min(0).default(0),
-  gift_wrap_cost: z.number().min(0).default(0),
-  total: z.number().positive(),
 })
+
+const GIFT_WRAP_COST = 150
+const SHIPPING_THRESHOLD = 2500
+const STANDARD_COST = 199
+const EXPRESS_COST = 399
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -59,42 +62,155 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data
-  const GIFT_WRAP_COST = 150
-
-  // Server-side total sanity check (±1 rounding drift allowed)
-  const expectedTotal =
-    data.subtotal + data.shipping + (data.gift_wrap ? GIFT_WRAP_COST : 0) - data.coupon_discount
-  if (Math.abs(expectedTotal - data.total) > 1) {
-    return NextResponse.json({ message: 'Order total mismatch. Please refresh and try again.' }, { status: 400 })
-  }
 
   try {
     const supabase = createServerClient()
 
-    // Validate coupon still active
-    if (data.coupon_code) {
-      const { data: coupon } = await supabase
-        .from('coupons')
-        .select('id, usage_count, usage_limit')
-        .eq('code', data.coupon_code)
-        .eq('is_active', true)
-        .single()
-      if (!coupon) {
-        return NextResponse.json({ message: 'Coupon code is no longer valid.' }, { status: 400 })
+    // ─── 1. Fetch real variant prices from DB — never trust client prices ──────
+    const variantIds = [...new Set(data.items.map((i) => i.variant_id))]
+
+    const { data: variants, error: variantError } = await supabase
+      .from('product_variants')
+      .select('id, stock_qty, products(id, price, is_active)')
+      .in('id', variantIds)
+
+    if (variantError || !variants || variants.length !== variantIds.length) {
+      return NextResponse.json(
+        { message: 'One or more items are no longer available. Please refresh your cart.' },
+        { status: 400 }
+      )
+    }
+
+    // Build lookup: variantId → { price, stock_qty, is_active }
+    const variantMap = new Map(
+      variants.map((v) => {
+        const product = (v.products as unknown) as { id: string; price: number; is_active: boolean } | null
+        return [v.id, { price: product?.price ?? 0, stock_qty: v.stock_qty, is_active: product?.is_active ?? false }]
+      })
+    )
+
+    // Validate each item: active, in stock
+    for (const item of data.items) {
+      const v = variantMap.get(item.variant_id)
+      if (!v) {
+        return NextResponse.json(
+          { message: `"${item.name}" is no longer available.` },
+          { status: 400 }
+        )
+      }
+      if (!v.is_active) {
+        return NextResponse.json(
+          { message: `"${item.name}" has been removed from the catalog.` },
+          { status: 400 }
+        )
+      }
+      if (v.stock_qty < item.qty) {
+        return NextResponse.json(
+          { message: `"${item.name}" only has ${v.stock_qty} unit(s) left. Please update your cart.` },
+          { status: 400 }
+        )
       }
     }
 
+    // ─── 2. Server-calculated subtotal using DB prices ─────────────────────────
+    const serverSubtotal = data.items.reduce((sum, item) => {
+      return sum + variantMap.get(item.variant_id)!.price * item.qty
+    }, 0)
+
+    // ─── 3. Server-calculated shipping ────────────────────────────────────────
+    let serverShipping =
+      serverSubtotal >= SHIPPING_THRESHOLD
+        ? 0
+        : data.delivery_option === 'express'
+        ? EXPRESS_COST
+        : STANDARD_COST
+
+    // ─── 4. Validate coupon and calculate discount ─────────────────────────────
+    let couponDiscount = 0
+    let isFreeShipping = false
+    let validatedCouponId: string | null = null
+
+    if (data.coupon_code) {
+      const now = new Date().toISOString()
+      const { data: coupon } = await supabase
+        .from('coupons')
+        .select('id, type, value, min_order_value, expiry_date, usage_limit, usage_count')
+        .eq('code', data.coupon_code)
+        .eq('is_active', true)
+        .single()
+
+      if (!coupon) {
+        return NextResponse.json({ message: 'Coupon code is no longer valid.' }, { status: 400 })
+      }
+      if (coupon.expiry_date && coupon.expiry_date < now) {
+        return NextResponse.json({ message: 'Coupon code has expired.' }, { status: 400 })
+      }
+      if (coupon.usage_limit !== null && coupon.usage_count >= coupon.usage_limit) {
+        return NextResponse.json({ message: 'Coupon code has reached its usage limit.' }, { status: 400 })
+      }
+      if (coupon.min_order_value && serverSubtotal < coupon.min_order_value) {
+        return NextResponse.json(
+          { message: `Minimum order of ₹${coupon.min_order_value.toLocaleString('en-IN')} required for this code.` },
+          { status: 400 }
+        )
+      }
+
+      validatedCouponId = coupon.id
+      if (coupon.type === 'percent') {
+        couponDiscount = Math.round((serverSubtotal * coupon.value) / 100)
+      } else if (coupon.type === 'flat') {
+        couponDiscount = Math.min(coupon.value, serverSubtotal)
+      } else if (coupon.type === 'free_shipping') {
+        isFreeShipping = true
+        serverShipping = 0
+      }
+    }
+
+    // ─── 5. Server-calculated final total ─────────────────────────────────────
+    const giftWrapCost = data.gift_wrap ? GIFT_WRAP_COST : 0
+    const serverTotal = serverSubtotal + serverShipping + giftWrapCost - couponDiscount
+    const totalPaise = Math.round(serverTotal * 100)
+
+    if (totalPaise < 100) {
+      return NextResponse.json({ message: 'Order total is too low.' }, { status: 400 })
+    }
+
+    // ─── 6. Atomic coupon increment via RPC ───────────────────────────────────
+    // Uses a PostgreSQL function that does UPDATE ... WHERE usage_count < usage_limit
+    // preventing race conditions under concurrent requests.
+    if (validatedCouponId) {
+      const { data: incremented, error: rpcError } = await supabase
+        .rpc('increment_coupon_usage', { p_coupon_id: validatedCouponId })
+
+      if (rpcError || !incremented) {
+        // Another concurrent request just exhausted this coupon
+        return NextResponse.json({ message: 'Coupon is no longer valid. Please try again.' }, { status: 400 })
+      }
+    }
+
+    // ─── 7. Create Razorpay order ──────────────────────────────────────────────
     const orderNumber = generateOrderNumber()
-    const totalPaise = Math.round(data.total * 100)
+    let rzOrder: { id: string; amount: number; currency: string }
 
-    // Create Razorpay order
-    const rzOrder = await createRazorpayOrder({
-      amount: totalPaise,
-      currency: 'INR',
-      receipt: orderNumber,
-    })
+    try {
+      rzOrder = await createRazorpayOrder({
+        amount: totalPaise,
+        currency: 'INR',
+        receipt: orderNumber,
+      })
+    } catch (rzErr) {
+      console.error('[orders/create] Razorpay order creation failed:', rzErr)
+      // Best-effort coupon rollback — undo the atomic increment
+      if (validatedCouponId) {
+        supabase
+          .rpc('decrement_coupon_usage', { p_coupon_id: validatedCouponId })
+          .then(() => {})
+          .catch(() => {})
+      }
+      return NextResponse.json({ message: 'Payment gateway error. Please try again.' }, { status: 502 })
+    }
 
-    // Map to actual DB schema columns
+    // ─── 8. Insert order with server-calculated values ─────────────────────────
     const shippingAddress = {
       line1: data.address.line1,
       line2: data.address.line2,
@@ -103,12 +219,13 @@ export async function POST(req: NextRequest) {
       pincode: data.address.pincode,
     }
 
+    // Line items always use DB prices, never client-submitted prices
     const lineItems = data.items.map((item) => ({
       product_id: item.product_id,
       variant_id: item.variant_id,
       name: item.name,
       image: item.image,
-      price: item.price,
+      price: variantMap.get(item.variant_id)!.price,
       qty: item.qty,
       colour: item.colour,
       size: item.size,
@@ -123,12 +240,12 @@ export async function POST(req: NextRequest) {
         customer_phone: data.contact.phone,
         shipping_address: shippingAddress,
         line_items: lineItems,
-        subtotal: data.subtotal,
-        shipping_fee: data.shipping,
-        discount_amount: data.coupon_discount,
-        coupon_code: data.coupon_code ?? null,
+        subtotal: serverSubtotal,
+        shipping_fee: serverShipping,
+        discount_amount: couponDiscount,
+        coupon_code: data.coupon_code || null,
         tax: 0,
-        total: data.total,
+        total: serverTotal,
         payment_status: 'pending',
         fulfillment_status: 'unfulfilled',
         gateway_order_id: rzOrder.id,
@@ -144,41 +261,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Failed to save order. Please try again.' }, { status: 500 })
     }
 
-    // Increment coupon usage (non-blocking)
-    if (data.coupon_code) {
-      supabase
-        .from('coupons')
-        .select('id, usage_count')
-        .eq('code', data.coupon_code)
-        .single()
-        .then(({ data: coupon }) => {
-          if (coupon) {
-            supabase
-              .from('coupons')
-              .update({ usage_count: (coupon.usage_count ?? 0) + 1 })
-              .eq('id', coupon.id)
-              .then(() => {})
-          }
-        })
-    }
-
-    // Send confirmation email (non-blocking, never blocks response)
+    // ─── 9. Confirmation email (non-blocking) ──────────────────────────────────
     sendOrderConfirmationEmail({
       to: data.contact.email,
       orderNumber,
       customerName: `${data.contact.first_name} ${data.contact.last_name}`,
-      items: data.items.map((item) => ({
+      items: lineItems.map((item) => ({
         name: item.name,
         colour: item.colour,
         size: item.size,
         qty: item.qty,
         price: item.price,
       })),
-      subtotal: data.subtotal,
-      shippingFee: data.shipping,
-      discountAmount: data.coupon_discount,
+      subtotal: serverSubtotal,
+      shippingFee: serverShipping,
+      discountAmount: couponDiscount,
       tax: 0,
-      total: data.total,
+      total: serverTotal,
       estimatedDelivery: data.delivery_option === 'express' ? '2–3 business days' : '5–7 business days',
     }).catch(() => {})
 
@@ -188,6 +287,11 @@ export async function POST(req: NextRequest) {
       order_number: orderNumber,
       razorpay_order_id: rzOrder.id,
       amount: totalPaise,
+      // Return server totals so CheckoutForm can display accurate values
+      server_subtotal: serverSubtotal,
+      server_shipping: serverShipping,
+      server_total: serverTotal,
+      is_free_shipping: isFreeShipping,
     })
   } catch (err) {
     console.error('[orders/create] Unexpected error:', err)
