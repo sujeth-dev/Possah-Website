@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 import { FilterSidebar } from '@/components/shop/FilterSidebar'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import { SortBar } from '@/components/shop/SortBar'
@@ -27,7 +27,7 @@ async function getCategoryAndProducts(
   searchParams: Record<string, string | string[] | undefined>
 ) {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
 
     // Fetch category
     const { data: category } = await supabase
@@ -147,7 +147,7 @@ async function getCategoryAndProducts(
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
     const { data: category } = await supabase
       .from('categories')
       .select('name, slug')

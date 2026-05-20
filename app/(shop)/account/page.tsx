@@ -32,7 +32,7 @@ export default async function AccountPage() {
           View your orders, saved addresses, and more.
         </p>
         <Link
-          href="/api/auth/signin"
+          href="/auth/signin?callbackUrl=%2Faccount"
           className="inline-flex items-center justify-center gap-2 px-10 py-3.5 transition-opacity duration-200 hover:opacity-80"
           style={{
             backgroundColor: 'var(--color-green)',

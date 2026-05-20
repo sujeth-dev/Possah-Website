@@ -30,6 +30,7 @@ export interface Database {
           is_featured: boolean
           is_new_arrival: boolean
           is_top_selling: boolean
+          is_ready_to_ship: boolean
           is_active: boolean
           meta_title: string | null
           meta_description: string | null
@@ -288,6 +289,22 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['lookbook_looks']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['lookbook_looks']['Insert']>
+      }
+      store_settings: {
+        Row: {
+          id:                      string
+          announcement_text:       string
+          store_email:             string
+          whatsapp_number:         string
+          free_shipping_threshold: number
+          express_delivery_fee:    number
+          seo_title:               string
+          seo_description:         string
+          seo_og_image:            string | null
+          updated_at:              string
+        }
+        Insert: Partial<Database['public']['Tables']['store_settings']['Row']>
+        Update: Partial<Database['public']['Tables']['store_settings']['Row']>
       }
     }
     Views: Record<string, never>

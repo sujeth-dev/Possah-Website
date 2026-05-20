@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import type { ProductCardData } from '@/app/(shop)/page'
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 async function getFestiveProducts(): Promise<ProductCardData[]> {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
     const { data } = await supabase
       .from('products')
       .select(`

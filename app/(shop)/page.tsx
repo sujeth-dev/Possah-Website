@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 import { HeroSlider } from '@/components/homepage/HeroSlider'
 import { CategorySplit } from '@/components/homepage/CategorySplit'
 import { CategoryCircles } from '@/components/homepage/CategoryCircles'
@@ -86,7 +86,7 @@ export interface ProductCardData {
 
 async function getHomepageData() {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
 
     const [{ data: config }, { data: products }] = await Promise.all([
       supabase

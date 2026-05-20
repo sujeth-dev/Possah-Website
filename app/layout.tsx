@@ -1,9 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Playfair_Display, JetBrains_Mono } from 'next/font/google'
 import '@/styles/globals.css'
-import { AnnouncementBar } from '@/components/layout/AnnouncementBar'
-import { Header } from '@/components/layout/Header'
-import { Footer } from '@/components/layout/Footer'
 
 // ─── Google Fonts (closest available matches for brand fonts) ──
 const inter = Inter({
@@ -69,10 +66,7 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable}`}
     >
       <body>
-        <AnnouncementBar />
-        <Header />
-        <main id="main-content">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   )

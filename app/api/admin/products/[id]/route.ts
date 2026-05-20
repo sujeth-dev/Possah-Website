@@ -1,0 +1,217 @@
+import { NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase/server'
+import { ProductCreateSchema, type VariantInput, type ImageInput } from '@/lib/validations/admin-products'
+
+// ─── Auth guard ───────────────────────────────────────────────────────────────
+
+function requireAdminAuth(request: Request): boolean {
+  if (process.env.NODE_ENV === 'development') return true
+  const cookie = request.headers.get('cookie') ?? ''
+  return cookie.includes('next-auth.session-token') || cookie.includes('__Secure-next-auth.session-token')
+}
+
+// ─── GET /api/admin/products/[id] ─ single product with all relations ─────────
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  if (!requireAdminAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const supabase = createServerClient()
+
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories:category_id (id, name, slug),
+        product_images (id, url, alt, position),
+        product_variants (id, colour_name, colour_hex, size, stock_qty),
+        product_tags (id, tag)
+      `)
+      .eq('id', params.id)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json(data)
+  } catch (err) {
+    console.error('[Admin Products GET/:id] unexpected:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// ─── PATCH /api/admin/products/[id] ─ partial update ─────────────────────────
+
+const ProductUpdateSchema = ProductCreateSchema.partial()
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  if (!requireAdminAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const body = await request.json()
+    const parsed = ProductUpdateSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', issues: parsed.error.flatten().fieldErrors },
+        { status: 422 }
+      )
+    }
+
+    const data = parsed.data
+    const supabase = createServerClient()
+
+    // Check product exists
+    const { data: existing, error: fetchErr } = await supabase
+      .from('products')
+      .select('id, slug')
+      .eq('id', params.id)
+      .single()
+
+    if (fetchErr || !existing) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    // Check slug uniqueness if slug is being changed
+    if (data.slug && data.slug !== existing.slug) {
+      const { data: slugCheck } = await supabase
+        .from('products')
+        .select('id')
+        .eq('slug', data.slug)
+        .neq('id', params.id)
+        .maybeSingle()
+
+      if (slugCheck) {
+        return NextResponse.json(
+          { error: 'Validation failed', issues: { slug: ['Slug already exists.'] } },
+          { status: 422 }
+        )
+      }
+    }
+
+    // Build update object — only include fields that were sent
+    const updateFields: Record<string, unknown> = {}
+    const scalarFields = [
+      'name', 'slug', 'description', 'sub_line', 'category_id',
+      'price', 'compare_price', 'fabric', 'craft_description',
+      'care_instructions', 'drape_guide', 'craft_story_title',
+      'craft_story_body', 'craft_story_image', 'audio_url',
+      'meta_title', 'meta_description', 'is_new_arrival',
+      'is_top_selling', 'is_featured', 'is_active',
+    ] as const
+
+    for (const field of scalarFields) {
+      if (field in data) {
+        updateFields[field] = data[field as keyof typeof data] ?? null
+      }
+    }
+
+    // Recalculate stock_qty from variants if provided
+    if (data.variants) {
+      updateFields.stock_qty = data.variants.reduce((sum: number, v: VariantInput) => sum + v.stock_qty, 0)
+    }
+
+    if (Object.keys(updateFields).length > 0) {
+      const { error: updateErr } = await supabase
+        .from('products')
+        .update(updateFields)
+        .eq('id', params.id)
+
+      if (updateErr) {
+        console.error('[Admin Products PATCH] update:', updateErr)
+        return NextResponse.json({ error: updateErr.message }, { status: 500 })
+      }
+    }
+
+    // Replace tags if provided
+    if (data.tags !== undefined) {
+      await supabase.from('product_tags').delete().eq('product_id', params.id)
+      if (data.tags.length > 0) {
+        await supabase.from('product_tags').insert(
+          data.tags.map((tag: string) => ({ product_id: params.id, tag }))
+        )
+      }
+    }
+
+    // Replace variants if provided
+    if (data.variants !== undefined) {
+      await supabase.from('product_variants').delete().eq('product_id', params.id)
+      if (data.variants.length > 0) {
+        await supabase.from('product_variants').insert(
+          data.variants.map((v: VariantInput) => ({
+            product_id:  params.id,
+            colour_name: v.colour_name,
+            colour_hex:  v.colour_hex,
+            size:        v.size,
+            stock_qty:   v.stock_qty,
+          }))
+        )
+      }
+    }
+
+    // Replace images if provided
+    if (data.images !== undefined) {
+      await supabase.from('product_images').delete().eq('product_id', params.id)
+      if (data.images.length > 0) {
+        await supabase.from('product_images').insert(
+          data.images.map((img: ImageInput, idx: number) => ({
+            product_id: params.id,
+            url:        img.url,
+            alt:        img.alt ?? null,
+            position:   img.position ?? idx,
+          }))
+        )
+      }
+    }
+
+    return NextResponse.json({ id: params.id, ok: true })
+  } catch (err) {
+    console.error('[Admin Products PATCH] unexpected:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// ─── DELETE /api/admin/products/[id] ─ soft delete (set is_active=false) ─────
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  if (!requireAdminAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const supabase = createServerClient()
+
+    // Soft delete — never hard delete products (orders reference them)
+    const { error } = await supabase
+      .from('products')
+      .update({ is_active: false })
+      .eq('id', params.id)
+
+    if (error) {
+      console.error('[Admin Products DELETE]', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[Admin Products DELETE] unexpected:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

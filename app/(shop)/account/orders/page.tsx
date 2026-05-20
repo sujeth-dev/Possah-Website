@@ -56,7 +56,7 @@ export default async function OrdersPage() {
     return (
       <div className="container-site py-24 text-center">
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--color-text-muted)' }}>
-          Please <Link href="/api/auth/signin" style={{ color: 'var(--color-green)', textDecoration: 'underline' }}>sign in</Link> to view your orders.
+          Please <Link href="/auth/signin?callbackUrl=%2Faccount%2Forders" style={{ color: 'var(--color-green)', textDecoration: 'underline' }}>sign in</Link> to view your orders.
         </p>
       </div>
     )

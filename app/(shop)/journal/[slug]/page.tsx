@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 interface PageProps {
   params: { slug: string }
@@ -22,7 +22,7 @@ interface Article {
 
 async function getArticle(slug: string): Promise<Article | null> {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
     const { data } = await supabase
       .from('journal_articles')
       .select('id, slug, title, category, author, body, featured_image, published_at, is_featured')

@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
     })
 
     if (!token || !token.isAdmin) {
-      const loginUrl = new URL('/admin/login', request.url)
+      const loginUrl = new URL('/auth/signin', request.url)
       loginUrl.searchParams.set('callbackUrl', request.url)
       return NextResponse.redirect(loginUrl)
     }

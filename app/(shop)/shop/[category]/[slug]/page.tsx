@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 import { formatPrice } from '@/lib/utils'
 import { ProductGallery } from '@/components/pdp/ProductGallery'
 import { ProductInfo } from '@/components/pdp/ProductInfo'
@@ -20,7 +20,7 @@ interface PageProps {
 
 async function getProductData(slug: string) {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
 
     const { data: product } = await supabase
       .from('products')

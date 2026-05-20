@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 const BASE_URL = 'https://thepossah.com'
 
@@ -17,7 +17,7 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createServerClient()
+  const supabase = createPublicClient()
 
   // Categories
   const { data: categories } = await supabase

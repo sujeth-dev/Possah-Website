@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 export const metadata: Metadata = {
   title: 'Lookbook — The Possah',
@@ -55,7 +55,7 @@ const STATIC_LOOKBOOKS: Lookbook[] = [
 
 async function getLookbooks(): Promise<Lookbook[]> {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
     const { data } = await supabase
       .from('lookbooks')
       .select('id, collection_name, season, year, theme_word, chapter_number, hero_image, concept_text')

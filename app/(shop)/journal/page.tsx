@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 export const metadata: Metadata = {
   title: 'Journal — The Possah',
@@ -55,7 +55,7 @@ const STATIC_ARTICLES: Article[] = [
 
 async function getArticles(): Promise<Article[]> {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
     const { data } = await supabase
       .from('journal_articles')
       .select('id, slug, title, category, author, featured_image, published_at, is_featured')

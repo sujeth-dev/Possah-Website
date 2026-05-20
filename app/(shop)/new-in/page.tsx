@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 import { FilterSidebar } from '@/components/shop/FilterSidebar'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import { SortBar } from '@/components/shop/SortBar'
@@ -21,7 +21,7 @@ function getString(val: string | string[] | undefined): string | undefined {
 
 async function getNewArrivals(searchParams: Record<string, string | string[] | undefined>) {
   try {
-    const supabase = createServerClient()
+    const supabase = createPublicClient()
 
     const occasion = getString(searchParams.occasion)
     const fabric   = getString(searchParams.fabric)
