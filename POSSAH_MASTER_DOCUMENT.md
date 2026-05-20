@@ -1,6 +1,6 @@
 # The Possah — Master Project Document
 
-**Version:** 1.1 — Phase 1 Complete  
+**Version:** 1.2 — Navigation Fix + New Collection Pages  
 **Last Updated:** May 2026  
 **Project:** thepossah.com — Luxury Indian Fashion E-Commerce  
 **Stack:** Next.js 14 · Supabase · Razorpay · Resend · Vercel / Cloudflare Pages
@@ -82,6 +82,11 @@ Every customer-facing page is built, fully responsive, connected to Supabase, an
 | Razorpay payments | ✅ Done | Order create, modal, signature verify, webhook |
 | Order confirmation email | ✅ Done | HTML email via Resend |
 | All bugs fixed | ✅ Done | See bug audit below |
+| **New In** collection page | ✅ Done | `/new-in` — products where `is_new_arrival=true`, all categories |
+| **Ready to Ship** collection page | ✅ Done | `/ready-to-ship` — products where `is_ready_to_ship=true`, all categories |
+| **Women** editorial landing | ✅ Done | `/women` — Ethnic + Western category tiles + new arrivals preview |
+| Desktop dropdown nav | ✅ Done | WOMEN hover reveals Ethnic/Western sub-menu with all 6 category links |
+| Nav hrefs fixed | ✅ Done | NEW IN → `/new-in`, WOMEN → `/women`, READY-TO-SHIP → `/ready-to-ship` |
 
 ### Bug Audit — Fixed in Phase 1
 
@@ -212,6 +217,34 @@ All pages live under `app/(shop)/` using Next.js App Router. The `(shop)` route 
 | `/contact` | `app/(shop)/contact/page.tsx` | Client | `POST /api/contact` |
 | `/faq` | `app/(shop)/faq/page.tsx` | Server | Static |
 | `/size-guide` | `app/(shop)/size-guide/page.tsx` | Server | Static |
+| `/new-in` | `app/(shop)/new-in/page.tsx` | Server | `products` WHERE `is_new_arrival=true` |
+| `/ready-to-ship` | `app/(shop)/ready-to-ship/page.tsx` | Server | `products` WHERE `is_ready_to_ship=true` |
+| `/women` | `app/(shop)/women/page.tsx` | Server | `categories` (hero images) + `products` (new arrivals preview) |
+
+### Collection Types — How Products Appear in Multiple Places
+
+There are 3 collection types. Understanding this is critical when adding new pages or admin features.
+
+```
+TYPE 1 — CATEGORY PAGES  /shop/sarees  /shop/lehengas  /shop/co-ords  etc.
+  Product membership: products.category_id FK → categories.id
+  One product = one category only
+  Admin controls: "Category" field on product form
+
+TYPE 2 — FLAG COLLECTIONS  /new-in  /ready-to-ship
+  Product membership: boolean flags on products row
+    is_new_arrival    → appears at /new-in
+    is_ready_to_ship  → appears at /ready-to-ship  (added in migration 016)
+  One product can be in BOTH its category page AND flag collection(s) simultaneously
+  Admin controls: toggle per product in product form (Phase 2)
+  Turning a flag OFF removes product from collection instantly, no category change
+
+TYPE 3 — EDITORIAL LANDINGS  /women  /bridal  /festive
+  Not a product listing driven by DB flags
+  Curated editorial page — links to category pages + featured product grid
+  /women pulls new arrivals preview (is_new_arrival=true, limit 4)
+  Admin controls: none (static editorial) except hero images via categories table
+```
 
 ### URL Pattern — Products
 

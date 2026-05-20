@@ -202,10 +202,7 @@ export async function POST(req: NextRequest) {
       console.error('[orders/create] Razorpay order creation failed:', rzErr)
       // Best-effort coupon rollback — undo the atomic increment
       if (validatedCouponId) {
-        supabase
-          .rpc('decrement_coupon_usage', { p_coupon_id: validatedCouponId })
-          .then(() => {})
-          .catch(() => {})
+        void supabase.rpc('decrement_coupon_usage', { p_coupon_id: validatedCouponId })
       }
       return NextResponse.json({ message: 'Payment gateway error. Please try again.' }, { status: 502 })
     }
