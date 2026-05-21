@@ -9,9 +9,8 @@ const schema = z.object({
   message: z.string().min(10).max(2000),
 })
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   let body: unknown
   try {
     body = await req.json()
