@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
+import GoogleSignInButton from './GoogleSignInButton'
 
 export const metadata: Metadata = {
   title: 'Sign In - The Possah',
@@ -22,8 +22,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   if (session) {
     redirect(callbackUrl)
   }
-
-  const googleSignInHref = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`
 
   return (
     <div className="container-site py-24">
@@ -60,21 +58,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </p>
         </div>
 
-        <Link
-          href={googleSignInHref}
-          className="inline-flex items-center justify-center px-10 py-3.5 transition-opacity duration-200 hover:opacity-80"
-          style={{
-            backgroundColor: 'var(--color-green)',
-            color: 'var(--color-white)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '11px',
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            borderRadius: 'var(--radius-btn)',
-          }}
-        >
-          Continue with Google
-        </Link>
+        <GoogleSignInButton callbackUrl={callbackUrl} />
 
         <p
           style={{
