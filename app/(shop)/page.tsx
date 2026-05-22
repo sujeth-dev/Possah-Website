@@ -125,9 +125,13 @@ export default async function HomePage() {
     ? parseJson<HeroSlide[]>(config.hero_slides, FALLBACK_HERO_SLIDES)
     : FALLBACK_HERO_SLIDES
 
-  const collectionBanner = config
-    ? parseJson<CollectionBannerData>(config.collection_banner, FALLBACK_COLLECTION_BANNER)
+  const rawBanner = config
+    ? parseJson<Partial<CollectionBannerData>>(config.collection_banner, FALLBACK_COLLECTION_BANNER)
     : FALLBACK_COLLECTION_BANNER
+  const collectionBanner: CollectionBannerData =
+    rawBanner?.ctaLink && rawBanner?.image && rawBanner?.headline
+      ? (rawBanner as CollectionBannerData)
+      : FALLBACK_COLLECTION_BANNER
 
   const occasionTiles = config
     ? parseJson<OccasionTile[]>(config.occasion_tiles, FALLBACK_OCCASION_TILES)
