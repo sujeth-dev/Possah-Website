@@ -121,9 +121,12 @@ async function getHomepageData() {
 export default async function HomePage() {
   const { config, products } = await getHomepageData()
 
-  const heroSlides = config
-    ? parseJson<HeroSlide[]>(config.hero_slides, FALLBACK_HERO_SLIDES)
-    : FALLBACK_HERO_SLIDES
+  const heroSlides = (() => {
+    const slides = config
+      ? parseJson<HeroSlide[]>(config.hero_slides, FALLBACK_HERO_SLIDES)
+      : FALLBACK_HERO_SLIDES
+    return slides.length > 0 ? slides : FALLBACK_HERO_SLIDES
+  })()
 
   const rawBanner = config
     ? parseJson<Partial<CollectionBannerData>>(config.collection_banner, FALLBACK_COLLECTION_BANNER)
