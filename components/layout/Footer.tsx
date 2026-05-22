@@ -100,7 +100,7 @@ export function Footer() {
           <div className="flex flex-col items-center md:items-start gap-2">
             <div className="flex items-center gap-3">
               <Image
-                src="/images/logo-wordmark-cream.png"
+                src="/images/logo-gradient.png"
                 alt="The Possah"
                 width={140}
                 height={32}

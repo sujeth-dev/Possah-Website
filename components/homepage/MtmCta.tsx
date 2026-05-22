@@ -81,7 +81,7 @@ export function MtmCta() {
           {/* Right — image */}
           <div className="relative order-1 md:order-2 overflow-hidden" style={{ minHeight: '280px' }}>
             <Image
-              src="https://placehold.co/720x500/1F3A2D/F4ECDF?text=Made+to+Measure"
+              src="https://placehold.co/720x500/1F3A2D/F4ECDF.png?text=Made+to+Measure"
               alt="Artisan hands working on fabric — Made-to-Measure"
               fill
               className="object-cover object-center"

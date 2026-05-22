@@ -2,12 +2,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 const CATEGORIES = [
-  { label: 'SAREES',    href: '/shop/sarees',     image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Sarees'    },
-  { label: 'LEHENGAS',  href: '/shop/lehengas',   image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Lehengas'  },
-  { label: 'CO-ORDS',   href: '/shop/co-ords',    image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Co-Ords'   },
-  { label: 'DRESSES',   href: '/shop/dresses',    image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Dresses'   },
-  { label: 'KURTA SETS',href: '/shop/kurta-sets', image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Kurtas'    },
-  { label: 'SEPARATES', href: '/shop/separates',  image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Separates' },
+  { label: 'SAREES',    href: '/shop/sarees',     image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Sarees'    },
+  { label: 'LEHENGAS',  href: '/shop/lehengas',   image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Lehengas'  },
+  { label: 'CO-ORDS',   href: '/shop/co-ords',    image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Co-Ords'   },
+  { label: 'DRESSES',   href: '/shop/dresses',    image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Dresses'   },
+  { label: 'KURTA SETS',href: '/shop/kurta-sets', image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Kurtas'    },
+  { label: 'SEPARATES', href: '/shop/separates',  image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Separates' },
 ]
 
 export function CategoryCircles() {

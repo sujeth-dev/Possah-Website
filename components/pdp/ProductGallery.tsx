@@ -17,7 +17,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
 
-  const safeImages = images.length > 0 ? images : [{ url: 'https://placehold.co/600x800/1F3A2D/F4ECDF?text=Possah', alt: productName }]
+  const safeImages = images.length > 0 ? images : [{ url: 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah', alt: productName }]
   const active = safeImages[activeIndex] ?? safeImages[0]
 
   const goNext = useCallback(() => {
