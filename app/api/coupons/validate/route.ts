@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, message: 'This code is not valid.' })
     }
 
-    // Check expiry (column: expiry_date)
+    // Check expiry
     if (coupon.expiry_date && coupon.expiry_date < now) {
       return NextResponse.json({ valid: false, message: 'This code has expired.' })
     }
@@ -51,24 +51,23 @@ export async function POST(req: NextRequest) {
     if (coupon.min_order_value && subtotal < coupon.min_order_value) {
       return NextResponse.json({
         valid: false,
-        message: `Minimum order of ₹${coupon.min_order_value.toLocaleString('en-IN')} required for this code.`,
+        message: `Minimum order of Rs.${coupon.min_order_value.toLocaleString('en-IN')} required for this code.`,
       })
     }
 
-    // Return correct discount_type for all three coupon types
-    // 'percent'       → percentage off subtotal
-    // 'flat'          → fixed ₹ amount off
-    // 'free_shipping' → zero out shipping cost (handled client-side)
+    // 'percent' -> percentage off subtotal
+    // 'flat'    -> fixed Rs. amount off
+    // 'free_shipping' -> zero out shipping (handled client-side)
     const discountType: 'percent' | 'flat' | 'free_shipping' = coupon.type as 'percent' | 'flat' | 'free_shipping'
     const discountValue: number = coupon.value
 
     let message: string
     if (discountType === 'percent') {
-      message = `${discountValue}% off applied!`
+      message = `${discountValue}% off your order`
     } else if (discountType === 'flat') {
-      message = `₹${discountValue.toLocaleString('en-IN')} off applied!`
+      message = `Rs.${discountValue.toLocaleString('en-IN')} off your order`
     } else {
-      message = 'Free shipping applied!'
+      message = 'Free shipping applied'
     }
 
     return NextResponse.json({
@@ -77,7 +76,8 @@ export async function POST(req: NextRequest) {
       discount_value: discountValue,
       message,
     })
-  } catch {
-    return NextResponse.json({ valid: false, message: 'Something went wrong. Please try again.' }, { status: 500 })
+  } catch (err) {
+    console.error('[coupons/validate] Error:', err)
+    return NextResponse.json({ valid: false, message: 'Unable to validate coupon. Please try again.' }, { status: 500 })
   }
 }

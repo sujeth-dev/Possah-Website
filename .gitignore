@@ -25,3 +25,9 @@ build/
 .DS_Store
 *.pem
 tsconfig.tsbuildinfo
+
+# Dev session logs
+.codex-dev*.log
+
+# Test run reports (generated output — not source)
+scripts/admin_test/reports/

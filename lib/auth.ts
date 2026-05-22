@@ -54,6 +54,7 @@ export const authOptions: NextAuthOptions = {
             .from('admin_users')
             .select('id')
             .eq('email', user.email ?? '')
+            .eq('is_active', true)  // FIX-SEC-05: deactivated admins must not get JWT flag
             .maybeSingle()
 
           token.isAdmin = !!data
@@ -78,5 +79,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: 'jwt',
+  },
 }

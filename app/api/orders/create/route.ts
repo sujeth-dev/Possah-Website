@@ -4,7 +4,6 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createRazorpayOrder } from '@/lib/razorpay'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { generateOrderNumber } from '@/lib/utils'
-
 const orderItemSchema = z.object({
   product_id: z.string().uuid(),
   variant_id: z.string().uuid(),
@@ -284,14 +283,9 @@ export async function POST(req: NextRequest) {
       order_number: orderNumber,
       razorpay_order_id: rzOrder.id,
       amount: totalPaise,
-      // Return server totals so CheckoutForm can display accurate values
-      server_subtotal: serverSubtotal,
-      server_shipping: serverShipping,
-      server_total: serverTotal,
-      is_free_shipping: isFreeShipping,
     })
   } catch (err) {
     console.error('[orders/create] Unexpected error:', err)
-    return NextResponse.json({ message: 'An unexpected error occurred. Please try again.' }, { status: 500 })
+    return NextResponse.json({ message: 'Internal server error. Please try again.' }, { status: 500 })
   }
 }

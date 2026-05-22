@@ -2,6 +2,21 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createPublicClient } from '@/lib/supabase/public'
+
+// FIX-FE-04: ISR — revalidate every hour. Static params generated at build time.
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+  const supabase = createPublicClient()
+  const { data } = await supabase
+    .from('products')
+    .select('slug, categories(slug)')
+    .eq('is_active', true)
+  return (data ?? []).map((p) => ({
+    category: ((p.categories as unknown) as { slug: string } | null)?.slug ?? 'uncategorised',
+    slug: p.slug,
+  }))
+}
 import { formatPrice } from '@/lib/utils'
 import { ProductGallery } from '@/components/pdp/ProductGallery'
 import { ProductInfo } from '@/components/pdp/ProductInfo'
@@ -22,6 +37,8 @@ async function getProductData(slug: string) {
   try {
     const supabase = createPublicClient()
 
+    // FIX-FE-05: fetch product first (needed for product.id/category_id),
+    // then fan out the remaining 3 queries in parallel.
     const { data: product } = await supabase
       .from('products')
       .select(`
@@ -39,50 +56,55 @@ async function getProductData(slug: string) {
 
     if (!product) return null
 
-    const { data: variants } = await supabase
-      .from('product_variants')
-      .select('id, colour_name, colour_hex, size, stock_qty')
-      .eq('product_id', product.id)
-      .gt('stock_qty', 0)
-      .order('colour_name')
-      .order('size')
-
-    const { data: reviews } = await supabase
-      .from('reviews')
-      .select('id, reviewer_name, rating, body, created_at')
-      .eq('product_id', product.id)
-      .eq('is_approved', true)
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    const { data: categoryProducts } = await supabase
-      .from('products')
-      .select(`
-        id, slug, name, fabric, price, compare_price,
-        is_new_arrival, is_top_selling,
-        categories (slug),
-        product_images (url, alt, position),
-        product_tags (tag)
-      `)
-      .eq('category_id', product.category_id)
-      .eq('is_active', true)
-      .neq('id', product.id)
-      .order('created_at', { ascending: false })
-      .limit(4)
-
-    const { data: related } = await supabase
-      .from('products')
-      .select(`
-        id, slug, name, fabric, price, compare_price,
-        is_new_arrival, is_top_selling,
-        categories (slug),
-        product_images (url, alt, position),
-        product_tags (tag)
-      `)
-      .eq('is_active', true)
-      .neq('category_id', product.category_id)
-      .order('created_at', { ascending: false })
-      .limit(5)
+    // Parallel fan-out — all 4 secondary queries run simultaneously
+    const [
+      { data: variants },
+      { data: reviews },
+      { data: categoryProducts },
+      { data: related },
+    ] = await Promise.all([
+      supabase
+        .from('product_variants')
+        .select('id, colour_name, colour_hex, size, stock_qty')
+        .eq('product_id', product.id)
+        .gt('stock_qty', 0)
+        .order('colour_name')
+        .order('size'),
+      supabase
+        .from('reviews')
+        .select('id, reviewer_name, rating, body, created_at')
+        .eq('product_id', product.id)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false })
+        .limit(20),
+      supabase
+        .from('products')
+        .select(`
+          id, slug, name, fabric, price, compare_price,
+          is_new_arrival, is_top_selling,
+          categories (slug),
+          product_images (url, alt, position),
+          product_tags (tag)
+        `)
+        .eq('category_id', product.category_id)
+        .eq('is_active', true)
+        .neq('id', product.id)
+        .order('created_at', { ascending: false })
+        .limit(4),
+      supabase
+        .from('products')
+        .select(`
+          id, slug, name, fabric, price, compare_price,
+          is_new_arrival, is_top_selling,
+          categories (slug),
+          product_images (url, alt, position),
+          product_tags (tag)
+        `)
+        .eq('is_active', true)
+        .neq('category_id', product.category_id)
+        .order('created_at', { ascending: false })
+        .limit(5),
+    ])
 
     const mapProductCard = (raw: typeof categoryProducts): ProductCardData[] =>
       (raw ?? []).map((p) => ({
@@ -212,7 +234,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://thepossah.com' },
-      { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://thepossah.com/shop/sarees' },
+      { '@type': 'ListItem', position: 2, name: 'Shop', item: `https://thepossah.com/shop/${product.category_slug ?? params.category}` },
       { '@type': 'ListItem', position: 3, name: categoryName, item: `https://thepossah.com/shop/${product.category_slug}` },
       { '@type': 'ListItem', position: 4, name: product.name, item: `https://thepossah.com/shop/${product.category_slug}/${product.slug}` },
     ],

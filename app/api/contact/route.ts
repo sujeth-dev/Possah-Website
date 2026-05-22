@@ -30,18 +30,18 @@ export async function POST(req: NextRequest) {
       from: 'The Possah <noreply@thepossah.com>',
       to: 'hello@thepossah.com',
       reply_to: email,
-      subject: `Contact: ${subject} — from ${name}`,
+      subject: `Contact: ${subject} - from ${name}`,
       html: `
-        <p><strong>From:</strong> ${name} &lt;${email}&gt;</p>
+        <p><strong>From:</strong> ${name} (${email})</p>
         <p><strong>Subject:</strong> ${subject}</p>
-        <hr />
-        <p style="white-space:pre-line">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+        <hr>
+        <p style="white-space:pre-wrap;">${message}</p>
       `,
     })
 
     return NextResponse.json({ success: true })
   } catch (err) {
-    console.error('[api/contact]', err)
-    return NextResponse.json({ message: 'Failed to send. Please try again.' }, { status: 500 })
+    console.error('[contact] Email send failed:', err)
+    return NextResponse.json({ message: 'Failed to send message. Please try again.' }, { status: 500 })
   }
 }

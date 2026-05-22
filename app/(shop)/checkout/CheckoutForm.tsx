@@ -12,6 +12,17 @@ import { formatPrice } from '@/lib/utils'
 
 // ─── Zod Schema ──────────────────────────────────────────────────────────────
 
+// FIX-FE-06: Indian states/UTs dropdown — validated against this list
+const INDIAN_STATES = [
+  'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam',
+  'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
+  'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh',
+  'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha',
+  'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
+  'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+] as const
+
 const checkoutSchema = z.object({
   first_name: z.string().min(1, 'First name required').max(60),
   last_name: z.string().min(1, 'Last name required').max(60),
@@ -22,7 +33,7 @@ const checkoutSchema = z.object({
   address_line1: z.string().min(5, 'Address required').max(200),
   address_line2: z.string().max(200).optional(),
   city: z.string().min(2, 'City required').max(80),
-  state: z.string().min(2, 'State required').max(60),
+  state: z.enum(INDIAN_STATES, { errorMap: () => ({ message: 'Select your state' }) }),
   pincode: z.string().regex(/^\d{6}$/, 'Enter valid 6-digit pincode'),
   delivery_option: z.enum(['standard', 'express']),
   notes: z.string().max(500).optional(),
@@ -106,6 +117,62 @@ const inputErrorStyle: React.CSSProperties = {
   border: '1px solid var(--color-rose)',
 }
 
+// ─── Razorpay helper ─────────────────────────────────────────────────────────
+
+interface RazorpayOptions {
+  orderId: string
+  amount: number
+  orderNumber: string
+  name: string
+  email: string
+  phone: string
+  onSuccess: (paymentId: string, signature: string) => void
+  onPaymentFailed: (code: string, description: string) => void
+  onDismiss: () => void
+}
+
+function initRazorpay({
+  orderId,
+  amount,
+  orderNumber,
+  name,
+  email,
+  phone,
+  onSuccess,
+  onPaymentFailed,
+  onDismiss,
+}: RazorpayOptions) {
+  type RzpInstance = {
+    open: () => void
+    on: (event: string, handler: (resp: Record<string, unknown>) => void) => void
+  }
+  const RzpCtor = (window as Window & typeof globalThis & { Razorpay: new (opts: Record<string, unknown>) => RzpInstance }).Razorpay
+
+  const rz = new RzpCtor({
+    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+    order_id: orderId,
+    amount,
+    currency: 'INR',
+    name: 'The Possah',
+    description: `Order #${orderNumber}`,
+    image: 'https://thepossah.com/images/logo-rp.png',
+    prefill: { name, email, contact: phone },
+    theme: { color: '#1F3A2D' },
+    handler: (response: Record<string, unknown>) => {
+      onSuccess(response.razorpay_payment_id as string, response.razorpay_signature as string)
+    },
+    modal: { ondismiss: onDismiss },
+  })
+
+  // FIX-PAY-01: capture payment.failed event from the modal
+  rz.on('payment.failed', (response: Record<string, unknown>) => {
+    const err = (response.error ?? {}) as Record<string, string>
+    onPaymentFailed(err.code ?? 'UNKNOWN', err.description ?? 'Payment failed')
+  })
+
+  rz.open()
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function CheckoutForm() {
@@ -115,8 +182,12 @@ export function CheckoutForm() {
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const couponCode = searchParams.get('coupon') ?? ''
+  // FIX-SEC-07: coupon code managed as state — never in URL
   const hasGiftWrap = searchParams.get('gift') === '1'
+  const [couponInput, setCouponInput] = useState('')
+  const [couponCode, setCouponCode] = useState('')
+  const [couponApplying, setCouponApplying] = useState(false)
+  const [couponError, setCouponError] = useState<string | null>(null)
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [isFreeShippingCoupon, setIsFreeShippingCoupon] = useState(false)
 
@@ -139,29 +210,48 @@ export function CheckoutForm() {
   const giftCost = hasGiftWrap ? GIFT_WRAP_COST : 0
   const total = sub + shippingCost + giftCost - couponDiscount
 
-  // Re-validate coupon from URL param
-  useEffect(() => {
-    if (!couponCode) return
-    fetch('/api/coupons/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: couponCode, subtotal: sub }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.valid) {
-          if (data.discount_type === 'free_shipping') {
-            setIsFreeShippingCoupon(true)
-            setCouponDiscount(0)
-          } else if (data.discount_type === 'percent') {
-            setCouponDiscount(Math.round((sub * data.discount_value) / 100))
-          } else {
-            setCouponDiscount(data.discount_value ?? 0)
-          }
-        }
+  // FIX-SEC-07: coupon apply handler — called from UI button, not URL
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return
+    setCouponApplying(true)
+    setCouponError(null)
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponInput.trim().toUpperCase(), subtotal: sub }),
       })
-      .catch(() => {})
-  }, [couponCode, sub])
+      const data = await res.json()
+      if (data.valid) {
+        setCouponCode(couponInput.trim().toUpperCase())
+        if (data.discount_type === 'free_shipping') {
+          setIsFreeShippingCoupon(true)
+          setCouponDiscount(0)
+        } else if (data.discount_type === 'percent') {
+          setCouponDiscount(Math.round((sub * data.discount_value) / 100))
+        } else {
+          setCouponDiscount(data.discount_value ?? 0)
+        }
+      } else {
+        setCouponError(data.message ?? 'Invalid coupon code')
+        setCouponCode('')
+        setCouponDiscount(0)
+        setIsFreeShippingCoupon(false)
+      }
+    } catch {
+      setCouponError('Could not validate coupon. Check your connection.')
+    } finally {
+      setCouponApplying(false)
+    }
+  }
+
+  const removeCoupon = () => {
+    setCouponCode('')
+    setCouponInput('')
+    setCouponDiscount(0)
+    setIsFreeShippingCoupon(false)
+    setCouponError(null)
+  }
 
   // Redirect to cart if empty
   useEffect(() => {
@@ -233,6 +323,15 @@ export function CheckoutForm() {
           name: `${data.first_name} ${data.last_name}`,
           email: data.email,
           phone: data.phone,
+          onPaymentFailed: (code, description) => {
+            // FIX-PAY-01: surface failure to user — do NOT clear cart
+            setServerError(
+              code === 'BAD_REQUEST_ERROR'
+                ? 'Payment failed due to a technical issue. Please try again.'
+                : `Payment declined: ${description}. Try a different card or UPI.`
+            )
+            setSubmitting(false)
+          },
           onSuccess: async (paymentId: string, signature: string) => {
             // Server-side HMAC verification before clearing cart
             try {
@@ -424,16 +523,93 @@ export function CheckoutForm() {
                       />
                     </Field>
                   </div>
+                  {/* FIX-FE-06: Indian states dropdown */}
                   <Field label="State" error={errors.state?.message}>
-                    <input
+                    <select
                       {...register('state')}
-                      type="text"
                       autoComplete="address-level1"
                       style={errors.state ? inputErrorStyle : inputStyle}
                       aria-invalid={!!errors.state}
-                    />
+                    >
+                      <option value="">Select state / UT</option>
+                      {INDIAN_STATES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
                   </Field>
                 </div>
+              </section>
+
+              {/* FIX-SEC-07: Coupon code — state-managed, not URL */}
+              <section aria-labelledby="coupon-heading">
+                <h2
+                  id="coupon-heading"
+                  className="mb-4"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '11px',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: 'var(--color-text)',
+                  }}
+                >
+                  Coupon Code
+                </h2>
+                {couponCode ? (
+                  <div
+                    className="flex items-center justify-between px-4 py-3"
+                    style={{ border: '1px solid var(--color-success)', borderRadius: 'var(--radius-card)', backgroundColor: 'rgba(39,174,96,0.06)' }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-success)' }}>
+                      ✓ {couponCode} applied
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), applyCoupon())}
+                      placeholder="ENTER CODE"
+                      style={{ ...inputStyle, flex: 1, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}
+                      aria-label="Coupon code"
+                    />
+                    <button
+                      type="button"
+                      onClick={applyCoupon}
+                      disabled={couponApplying || !couponInput.trim()}
+                      style={{
+                        padding: '0 20px',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '11px',
+                        letterSpacing: '0.15em',
+                        textTransform: 'uppercase',
+                        backgroundColor: 'var(--color-green)',
+                        color: 'var(--color-bg)',
+                        border: 'none',
+                        borderRadius: 'var(--radius-btn)',
+                        cursor: couponApplying ? 'wait' : 'pointer',
+                        opacity: !couponInput.trim() ? 0.5 : 1,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {couponApplying ? '…' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-error)', marginTop: 6 }}>
+                    {couponError}
+                  </p>
+                )}
               </section>
 
               {/* Delivery options */}
@@ -637,84 +813,100 @@ export function CheckoutForm() {
                       >
                         {item.colour} · {item.size}
                       </p>
+
+                      <p
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-text)' }}
+                      >
+                        {formatPrice(item.price)}
+                      </p>
                     </div>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text)', flexShrink: 0 }}>
-                      {formatPrice(item.price * item.qty)}
-                    </span>
                   </div>
                 ))}
               </div>
 
-              {/* Price breakdown */}
-              <div className="flex flex-col gap-2.5">
+              {/* Totals */}
+              <div className="flex flex-col gap-2 py-4 border-t border-b" style={{ borderColor: 'var(--color-border)' }}>
                 <div className="flex justify-between">
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>Subtotal</span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text)' }}>{formatPrice(sub)}</span>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)' }}>Subtotal</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-text)' }}>{formatPrice(sub)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>Shipping</span>
-                  {freeShipping
-                    ? <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-green)', letterSpacing: '0.1em' }}>FREE</span>
-                    : <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text)' }}>{formatPrice(shippingCost)}</span>
-                  }
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)' }}>Shipping</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: freeShipping ? 'var(--color-green)' : 'var(--color-text)' }}>
+                    {freeShipping ? 'FREE' : formatPrice(shippingCost)}
+                  </span>
                 </div>
-                {hasGiftWrap && (
-                  <div className="flex justify-between">
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>Gift wrap</span>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text)' }}>{formatPrice(GIFT_WRAP_COST)}</span>
-                  </div>
-                )}
                 {couponDiscount > 0 && (
                   <div className="flex justify-between">
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-green)' }}>Discount ({couponCode})</span>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-green)' }}>−{formatPrice(couponDiscount)}</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-green)' }}>Discount ({couponCode})</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-green)' }}>-{formatPrice(couponDiscount)}</span>
                   </div>
                 )}
-                <div
-                  className="flex justify-between pt-3 border-t"
-                  style={{ borderColor: 'var(--color-border)' }}
-                >
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '15px', fontWeight: '500', color: 'var(--color-text)' }}>Total</span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '18px', fontWeight: '600', color: 'var(--color-text)' }}>{formatPrice(total)}</span>
-                </div>
+                {giftCost > 0 && (
+                  <div className="flex justify-between">
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)' }}>Gift wrapping</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-text)' }}>{formatPrice(giftCost)}</span>
+                  </div>
+                )}
               </div>
 
-              {/* Submit */}
+              {/* Grand total */}
+              <div className="flex justify-between items-center">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '13px',
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                    color: 'var(--color-text)',
+                  }}
+                >
+                  Total
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '22px',
+                    fontWeight: '500',
+                    color: 'var(--color-text)',
+                  }}
+                >
+                  {formatPrice(total)}
+                </span>
+              </div>
+
+              {/* Pay CTA */}
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 py-4 transition-opacity duration-200 hover:opacity-85 disabled:opacity-60"
                 style={{
-                  backgroundColor: 'var(--color-green)',
-                  color: 'var(--color-white)',
+                  width: '100%',
+                  padding: '16px',
+                  backgroundColor: submitting ? 'var(--color-text-muted)' : 'var(--color-green)',
+                  color: 'var(--color-bg)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-btn)',
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
-                  borderRadius: 'var(--radius-btn)',
-                  border: 'none',
                   cursor: submitting ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s ease',
                 }}
-                aria-busy={submitting}
               >
-                {submitting ? (
-                  <>
-                    <span
-                      className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
-                      aria-hidden="true"
-                    />
-                    Processing…
-                  </>
-                ) : (
-                  `Pay ${formatPrice(total)}`
-                )}
+                {submitting ? 'Processing...' : `Pay ${formatPrice(total)}`}
               </button>
 
               <p
-                className="text-center"
-                style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)' }}
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '11px',
+                  color: 'var(--color-text-muted)',
+                  textAlign: 'center',
+                  lineHeight: 1.6,
+                }}
               >
-                Secured by Razorpay · 256-bit SSL
+                Secured by Razorpay. Your payment info is never stored.
               </p>
             </div>
           </div>
@@ -722,52 +914,4 @@ export function CheckoutForm() {
       </div>
     </>
   )
-}
-
-// ─── Razorpay helper ──────────────────────────────────────────────────────────
-
-function initRazorpay({
-  orderId,
-  amount,
-  orderNumber,
-  name,
-  email,
-  phone,
-  onSuccess,
-  onDismiss,
-}: {
-  orderId: string
-  amount: number
-  orderNumber: string
-  name: string
-  email: string
-  phone: string
-  onSuccess: (paymentId: string, signature: string) => void
-  onDismiss: () => void
-}) {
-  const RazorpayConstructor = ((window as unknown) as Record<string, unknown>).Razorpay as (new (opts: unknown) => { open(): void }) | undefined
-  if (!RazorpayConstructor) {
-    onDismiss()
-    return
-  }
-
-  const rz = new RazorpayConstructor({
-    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    amount,
-    currency: 'INR',
-    order_id: orderId,
-    name: 'The Possah',
-    description: `Order ${orderNumber}`,
-    image: '/images/logo-dark.svg',
-    prefill: { name, email, contact: `+91${phone}` },
-    theme: { color: '#1F3A2D' },
-    modal: {
-      ondismiss: onDismiss,
-      escape: true,
-    },
-    handler: (response: { razorpay_payment_id: string; razorpay_signature: string }) => {
-      onSuccess(response.razorpay_payment_id, response.razorpay_signature)
-    },
-  })
-  rz.open()
 }

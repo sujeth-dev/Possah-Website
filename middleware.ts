@@ -3,26 +3,15 @@ import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
 /**
- * Admin route guard.
- *
- * Dev:  all /admin/* routes pass through without auth (fast iteration).
- * Prod: decodes the NextAuth JWT from the session cookie, verifies token.isAdmin === true.
- *       isAdmin is embedded at sign-in time by checking the admin_users table (see lib/auth.ts).
- *       Cookie presence alone is NOT sufficient — any authenticated Google user could otherwise
- *       access /admin/* by knowing the URL.
+ * Admin route guard. ALL environments enforced.
+ * FIX-SEC-01: dev bypass removed.
+ * Add your Google email to admin_users table in local Supabase instead.
  */
 export async function middleware(request: NextRequest) {
-  const isDev = process.env.NODE_ENV === 'development'
   const pathname = request.nextUrl.pathname
   const isAdminRoute = pathname.startsWith('/admin')
 
-  // ─── Dev: bypass ALL admin auth ───────────────────────────────────────────
-  if (isDev && isAdminRoute) {
-    return NextResponse.next()
-  }
-
-  // ─── Prod: verify JWT + isAdmin flag ──────────────────────────────────────
-  if (!isDev && isAdminRoute) {
+  if (isAdminRoute) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -39,6 +28,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Only run middleware on admin routes — zero overhead on public/shop pages
+  // Only run middleware on admin routes
   matcher: ['/admin/:path*'],
 }

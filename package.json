@@ -7,7 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:cf": "npx @cloudflare/next-on-pages"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit",
+    "seed:test": "node scripts/admin_test/seed.mjs",
+    "cleanup:test": "node scripts/admin_test/cleanup.mjs",
+    "test:api": "NODE_ENV=development node scripts/admin_test/run.mjs",
+    "test:api:keep": "NODE_ENV=development SKIP_CLEANUP=1 node scripts/admin_test/run.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -30,16 +39,23 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^20",
     "@types/prop-types": "^15.7.15",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitest/coverage-v8": "^1.6.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
+    "jsdom": "^24.0.0",
+    "msw": "^2.3.0",
     "oauth": "^0.10.2",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^1.6.0"
   }
 }

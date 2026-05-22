@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { verifyRazorpayWebhookSignature } from '@/lib/razorpay'
-import { sendOrderConfirmationEmail } from '@/lib/email'
+import { sendOrderConfirmationEmail, sendPaymentFailureEmail, sendAdminOrderNotification } from '@/lib/email'
 
 /**
  * Razorpay webhook — backup payment confirmation.
@@ -135,7 +135,22 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    // Send confirmation email (best-effort — never fail webhook for email errors)
+    // FIX-PAY-03: Admin notification (non-blocking)
+    try {
+      await sendAdminOrderNotification({
+        to: process.env.ADMIN_EMAIL ?? 'thedenn0007@gmail.com',
+        orderNumber: order.order_number,
+        customerName: order.customer_name,
+        customerEmail: order.customer_email,
+        items: lineItemsRaw,
+        total: order.total,
+        shippingAddress: (order as unknown as Record<string, unknown>).shipping_address as Record<string, string> ?? '',
+      })
+    } catch {
+      // non-fatal
+    }
+
+    // Send confirmation email (best-effort -- never fail webhook for email errors)
     try {
       await sendOrderConfirmationEmail({
         to: order.customer_email,
@@ -147,21 +162,51 @@ export async function POST(req: NextRequest) {
         discountAmount: order.discount_amount ?? 0,
         tax: 0,
         total: order.total,
-        estimatedDelivery: '5–7 business days',
+        estimatedDelivery: '5-7 business days',
       })
-    } catch (emailErr) {
-      console.error('[webhook] Email send failed (non-fatal):', emailErr)
+    } catch {
+      // non-fatal
     }
+
+    return NextResponse.json({ received: true })
   }
 
   if (event.event === 'payment.failed') {
-    // Mark order as payment_failed — do NOT delete, customer may retry
-    await supabase
+    // FIX-PAY-02: Find order and send payment failure email to customer
+    const { data: order } = await supabase
       .from('orders')
-      .update({ payment_status: 'failed' })
+      .select('id, order_number, payment_status, customer_name, customer_email, total')
       .eq('gateway_order_id', razorpayOrderId)
-      .eq('payment_status', 'pending') // only update if still pending
+      .single()
+
+    if (!order) {
+      // No matching order -- log and ack (don't retry)
+      console.warn('[webhook] payment.failed: no order for razorpay_order_id', razorpayOrderId)
+      return NextResponse.json({ received: true })
+    }
+
+    // Only send failure email once (DB constraint: 'pending'|'paid'|'failed'|'refunded')
+    if (order.payment_status !== 'failed') {
+      await supabase
+        .from('orders')
+        .update({ payment_status: 'failed' })
+        .eq('id', order.id)
+
+      try {
+        await sendPaymentFailureEmail({
+          to: order.customer_email,
+          customerName: order.customer_name,
+          orderNumber: order.order_number,
+          amount: order.total,
+        })
+      } catch {
+        // non-fatal
+      }
+    }
+
+    return NextResponse.json({ received: true })
   }
 
+  // Unknown event type -- ack and ignore
   return NextResponse.json({ received: true })
 }

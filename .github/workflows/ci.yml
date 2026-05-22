@@ -1,0 +1,52 @@
+# FIX-INFRA-01: CI/CD Pipeline
+# Runs on every push to main/staging and every PR targeting those branches.
+# Three sequential gates: lint → typecheck → test
+# Branch protection on main should require this workflow to pass before merge.
+
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  quality:
+    name: Lint + Typecheck + Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Test
+        run: npm test
+        env:
+          # Provide dummy env vars for unit tests (mocked — no real connections)
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder_anon_key_that_is_long_enough
+          SUPABASE_SERVICE_ROLE_KEY: placeholder_service_role_key_long_enough_xxx
+          NEXTAUTH_SECRET: placeholder_nextauth_secret_must_be_32chars_x
+          NEXTAUTH_URL: https://localhost:3000
+          GOOGLE_CLIENT_ID: placeholder_google_client_id
+          GOOGLE_CLIENT_SECRET: placeholder_google_client_secret
+          RAZORPAY_KEY_ID: rzp_test_placeholder
+          RAZORPAY_KEY_SECRET: placeholder_razorpay_secret
+          RAZORPAY_WEBHOOK_SECRET: placeholder_webhook_secret
+          RESEND_API_KEY: re_placeholder_resend_key

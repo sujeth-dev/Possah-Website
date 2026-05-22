@@ -1,43 +1,34 @@
 # The Possah
 
-Luxury Indian fashion e-commerce built with Next.js, Supabase, NextAuth, Razorpay, and Resend.
+Luxury Indian fashion e-commerce. Next.js 14 · Supabase · NextAuth · Razorpay · Resend.
 
-## Current status
+**Build:** `npm run lint` ✅ `npm run build` ✅ · Phase 1 ✅ · Phase 2 ✅ · Sprint in progress
 
-- `npm run lint`: passing
-- `npm run build`: passing
-- storefront and admin code are in the repo
-- local Docker-backed Supabase reset still requires elevated Docker access on this machine
+---
 
-## Primary docs
+## Canonical Documents
 
-Only these 2 documents are canonical:
+| Document | Read when |
+|---|---|
+| `POSSAH_MASTER_DOCUMENT.md` | Starting anything. Architecture, routes, schema, auth model. |
+| `SPRINT.md` | Doing work. Every remaining fix with exact code + go-live gate checklist. |
+| `docs/archive/POSSAH_CREATIVE_DIRECTION.md` | Building any UI. Colours, fonts, voice, logo, layout rules. |
+| `docs/archive/POSSAH_BUILD_GUIDE.md` | Referencing Phase 1+2 build steps and test checklists. |
+| `TESTING_PLAN.md` | Setting up Vitest or Playwright. Tool config + test structure. |
+| `scripts/admin_test/GUIDE.md` | Running the admin API test suite. |
 
-- [POSSAH_MASTER_DOCUMENT.md](/C:/Users/user/OneDrive/Desktop/Tech/Live%20Projects/Possah/Possah_1.0/POSSAH_MASTER_DOCUMENT.md)
-- [POSSAH_BUILD_STATUS_GUIDE.md](/C:/Users/user/OneDrive/Desktop/Tech/Live%20Projects/Possah/Possah_1.0/POSSAH_BUILD_STATUS_GUIDE.md)
+---
 
-Older planning and setup documents have been archived under `docs/archive/`.
-
-## Core commands
+## Commands
 
 ```bash
 npm install
-npm run dev
+npm run dev          # :3000
 npm run lint
 npm run build
-supabase start
-supabase db reset
-```
+npm run typecheck    # tsc --noEmit
 
-## Project structure
-
-```text
-app/(shop)/          storefront pages
-app/admin/           admin dashboard
-app/api/             API routes
-components/          UI and feature components
-lib/                 auth, integrations, Supabase clients, utilities
-supabase/migrations/ schema source of truth
-seeds/               local seed SQL
-styles/              global styling
+supabase start       # requires Docker (run as Admin on Windows)
+supabase db reset    # applies all migrations + seeds
+supabase status      # prints local URL + keys → paste into .env.local
 ```
