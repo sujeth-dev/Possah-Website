@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 const FALLBACK_HERO_SLIDES = [
   {
     id: 'slide-1',
-    image: '/images/placeholder-hero.jpg',
+    image: 'https://placehold.co/1440x820/1F3A2D/F4ECDF?text=The+Possah',
     headline: 'she wants what she wants.',
     subheadline: 'Couture, off-duty. Spring \'26',
     ctaLabel: 'Shop the Collection',
@@ -28,7 +28,7 @@ const FALLBACK_HERO_SLIDES = [
 ]
 
 const FALLBACK_COLLECTION_BANNER = {
-  image: '/images/placeholder-banner.jpg',
+  image: 'https://placehold.co/1440x580/1F3A2D/F4ECDF?text=Collection',
   headline: 'Chapter 04: Veil',
   subtitle: 'The Spring Collection',
   ctaLabel: 'Shop the Collection',
@@ -36,14 +36,14 @@ const FALLBACK_COLLECTION_BANNER = {
 }
 
 const FALLBACK_OCCASION_TILES = [
-  { id: 'everyday', label: 'EVERYDAY', image: '/images/placeholder-occasion.jpg', link: '/shop/sarees?occasion=Everyday' },
-  { id: 'brunch',   label: 'BRUNCH',   image: '/images/placeholder-occasion.jpg', link: '/shop/sarees?occasion=Brunch'   },
-  { id: 'workwear', label: 'WORKWEAR', image: '/images/placeholder-occasion.jpg', link: '/shop/co-ords?occasion=Workwear'},
-  { id: 'evening',  label: 'EVENING',  image: '/images/placeholder-occasion.jpg', link: '/shop/lehengas?occasion=Evening'},
-  { id: 'sangeet',  label: 'SANGEET',  image: '/images/placeholder-occasion.jpg', link: '/shop/lehengas?occasion=Sangeet'},
-  { id: 'mehendi',  label: 'MEHENDI',  image: '/images/placeholder-occasion.jpg', link: '/shop/sarees?occasion=Mehendi' },
-  { id: 'haldi',    label: 'HALDI',    image: '/images/placeholder-occasion.jpg', link: '/shop/kurta-sets?occasion=Haldi'},
-  { id: 'wedding',  label: 'WEDDING',  image: '/images/placeholder-occasion.jpg', link: '/shop/lehengas?occasion=Wedding'},
+  { id: 'everyday', label: 'EVERYDAY', image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Everyday', link: '/shop/sarees?occasion=Everyday' },
+  { id: 'brunch',   label: 'BRUNCH',   image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Brunch',   link: '/shop/sarees?occasion=Brunch'   },
+  { id: 'workwear', label: 'WORKWEAR', image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Workwear', link: '/shop/co-ords?occasion=Workwear' },
+  { id: 'evening',  label: 'EVENING',  image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Evening',  link: '/shop/lehengas?occasion=Evening' },
+  { id: 'sangeet',  label: 'SANGEET',  image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Sangeet',  link: '/shop/lehengas?occasion=Sangeet' },
+  { id: 'mehendi',  label: 'MEHENDI',  image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Mehendi',  link: '/shop/sarees?occasion=Mehendi'  },
+  { id: 'haldi',    label: 'HALDI',    image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Haldi',    link: '/shop/kurta-sets?occasion=Haldi' },
+  { id: 'wedding',  label: 'WEDDING',  image: 'https://placehold.co/400x400/1F3A2D/F4ECDF?text=Wedding',  link: '/shop/lehengas?occasion=Wedding' },
 ]
 
 export interface HeroSlide {

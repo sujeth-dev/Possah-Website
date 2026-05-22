@@ -37,7 +37,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       productId: product.id,
       variantId: `${product.id}-default`,
       name: product.name,
-      image: primaryImage?.url ?? '/images/placeholder-product.jpg',
+      image: primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF?text=Possah',
       price: product.price,
       colour: 'Default',
       colourHex: '#C99A99',
@@ -56,7 +56,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       productId: product.id,
       variantId: null,
       name: product.name,
-      image: primaryImage?.url ?? '/images/placeholder-product.jpg',
+      image: primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF?text=Possah',
       price: product.price,
       slug: `${product.category_slug}/${product.slug}`,
     })
@@ -72,7 +72,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       <Link href={`/shop/${product.category_slug}/${product.slug}`} className="block relative overflow-hidden aspect-product">
         {/* Primary image */}
         <Image
-          src={primaryImage?.url ?? '/images/placeholder-product.jpg'}
+          src={primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF?text=Possah'}
           alt={primaryImage?.alt ?? product.name}
           fill
           priority={priority}
