@@ -31,7 +31,7 @@ const OccasionTileSchema = z.object({
 
 const HomepageUpdateSchema = z.object({
   hero_slides:       z.array(HeroSlideSchema).optional(),
-  collection_banner: CollectionBannerSchema.optional(),
+  collection_banner: z.union([CollectionBannerSchema, z.null(), z.record(z.unknown())]).optional(),
   new_arrival_ids:   z.array(z.string().uuid()).optional(),
   occasion_tiles:    z.array(OccasionTileSchema).length(8).optional(),
 })
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase
       .from('homepage_config')
       .select('*')
-      .limit(1)
+      .eq('id', SINGLETON_ID)
       .maybeSingle()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -84,7 +84,7 @@ export async function PATCH(request: Request) {
     const updates: Record<string, unknown> = {}
 
     if (parsed.data.hero_slides       !== undefined) updates.hero_slides       = parsed.data.hero_slides
-    if (parsed.data.collection_banner !== undefined) updates.collection_banner = parsed.data.collection_banner
+    if (parsed.data.collection_banner !== undefined) updates.collection_banner = parsed.data.collection_banner ?? {}
     if (parsed.data.new_arrival_ids   !== undefined) updates.new_arrival_ids   = parsed.data.new_arrival_ids
     if (parsed.data.occasion_tiles    !== undefined) updates.occasion_tiles    = parsed.data.occasion_tiles
 

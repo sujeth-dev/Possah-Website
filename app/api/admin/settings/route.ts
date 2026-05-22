@@ -12,7 +12,7 @@ const SETTINGS_ID = '00000000-0000-0000-0000-000000000001'
 
 const SettingsSchema = z.object({
   announcement_text:       z.string().max(300).optional(),
-  store_email:             z.string().email().optional(),
+  store_email:             z.union([z.string().email(), z.literal('')]).optional(),
   whatsapp_number:         z.string().max(20).optional(),
   free_shipping_threshold: z.number().int().min(0).optional(),
   express_delivery_fee:    z.number().int().min(0).optional(),
