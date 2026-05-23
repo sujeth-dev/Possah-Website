@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductCreateSchema, type VariantInput, type ImageInput } from '@/lib/validations/admin-products'
 
 // ─── Auth guard ───────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ export async function GET(
   }
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
       .from('products')
@@ -73,7 +73,7 @@ export async function PATCH(
     }
 
     const data = parsed.data
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Check product exists
     const { data: existing, error: fetchErr } = await supabase
@@ -196,7 +196,7 @@ export async function DELETE(
   }
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Soft delete — never hard delete products (orders reference them)
     const { error } = await supabase

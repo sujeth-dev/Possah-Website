@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -35,7 +35,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Validation failed', issues: parsed.error.flatten().fieldErrors }, { status: 422 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const updates: Record<string, unknown> = {}
 
     const d = parsed.data
@@ -65,7 +65,7 @@ export async function DELETE(
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { error } = await supabase.from('coupons').delete().eq('id', params.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })

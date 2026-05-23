@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') ?? 'all'
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     let query = supabase
       .from('reviews')
       .select(`
@@ -52,7 +52,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Validation failed', issues: parsed.error.flatten().fieldErrors }, { status: 422 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { error } = await supabase
       .from('reviews')
       .update({ is_approved: parsed.data.is_approved })

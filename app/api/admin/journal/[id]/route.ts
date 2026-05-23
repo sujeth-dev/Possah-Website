@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils'
 
 function requireAdminAuth(request: Request): boolean {
@@ -28,7 +28,7 @@ export async function GET(
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('journal_articles')
       .select('*')
@@ -62,7 +62,7 @@ export async function PATCH(
     }
 
     const d = parsed.data
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const updates: Record<string, unknown> = {}
 
     if (d.title          !== undefined) updates.title          = d.title
@@ -95,7 +95,7 @@ export async function DELETE(
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { error } = await supabase.from('journal_articles').delete().eq('id', params.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })

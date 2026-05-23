@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils'
 
 function requireAdminAuth(request: Request): boolean {
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('categories')
       .select('*, parent:parent_id (id, name)')
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     const data     = parsed.data
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Get max position for auto-ordering
     const { data: maxRow } = await supabase
@@ -97,7 +97,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Invalid reorder payload' }, { status: 422 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const updates  = parsed.data
 
     // Batch update positions

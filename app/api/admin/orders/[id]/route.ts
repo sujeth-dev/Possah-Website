@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -24,7 +24,7 @@ export async function GET(
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('orders')
       .select('*')
@@ -61,7 +61,7 @@ export async function PATCH(
     }
 
     const data     = parsed.data
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     const updateFields: Record<string, unknown> = {}
     if (data.fulfillment_status !== undefined) updateFields.fulfillment_status = data.fulfillment_status

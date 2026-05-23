@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils'
 
 function requireAdminAuth(request: Request): boolean {
@@ -33,7 +33,7 @@ export async function PATCH(
     }
 
     const data     = parsed.data
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     const updateFields: Record<string, unknown> = {}
     if (data.name !== undefined)           updateFields.name           = data.name
@@ -68,7 +68,7 @@ export async function DELETE(
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Check for linked products
     const { count } = await supabase

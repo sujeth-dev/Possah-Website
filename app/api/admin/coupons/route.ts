@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('coupons')
       .select('*')
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Validation failed', issues: parsed.error.flatten().fieldErrors }, { status: 422 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Check for code uniqueness
     const { count } = await supabase

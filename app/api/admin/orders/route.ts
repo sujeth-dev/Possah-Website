@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     const format         = searchParams.get('format')   // 'csv' = export
     const offset         = (page - 1) * perPage
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     let query = supabase
       .from('orders')

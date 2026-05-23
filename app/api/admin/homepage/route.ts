@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('homepage_config')
       .select('*')
@@ -80,7 +80,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Validation failed', issues: parsed.error.flatten().fieldErrors }, { status: 422 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const updates: Record<string, unknown> = {}
 
     if (parsed.data.hero_slides       !== undefined) updates.hero_slides       = parsed.data.hero_slides

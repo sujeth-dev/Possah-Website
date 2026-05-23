@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils'
 
 function requireAdminAuth(request: Request): boolean {
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('journal_articles')
       .select('*')
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Validation failed', issues: parsed.error.flatten().fieldErrors }, { status: 422 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Slug uniqueness check
     const { count } = await supabase

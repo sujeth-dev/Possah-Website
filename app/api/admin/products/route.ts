@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductCreateSchema, type ProductCreateInput } from '@/lib/validations/admin-products'
 
 // ─── Auth guard (skipped in dev) ─────────────────────────────────────────────
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     const perPage   = parseInt(searchParams.get('per_page') ?? '20', 10)
     const isActive  = searchParams.get('active')
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const offset = (page - 1) * perPage
 
     let query = supabase
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Check slug uniqueness
     const { data: existing } = await supabase

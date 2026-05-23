@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -20,7 +20,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'is_approved (boolean) required' }, { status: 422 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { error } = await supabase
       .from('reviews')
       .update({ is_approved: body.is_approved })
@@ -41,7 +41,7 @@ export async function DELETE(
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { error } = await supabase.from('reviews').delete().eq('id', params.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ ok: true })

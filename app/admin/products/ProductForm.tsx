@@ -219,7 +219,13 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
 
     const payload = {
       ...form,
-      is_active: publish ? true : form.is_active,
+      // Empty strings must be null — Zod enum/UUID/url validators reject ""
+      sub_line:          form.sub_line          || null,
+      category_id:       form.category_id       || null,
+      craft_story_image: form.craft_story_image || null,
+      // Drop image rows that have no URL yet (user added row but didn't upload)
+      images: form.images.filter((img) => img.url.trim() !== ''),
+      is_active:    publish ? true : form.is_active,
       compare_price: form.compare_price && form.compare_price > 0 ? form.compare_price : null,
       audio_url: (form.is_new_arrival || form.is_top_selling) && form.audio_url ? form.audio_url : null,
     }
@@ -525,7 +531,7 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
         </FormSection>
 
         {/* ── IMAGES ── */}
-        <FormSection title="Product Images" hint="Add image URLs. First image is the primary.">
+        <FormSection title="Product Images" hint="Add image URLs. First image is the primary." error={errors.images}>
           <div className="flex flex-col gap-3">
             {form.images.map((img, idx) => (
               <ImageRow

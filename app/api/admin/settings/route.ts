@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function requireAdminAuth(request: Request): boolean {
   if (process.env.NODE_ENV === 'development') return true
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('store_settings')
       .select('*')
@@ -84,7 +84,7 @@ export async function PATCH(request: Request) {
 
     updates.updated_at = new Date().toISOString()
 
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { error } = await supabase
       .from('store_settings')
       .upsert(updates, { onConflict: 'id' })
