@@ -92,3 +92,57 @@ export function isInStock(qty: number): boolean {
 export function isLowStock(qty: number): boolean {
   return qty > 0 && qty <= 3
 }
+
+
+/**
+ * Return true if a URL looks like an actual image (not an HTML page URL).
+ * Checks for common image extensions and/or known storage hostnames.
+ */
+export function isImageUrl(url: string | null | undefined): url is string {
+  if (!url) return false
+  try {
+    const { hostname, pathname } = new URL(url)
+    // Known image storage hosts — always valid
+    const imageHosts = ['supabase.co', 'cloudinary.com', 'res.cloudinary.com', 'imagekit.io']
+    if (imageHosts.some((h) => hostname.endsWith(h))) return true
+    // Check for image file extension in the pathname
+    return /\.(webp|jpg|jpeg|png|gif|svg|avif|tiff?|bmp)(\?|$)/i.test(pathname)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Convert an image File to WebP using the Canvas API (browser-only).
+ * SVG and GIF pass through unchanged. Falls back to original on failure.
+ */
+export async function convertToWebp(file: File, quality = 0.85): Promise<File> {
+  if (file.type === 'image/svg+xml' || file.type === 'image/gif') return file
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file)
+    const img = new window.Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width  = img.naturalWidth
+        canvas.height = img.naturalHeight
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve(file); return }
+        ctx.drawImage(img, 0, 0)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { resolve(file); return }
+            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }))
+          },
+          'image/webp',
+          quality,
+        )
+      } catch {
+        resolve(file)
+      }
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+    img.src = url
+  })
+}

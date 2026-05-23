@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { convertToWebp } from '@/lib/utils'
 
 const BUCKET = 'possah-media'
 
@@ -57,14 +58,18 @@ export function MediaLibrary({ initialFiles }: MediaLibraryProps) {
         continue
       }
 
-      const ext       = file.name.split('.').pop() ?? 'jpg'
+      // Convert to WebP (SVG and GIF pass through unchanged)
+      const uploadFile = file.type.startsWith('image/') && file.type !== 'video/mp4'
+        ? await convertToWebp(file)
+        : file
+
       const timestamp = Date.now()
-      const safeName  = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase()
+      const safeName  = uploadFile.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase()
       const path      = `${timestamp}-${safeName}`
 
       const { error: upErr } = await supabase.storage
         .from(BUCKET)
-        .upload(path, file, { cacheControl: '3600', upsert: false })
+        .upload(path, uploadFile, { cacheControl: '31536000', upsert: false })
 
       if (upErr) {
         errors.push(`${file.name}: ${upErr.message}`)
@@ -73,9 +78,9 @@ export function MediaLibrary({ initialFiles }: MediaLibraryProps) {
 
       const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path)
       uploaded.push({
-        name:       file.name,
+        name:       uploadFile.name,
         url:        publicUrl,
-        size:       file.size,
+        size:       uploadFile.size,
         created_at: new Date().toISOString(),
         fullPath:   path,
       })

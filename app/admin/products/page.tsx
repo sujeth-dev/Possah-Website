@@ -21,6 +21,7 @@ interface ProductRow {
   is_new_arrival: boolean
   created_at: string
   category_name: string | null
+  category_slug: string | null
   thumbnail: string | null
 }
 
@@ -40,7 +41,7 @@ async function getProducts(search: string, page: number): Promise<{
       .from('products')
       .select(`
         id, name, slug, price, compare_price, stock_qty, is_active, is_new_arrival, created_at,
-        categories:category_id ( name ),
+        categories:category_id ( name, slug ),
         product_images ( url, position )
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
@@ -68,7 +69,8 @@ async function getProducts(search: string, page: number): Promise<{
         is_active:     p.is_active,
         is_new_arrival: p.is_new_arrival,
         created_at:    p.created_at,
-        category_name: (cat as { name?: string } | null)?.name ?? null,
+        category_name: (cat as { name?: string; slug?: string } | null)?.name ?? null,
+        category_slug: (cat as { name?: string; slug?: string } | null)?.slug ?? null,
         thumbnail:     imgs[0]?.url ?? null,
       }
     })
@@ -368,19 +370,21 @@ export default async function AdminProductsPage({
                         >
                           Edit
                         </Link>
-                        <Link
-                          href={`/shop/${product.slug}`}
-                          target="_blank"
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '12px',
-                            color: 'var(--color-text-muted)',
-                            textDecoration: 'none',
-                          }}
-                          className="hover:underline"
-                        >
-                          View ↗
-                        </Link>
+                        {product.category_slug && (
+                          <Link
+                            href={`/shop/${product.category_slug}/${product.slug}`}
+                            target="_blank"
+                            style={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: '12px',
+                              color: 'var(--color-text-muted)',
+                              textDecoration: 'none',
+                            }}
+                            className="hover:underline"
+                          >
+                            View ↗
+                          </Link>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -464,7 +468,7 @@ function Pagination({ current, total, search }: { current: number; total: number
             className="px-4 py-2 hover:opacity-80"
             style={{
               border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-btn)',
+              borderRadius: 'var(--radius-btn',
               fontFamily: 'var(--font-body)',
               fontSize: '12px',
               color: 'var(--color-text)',

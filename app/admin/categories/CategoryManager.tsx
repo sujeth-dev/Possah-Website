@@ -27,7 +27,8 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
   const [showModal, setShowModal]   = useState(false)
   const [editTarget, setEditTarget] = useState<Category | null>(null)
   const [error, setError]           = useState<string | null>(null)
-  const [pending, startTransition]  = useTransition()
+  const [pending, startTransition]    = useTransition()
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const router = useRouter()
 
   // ── Drag state ──────────────────────────────────────────────────────────────
@@ -84,9 +85,8 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
   }
 
   async function handleDelete(cat: Category) {
-    if (!window.confirm(`Delete "${cat.name}"? This cannot be undone.`)) return
-
     setError(null)
+    setConfirmDeleteId(null)
     try {
       const res = await fetch(`/api/admin/categories/${cat.id}`, { method: 'DELETE' })
       const data = await res.json()
@@ -255,21 +255,41 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
                         Edit
                       </button>
                       {cat.product_count === 0 && (
-                        <button
-                          onClick={() => handleDelete(cat)}
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '12px',
-                            color: 'var(--color-error)',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: 0,
-                          }}
-                          className="hover:underline"
-                        >
-                          Delete
-                        </button>
+                        confirmDeleteId === cat.id ? (
+                          <span className="flex items-center gap-2">
+                            <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                              Delete?
+                            </span>
+                            <button
+                              onClick={() => handleDelete(cat)}
+                              style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: '600', color: 'var(--color-error)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              No
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteId(cat.id)}
+                            style={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: '12px',
+                              color: 'var(--color-error)',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                            }}
+                            className="hover:underline"
+                          >
+                            Delete
+                          </button>
+                        )
                       )}
                     </div>
                   </td>

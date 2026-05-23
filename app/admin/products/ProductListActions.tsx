@@ -9,9 +9,10 @@ interface ProductListActionsProps {
 }
 
 export function ProductListActions({ productId, isActive }: ProductListActionsProps) {
-  const [active, setActive]   = useState(isActive)
-  const [deleting, setDeleting] = useState(false)
-  const [pending, startTransition] = useTransition()
+  const [active, setActive]         = useState(isActive)
+  const [deleting, setDeleting]     = useState(false)
+  const [confirmDelete, setConfirm] = useState(false)
+  const [pending, startTransition]  = useTransition()
   const router = useRouter()
 
   async function toggleActive() {
@@ -24,7 +25,6 @@ export function ProductListActions({ productId, isActive }: ProductListActionsPr
         body: JSON.stringify({ is_active: next }),
       })
       if (!res.ok) {
-        // Revert on failure
         setActive(active)
         console.error('[ProductListActions] toggle failed')
       } else {
@@ -36,12 +36,10 @@ export function ProductListActions({ productId, isActive }: ProductListActionsPr
   }
 
   async function handleDelete() {
-    if (!window.confirm('Deactivate this product? It will be hidden from the shop.')) return
     setDeleting(true)
+    setConfirm(false)
     try {
-      const res = await fetch(`/api/admin/products/${productId}`, {
-        method: 'DELETE',
-      })
+      const res = await fetch(`/api/admin/products/${productId}`, { method: 'DELETE' })
       if (res.ok) {
         startTransition(() => router.refresh())
       } else {
@@ -53,13 +51,37 @@ export function ProductListActions({ productId, isActive }: ProductListActionsPr
     }
   }
 
+  if (confirmDelete) {
+    return (
+      <div className="flex items-center gap-2">
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+          Deactivate?
+        </span>
+        <button
+          type="button"
+          onClick={handleDelete}
+          style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: '600', color: 'var(--color-error)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          Yes
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirm(false)}
+          style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          No
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center gap-3">
       {/* Active toggle */}
       <button
         onClick={toggleActive}
         disabled={pending}
-        className="flex items-center gap-2 cursor-pointer"
+        className="flex items-center gap-2"
         aria-label={active ? 'Deactivate product' : 'Activate product'}
         aria-pressed={active}
         type="button"
@@ -71,7 +93,6 @@ export function ProductListActions({ productId, isActive }: ProductListActionsPr
           opacity: pending ? 0.6 : 1,
         }}
       >
-        {/* Toggle pill */}
         <span
           className="relative inline-flex items-center"
           style={{
@@ -109,13 +130,13 @@ export function ProductListActions({ productId, isActive }: ProductListActionsPr
         </span>
       </button>
 
-      {/* Delete */}
+      {/* Delete - shows inline confirm first */}
       <button
-        onClick={handleDelete}
+        onClick={() => setConfirm(true)}
         disabled={deleting || pending}
         type="button"
         className="hover:opacity-70 transition-opacity"
-        aria-label="Delete product"
+        aria-label="Deactivate product"
         style={{
           background: 'none',
           border: 'none',

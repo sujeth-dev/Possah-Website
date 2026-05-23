@@ -17,7 +17,7 @@ export async function generateStaticParams() {
     slug: p.slug,
   }))
 }
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, isImageUrl } from '@/lib/utils'
 import { ProductGallery } from '@/components/pdp/ProductGallery'
 import { ProductInfo } from '@/components/pdp/ProductInfo'
 import { CraftBehind } from '@/components/pdp/CraftBehind'
@@ -273,7 +273,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
       {product.craft_story_body && (
         <CraftBehind
           craftStory={product.craft_story_body}
-          imageUrl={product.craft_story_image ?? product.images[1]?.url}
+          imageUrl={isImageUrl(product.craft_story_image) ? product.craft_story_image : product.images[1]?.url}
           productName={product.name}
         />
       )}

@@ -25,6 +25,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const primaryImage = product.images[0]
   const hoverImage = product.images[1] ?? product.images[0]
   const inWishlist = isInWishlist(product.id)
+  const productHref = `/shop/${product.category_slug ?? 'shop'}/${product.slug}`
 
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -42,7 +43,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       colour: 'Default',
       colourHex: '#C99A99',
       size: 'S',
-      slug: `${product.category_slug}/${product.slug}`,
+      slug: productHref,
     })
     setAdding(false)
     setAdded(true)
@@ -58,7 +59,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       name: product.name,
       image: primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah',
       price: product.price,
-      slug: `${product.category_slug}/${product.slug}`,
+      slug: productHref,
     })
   }
 
@@ -69,7 +70,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       onMouseLeave={() => setHovered(false)}
     >
       {/* Image container */}
-      <Link href={`/shop/${product.category_slug}/${product.slug}`} className="block relative overflow-hidden aspect-product">
+      <Link href={productHref} className="block relative overflow-hidden aspect-product">
         {/* Primary image */}
         <Image
           src={primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah'}
@@ -184,7 +185,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         )}
 
         {/* Name */}
-        <Link href={`/shop/${product.category_slug}/${product.slug}`}>
+        <Link href={productHref}>
           <h3
             className="hover:opacity-70 transition-opacity duration-200 line-clamp-2"
             style={{

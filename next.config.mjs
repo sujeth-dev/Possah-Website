@@ -15,6 +15,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'placehold.co',
       },
+      {
+        // Admin / preview images from Vercel deployments
+        protocol: 'https',
+        hostname: '**.vercel.app',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
   },
