@@ -73,7 +73,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       <Link href={productHref} className="block relative overflow-hidden aspect-product">
         {/* Primary image */}
         <Image
-          src={primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah'}
+          src={primaryImage?.url || 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah'}
           alt={primaryImage?.alt ?? product.name}
           fill
           priority={priority}
@@ -83,7 +83,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         />
 
         {/* Hover image */}
-        {hoverImage && hoverImage !== primaryImage && (
+        {hoverImage && hoverImage !== primaryImage && hoverImage.url && (
           <Image
             src={hoverImage.url}
             alt={hoverImage.alt ?? product.name}

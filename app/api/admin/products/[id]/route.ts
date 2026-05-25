@@ -66,6 +66,7 @@ export async function PATCH(
     const parsed = ProductUpdateSchema.safeParse(body)
 
     if (!parsed.success) {
+      console.error('[Admin Products PATCH] validation issues:', JSON.stringify(parsed.error.flatten().fieldErrors, null, 2))
       return NextResponse.json(
         { error: 'Validation failed', issues: parsed.error.flatten().fieldErrors },
         { status: 422 }

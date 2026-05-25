@@ -103,7 +103,7 @@ export default async function LookbookPage() {
               }}
             >
               <Image
-                src={lb.hero_image ?? '/images/lookbook-placeholder.jpg'}
+                src={lb.hero_image || 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Lookbook'}
                 alt={lb.collection_name}
                 fill
                 className="object-cover object-center img-hover-scale"

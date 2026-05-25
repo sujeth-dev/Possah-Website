@@ -156,7 +156,7 @@ export function Header() {
             <Link
               href="/wishlist"
               className="hidden md:flex items-center justify-center w-8 h-8 relative"
-              aria-label={`Wishlist${wishlistCount > 0 ? ` — ${wishlistCount} items` : ''}`}
+              aria-label={mounted && wishlistCount > 0 ? `Wishlist — ${wishlistCount} items` : 'Wishlist'}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10 17.5S2 12.5 2 6.5a4 4 0 018-1.3A4 4 0 0118 6.5c0 6-8 11-8 11z" />
@@ -179,7 +179,7 @@ export function Header() {
             <Link
               href="/cart"
               className="flex items-center justify-center w-8 h-8 relative"
-              aria-label={`Shopping bag${cartCount > 0 ? ` — ${cartCount} items` : ''}`}
+              aria-label={mounted && cartCount > 0 ? `Shopping bag — ${cartCount} items` : 'Shopping bag'}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 7V5a4 4 0 018 0v2" />

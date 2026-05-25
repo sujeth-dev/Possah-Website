@@ -120,7 +120,7 @@ export default async function JournalPage() {
               style={{ aspectRatio: '4/3', borderRadius: 'var(--radius-card)' }}
             >
               <Image
-                src={featured.featured_image ?? '/images/journal-placeholder.jpg'}
+                src={featured.featured_image || 'https://placehold.co/800x600/1F3A2D/F4ECDF.png?text=Journal'}
                 alt={featured.title}
                 fill
                 priority
@@ -197,7 +197,7 @@ export default async function JournalPage() {
                   style={{ aspectRatio: '4/3', borderRadius: 'var(--radius-card)' }}
                 >
                   <Image
-                    src={article.featured_image ?? '/images/journal-placeholder.jpg'}
+                    src={article.featured_image || 'https://placehold.co/800x600/1F3A2D/F4ECDF.png?text=Journal'}
                     alt={article.title}
                     fill
                     className="object-cover object-center img-hover-scale"
