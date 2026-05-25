@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ArticleForm, type ArticleFormData } from '../../ArticleForm'
 
 export const dynamic = 'force-dynamic'
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 async function getArticle(id: string) {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('journal_articles')
       .select('*')

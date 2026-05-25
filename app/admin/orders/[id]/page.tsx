@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PaymentBadge, FulfillmentBadge } from '@/components/admin/FulfillmentBadge'
 import { formatPrice } from '@/lib/utils'
 import { OrderDetailClient } from './OrderDetailClient'
@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 async function getOrder(id: string): Promise<OrderDetail | null> {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('orders')
       .select('*')

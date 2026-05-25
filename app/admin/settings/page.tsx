@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { SettingsEditor } from './SettingsEditor'
 
 export const metadata: Metadata = { title: 'Settings' }
@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS = {
 
 async function getSettings() {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data } = await supabase
       .from('store_settings')
       .select('*')

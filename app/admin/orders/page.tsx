@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { FulfillmentBadge, PaymentBadge } from '@/components/admin/FulfillmentBadge'
 import { formatPrice } from '@/lib/utils'
 
@@ -51,7 +51,7 @@ async function getOrders(params: PageProps['searchParams']): Promise<{
   page_count: number
 }> {
   try {
-    const supabase    = createServerClient()
+    const supabase    = createAdminClient()
     const page        = Math.max(1, parseInt(params.page ?? '1', 10))
     const perPage     = 25
     const offset      = (page - 1) * perPage

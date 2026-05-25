@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductForm, type ProductFormData } from '../../ProductForm'
 
 export const metadata: Metadata = { title: 'Edit Product' }
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 async function getProductAndCategories(id: string) {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     const [productRes, categoriesRes] = await Promise.all([
       supabase

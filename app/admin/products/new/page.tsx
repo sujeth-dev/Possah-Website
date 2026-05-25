@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductForm } from '../ProductForm'
 
 export const metadata: Metadata = { title: 'Add Product' }
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 async function getCategories() {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('categories')
       .select('id, name, slug')

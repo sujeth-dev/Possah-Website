@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { MediaLibrary } from './MediaLibrary'
 
 export const metadata: Metadata = { title: 'Media' }
@@ -17,7 +17,7 @@ interface MediaFile {
 
 async function getMediaFiles(): Promise<MediaFile[]> {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // List all files in the bucket root
     const { data, error } = await supabase.storage

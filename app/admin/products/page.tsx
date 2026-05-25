@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { formatPrice } from '@/lib/utils'
 import { ProductListActions } from './ProductListActions'
 
@@ -35,7 +35,7 @@ async function getProducts(search: string, page: number): Promise<{
   const offset  = (page - 1) * perPage
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     let query = supabase
       .from('products')

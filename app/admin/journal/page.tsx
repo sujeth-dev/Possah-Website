@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const metadata: Metadata = { title: 'Journal' }
 export const dynamic = 'force-dynamic'
@@ -18,7 +18,7 @@ interface Article {
 
 async function getArticles(): Promise<Article[]> {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('journal_articles')
       .select('id, title, slug, category, author, is_featured, published_at, created_at')

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { CategoryManager } from './CategoryManager'
 
 export const metadata: Metadata = { title: 'Categories' }
@@ -19,7 +19,7 @@ interface CategoryRow {
 
 async function getCategories(): Promise<CategoryRow[]> {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     const { data: categories, error } = await supabase
       .from('categories')

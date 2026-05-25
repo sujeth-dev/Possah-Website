@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ReviewManager } from './ReviewManager'
 
 export const metadata: Metadata = { title: 'Reviews' }
@@ -11,7 +11,7 @@ interface PageProps {
 
 async function getReviews(status: string) {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     let query = supabase
       .from('reviews')
       .select('*, product:product_id ( id, name, slug )')

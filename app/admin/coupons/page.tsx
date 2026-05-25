@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { CouponManager } from './CouponManager'
 
 export const metadata: Metadata = { title: 'Coupons' }
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 async function getCoupons() {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('coupons')
       .select('*')

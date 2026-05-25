@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { HomepageEditor } from './HomepageEditor'
 
 export const metadata: Metadata = { title: 'Homepage Config' }
@@ -46,7 +46,7 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
   }
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data }  = await supabase.from('homepage_config').select('*').limit(1).maybeSingle()
     if (!data) return defaults
 
@@ -65,7 +65,7 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
 
 async function getActiveProducts() {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
     const { data } = await supabase
       .from('products')
       .select('id, name, slug')
