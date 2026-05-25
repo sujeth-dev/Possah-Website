@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductCreateSchema, type VariantInput, type ImageInput } from '@/lib/validations/admin-products'
 
@@ -79,7 +80,7 @@ export async function PATCH(
     // Check product exists
     const { data: existing, error: fetchErr } = await supabase
       .from('products')
-      .select('id, slug')
+      .select('id, slug, categories:category_id (slug)')
       .eq('id', params.id)
       .single()
 
@@ -179,6 +180,15 @@ export async function PATCH(
       }
     }
 
+    // Bust ISR cache so shop pages reflect changes immediately
+    const finalSlug = (data.slug ?? existing.slug) as string
+    const catSlug   = (existing.categories as { slug?: string } | null)?.slug
+    revalidatePath('/', 'layout')
+    if (catSlug) {
+      revalidatePath(`/shop/${catSlug}`)
+      revalidatePath(`/shop/${catSlug}/${finalSlug}`)
+    }
+
     return NextResponse.json({ id: params.id, ok: true })
   } catch (err) {
     console.error('[Admin Products PATCH] unexpected:', err)
@@ -209,6 +219,9 @@ export async function DELETE(
       console.error('[Admin Products DELETE]', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Bust ISR — deactivated product must disappear from shop
+    revalidatePath('/', 'layout')
 
     return NextResponse.json({ ok: true })
   } catch (err) {

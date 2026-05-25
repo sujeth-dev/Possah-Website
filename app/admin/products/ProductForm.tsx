@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useCallback, useRef, type FormEvent } from 'react'
+import { useState, useCallback, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { slugify, convertToWebp } from '@/lib/utils'
+import { slugify } from '@/lib/utils'
+import { BucketPicker } from './BucketPicker'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -224,7 +225,7 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
       category_id:       form.category_id       || null,
       craft_story_image: form.craft_story_image || null,
       // Drop image rows that have no URL yet (user added row but didn't upload)
-      images: form.images.filter((img) => img.url.trim() !== ''),
+      images: form.images.filter((img) => img.url.trim() !== '').map((img, i) => ({ ...img, position: i })),
       is_active:    publish ? true : form.is_active,
       compare_price: form.compare_price && form.compare_price > 0 ? form.compare_price : null,
       audio_url: (form.is_new_arrival || form.is_top_selling) && form.audio_url ? form.audio_url : null,
@@ -1026,112 +1027,88 @@ interface ImageRowProps {
 }
 
 function ImageRow({ image, index, onChange, onRemove }: ImageRowProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadErr, setUploadErr] = useState<string | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [uploading, setUploading]   = useState(false)
+  const [uploadErr, setUploadErr]   = useState<string | null>(null)
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    e.target.value = ''
-    if (!file.type.startsWith('image/')) { setUploadErr('Images only'); return }
-    setUploading(true)
-    setUploadErr(null)
-    try {
-      const webpFile = await convertToWebp(file)
-      const storagePath = `products/${Date.now()}-${index}-${webpFile.name}`
-      const fd = new FormData()
-      fd.append('file', webpFile)
-      fd.append('path', storagePath)
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? `Upload failed (${res.status})`)
-      }
-      const { publicUrl } = await res.json()
-      onChange(index, 'url', publicUrl)
-      if (!image.alt) onChange(index, 'alt', file.name.replace(/\.[^.]+$/, ''))
-    } catch (err) {
-      console.error('[ImageRow] upload:', err)
-      setUploadErr(err instanceof Error ? err.message : 'Upload failed')
-    } finally {
-      setUploading(false)
+  // Called when BucketPicker confirms a selection
+  function handlePickerSelect(url: string) {
+    onChange(index, 'url', url)
+    if (!image.alt) {
+      // Derive alt from filename portion of URL
+      const filename = url.split('/').pop()?.split('?')[0] ?? ''
+      onChange(index, 'alt', filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '))
     }
   }
 
   return (
-    <div
-      className="flex flex-col gap-2 p-3 rounded"
-      style={{ backgroundColor: 'rgba(244,236,223,0.5)', border: '1px solid var(--color-border)' }}
-    >
-      <div className="flex items-center gap-3">
-        {/* Position number */}
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', flexShrink: 0, width: 20, textAlign: 'center' }}>
-          {index + 1}
-        </span>
+    <>
+      {pickerOpen && (
+        <BucketPicker
+          onSelect={handlePickerSelect}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
+      <div
+        className="flex flex-col gap-2 p-3 rounded"
+        style={{ backgroundColor: 'rgba(244,236,223,0.5)', border: '1px solid var(--color-border)' }}
+      >
+        <div className="flex items-center gap-3">
+          {/* Position number */}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', flexShrink: 0, width: 20, textAlign: 'center' }}>
+            {index + 1}
+          </span>
 
-        {/* Thumbnail preview */}
-        <div style={{ width: 44, height: 54, flexShrink: 0, borderRadius: 4, overflow: 'hidden', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {image.url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={image.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--color-text-muted)" strokeWidth="1.2" aria-hidden="true">
-              <rect x="1" y="2" width="14" height="12" rx="1" /><circle cx="5.5" cy="6" r="1.2" /><path d="M1 10l4-3 3 2.5 2-1.5 5 4" />
+          {/* Thumbnail preview */}
+          <div style={{ width: 44, height: 54, flexShrink: 0, borderRadius: 4, overflow: 'hidden', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {image.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--color-text-muted)" strokeWidth="1.2" aria-hidden="true">
+                <rect x="1" y="2" width="14" height="12" rx="1" /><circle cx="5.5" cy="6" r="1.2" /><path d="M1 10l4-3 3 2.5 2-1.5 5 4" />
+              </svg>
+            )}
+          </div>
+
+          {/* Open bucket picker (shows existing images + upload new) */}
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            disabled={uploading}
+            className="hover:opacity-80 transition-opacity flex items-center gap-1.5 px-3"
+            style={{ height: 36, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-input)', backgroundColor: 'var(--color-white)', fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-green)', cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
+          >
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 8V2M3 5l3-3 3 3M1 10h10" />
             </svg>
-          )}
+            Choose / Upload
+          </button>
+
+          {/* URL input — also editable manually / paste */}
+          <input type="url" value={image.url} onChange={(e) => onChange(index, 'url', e.target.value)} placeholder="Or paste URL…" style={{ ...inputStyle, flex: 1, minWidth: 0 }} />
+
+          {/* Alt text */}
+          <input type="text" value={image.alt} onChange={(e) => onChange(index, 'alt', e.target.value)} placeholder="Alt text" style={{ ...inputStyle, width: 130, flexShrink: 0 }} />
+
+          {/* Remove */}
+          <button type="button" onClick={onRemove} title="Remove image" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)', padding: 4, flexShrink: 0 }} className="hover:opacity-60 transition-opacity">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
+              <path d="M3 4h10M6 4V2h4v2M5 4l1 10h4l1-10" />
+            </svg>
+          </button>
         </div>
 
-        {/* Hidden file input */}
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} style={{ display: 'none' }} />
-
-        {/* Upload button */}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="hover:opacity-80 transition-opacity flex items-center gap-1.5 px-3"
-          style={{ height: 36, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-input)', backgroundColor: 'var(--color-white)', fontFamily: 'var(--font-body)', fontSize: '11px', color: uploading ? 'var(--color-text-muted)' : 'var(--color-green)', cursor: uploading ? 'not-allowed' : 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
-        >
-          {uploading ? (
-            <>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true" style={{ animation: 'spin 1s linear infinite' }}>
-                <path d="M6 1v2M6 9v2M1 6h2M9 6h2M2.4 2.4l1.4 1.4M8.2 8.2l1.4 1.4M2.4 9.6l1.4-1.4M8.2 3.8l1.4-1.4" />
-              </svg>
-              Uploading…
-            </>
-          ) : (
-            <>
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-                <path d="M6 8V2M3 5l3-3 3 3M1 10h10" />
-              </svg>
-              Upload
-            </>
-          )}
-        </button>
-
-        {/* URL input */}
-        <input type="url" value={image.url} onChange={(e) => onChange(index, 'url', e.target.value)} placeholder="Or paste URL…" style={{ ...inputStyle, flex: 1, minWidth: 0 }} />
-
-        {/* Alt text */}
-        <input type="text" value={image.alt} onChange={(e) => onChange(index, 'alt', e.target.value)} placeholder="Alt text" style={{ ...inputStyle, width: 130, flexShrink: 0 }} />
-
-        {/* Remove */}
-        <button type="button" onClick={onRemove} title="Remove image" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)', padding: 4, flexShrink: 0 }} className="hover:opacity-60 transition-opacity">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
-            <path d="M3 4h10M6 4V2h4v2M5 4l1 10h4l1-10" />
-          </svg>
-        </button>
+        {uploadErr && (
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-error)', paddingLeft: 28 }}>
+            {uploadErr}
+          </p>
+        )}
       </div>
-
-      {uploadErr && (
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-error)', paddingLeft: 28 }}>
-          {uploadErr}
-        </p>
-      )}
-    </div>
+    </>
   )
 }
+
 
 function CharCount({ current, max }: { current: number; max: number }) {
   const over = current > max

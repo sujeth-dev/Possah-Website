@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductCreateSchema, type ProductCreateInput } from '@/lib/validations/admin-products'
 
@@ -196,6 +197,21 @@ export async function POST(request: Request) {
 
       if (imgError) {
         console.error('[Admin Products POST] image insert:', imgError)
+      }
+    }
+
+    // Bust ISR so new product appears on shop immediately
+    revalidatePath('/', 'layout')
+    if (data.category_id) {
+      // Fetch category slug for targeted revalidation
+      const { data: cat } = await supabase
+        .from('categories')
+        .select('slug')
+        .eq('id', data.category_id)
+        .single()
+      if (cat?.slug) {
+        revalidatePath(`/shop/${cat.slug}`)
+        revalidatePath(`/shop/${cat.slug}/${data.slug}`)
       }
     }
 

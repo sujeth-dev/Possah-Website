@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyRazorpayWebhookSignature } from '@/lib/razorpay'
 import { sendOrderConfirmationEmail, sendPaymentFailureEmail, sendAdminOrderNotification } from '@/lib/email'
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   const razorpayPaymentId = payment.id
 
   // Always acknowledge receipt first — idempotency handled inside
-  const supabase = createServerClient()
+  const supabase = createAdminClient()
 
   if (event.event === 'payment.captured') {
     // Find order by gateway_order_id
