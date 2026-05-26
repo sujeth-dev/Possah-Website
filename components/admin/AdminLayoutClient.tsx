@@ -96,6 +96,7 @@ export function AdminLayoutClient({ children, isDev }: AdminLayoutClientProps) {
         >
           {children}
         </main>
+
       </div>
     </div>
   )

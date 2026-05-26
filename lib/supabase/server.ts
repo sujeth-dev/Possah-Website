@@ -1,9 +1,11 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/lib/database.types'
 
 // Server-side Supabase client — use in Server Components and API routes.
-// Database generic is intentionally omitted here; the Database type isn't fully
-// set up with Relationships yet, so joined selects resolve to `never`. Each
-// query function uses an explicit return type for type safety instead.
-export const createServerClient = () =>
-  createServerComponentClient({ cookies })
+// Auth is handled by NextAuth; this client is for DB queries only.
+export const createServerClient = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !anonKey) throw new Error('Missing Supabase credentials')
+  return createClient<Database>(url, anonKey)
+}

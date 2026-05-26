@@ -8,6 +8,7 @@ import { z } from 'zod'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store/cartStore'
+import { trackBeginCheckout, trackPurchase } from '@/lib/analytics'
 import { formatPrice } from '@/lib/utils'
 
 // ─── Zod Schema ──────────────────────────────────────────────────────────────
@@ -194,6 +195,22 @@ export function CheckoutForm() {
   const sub = subtotal()
   const count = items.reduce((s, i) => s + i.qty, 0)
 
+  // GA4: begin_checkout fires once on mount when cart is non-empty
+  useEffect(() => {
+    if (items.length === 0) return
+    trackBeginCheckout({
+      value: sub,
+      items: items.map((i) => ({
+        item_id: i.productId,
+        item_name: i.name,
+        item_variant: `${i.colour} / ${i.size}`,
+        price: i.price,
+        quantity: i.qty,
+      })),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const {
     register,
     handleSubmit,
@@ -352,6 +369,18 @@ export function CheckoutForm() {
             } catch {
               // Network error: webhook reconciles
             }
+            // GA4: purchase — fires after HMAC verify, before redirect
+            trackPurchase({
+              transactionId: order_number,
+              value: amount / 100, // convert paise → rupees
+              items: items.map((i) => ({
+                item_id: i.productId,
+                item_name: i.name,
+                item_variant: `${i.colour} / ${i.size}`,
+                price: i.price,
+                quantity: i.qty,
+              })),
+            })
             clearCart()
             router.push(`/order/confirmation?order=${order_number}`)
           },

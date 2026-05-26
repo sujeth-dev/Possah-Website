@@ -16,8 +16,8 @@ This is the single source of truth for the live codebase. Read this before touch
 | Phase 2 — Admin Dashboard | ✅ Complete | All 10 admin sections, CRUD, deploy-ready |
 | Sprint 1 — Critical Security + Payment | ✅ Complete | Bypass removed, headers, payment.failed, CI |
 | Sprint 2 — DB + Test Scaffolding | ✅ Complete | Migration 022 run, payment test suite written |
-| Sprint 3 — Frontend Quality + SEO | ⚠️ Partial | ISR/OG/JSON-LD done, GA4 events + Supabase SSR pending |
-| Sprint 4 — Infrastructure + Go-Live | ⏳ Not started | Sentry, Vercel, type gen, k6 |
+| Sprint 3 — Frontend Quality + SEO | ✅ Complete | ISR/OG/JSON-LD, GA4 events, loading/error boundaries, Vitest unit tests |
+| Sprint 4 — Infrastructure + Go-Live | ⚠️ Partial | Sentry config written (install pending), k6 script written; Vercel deploy TBD |
 
 **Current build (verified 26 May 2026):**
 - `tsc --noEmit` → **0 errors** (clean)
@@ -25,20 +25,24 @@ This is the single source of truth for the live codebase. Read this before touch
 - CI pipeline exists (`.github/workflows/ci.yml`)
 - Security headers on all routes
 - Dev admin bypass removed
-- payment.captured + payment.failed both handled in webhook
+- payment.captured + payment.failed both handled in webhook; idempotency guard confirmed
 - Coupon expiry DATE comparison bug fixed in both `coupons/validate` and `orders/create`
-- Payment test suite complete: `npm run test:payment`
-- Admin test suite: `npm run test:api`
+- Supabase SSR migration complete (`@supabase/ssr`); `database.types.ts` generated
+- Payment test suite: 104/104 passing (`npm run test:payment`)
+- Admin test suite: 175/175 passing (`npm run test:api`)
+- Vitest unit tests: `tests/unit/razorpay.test.ts` + `tests/unit/utils.test.ts` (run `npm test` locally)
+- GA4 events wired: `view_item` (PDP), `add_to_cart` (ProductInfo), `begin_checkout` + `purchase` (CheckoutForm)
+- All loading.tsx + error.tsx boundaries created for admin/orders, admin/products, cart, account
+- Sentry config files written; `npm install @sentry/nextjs` + env vars needed to activate
+- k6 load test: `scripts/load_test/k6.js` — targets orders/create and payments/webhook
+- Webhook setup guide: `docs/webhook-setup.md`
 
 **What is NOT done yet** — all tracked in `SPRINT.md`:
-- Zero Vitest/Playwright test files written (scaffolding exists; `__tests__/` and `e2e/` are empty)
-- Supabase client still on deprecated `@supabase/auth-helpers-nextjs` — must migrate to `@supabase/ssr`
-- GA4 events not wired: view_item, add_to_cart, begin_checkout, purchase (base script in layout.tsx only)
-- Missing loading.tsx: `admin/orders/`, `admin/products/`
-- Missing error.tsx: `cart/`, `account/`, `admin/orders/`, `admin/products/`
-- Sentry not installed
-- Supabase Database type generic not generated (`database.types.ts`)
-- k6 load test script not written
+- `npm install @sentry/nextjs` — config files written (`sentry.client/server/edge.config.ts`, `next.config.mjs` wrapped with `withSentryConfig`), env vars documented, but package not yet installed. After install: remove Sentry excludes from `tsconfig.json`.
+- Vercel project setup + live deploy (S4-EXT-1) — manual step by user
+- Razorpay live webhook URL registration — see `docs/webhook-setup.md`
+- Final SEO pass (excluded by user from this sprint)
+- Playwright E2E tests (`tests/e2e/`) — scaffolded, not yet authored
 
 **Schema drift — resolved:**
 - `reviews.is_approved BOOLEAN` — code was already correct. No migration needed. See `docs/reviews-schema-plan.md`.
@@ -274,135 +278,4 @@ If code references `status`, `expires_at`, or `user_id` on these tables, it is s
 4. `token.isAdmin` is set during sign-in: `lib/auth.ts` JWT callback queries `admin_users` WHERE `email = userEmail AND is_active = true`
 5. Not admin → redirect to `/auth/signin`
 
-### ⚠️ Dev bypass in middleware.ts (lines 17–19)
-
-Present intentionally for local development. **Must be removed before any production deploy.** See `SPRINT.md → FIX-SEC-01`.
-
-### Supabase client rules
-
-| Client | File | Use when |
-|---|---|---|
-| `createServerClient()` | `lib/supabase/server.ts` | Request cookies or session state are needed |
-| `createPublicClient()` | `lib/supabase/public.ts` | Public reads in pages, metadata, sitemap (build-safe) |
-| `createAdminClient()` | `lib/supabase/admin.ts` | Privileged server-only ops — auth callbacks, webhooks |
-
-Wrong client = broken builds or security gaps.
-
----
-
-## 7. Payment Flow
-
-```
-User submits checkout form
-  ↓
-POST /api/orders/create
-  → Validate all item prices server-side (never trust client total)
-  → Check variant stock quantities
-  → Apply + validate coupon via RPC
-  → Create order row with payment_status: 'pending'
-  → Call Razorpay Orders API → get razorpay_order_id
-  → Return { razorpay_order_id, amount, currency, key_id }
-  ↓
-Client opens Razorpay modal
-  → User pays via UPI / Card / Wallet / Net Banking
-  → Razorpay returns { payment_id, order_id, signature }
-  ↓
-POST /api/payments/verify
-  → Verify HMAC signature with timingSafeEqual
-  → Update order: payment_status = 'paid', gateway_payment_id
-  → Send confirmation email via Resend
-  → Decrement variant stock via RPC
-  ↓
-Redirect to /order/confirmation?order=PSH-XXXX
-
-Webhook backup (handles dropped client redirects):
-POST /api/payments/webhook
-  → Verify Razorpay webhook signature
-  → payment.captured → update order if not already paid, send email if not sent
-  → payment.failed → ⚠️ not yet handled — see SPRINT.md FIX-PAY-01
-```
-
----
-
-## 8. Local Development Setup
-
-### 1. Environment file
-
-```bash
-cp .env.local.example .env.local
-```
-
-```env
-NODE_ENV=development
-
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-NEXTAUTH_SECRET=any_random_string_for_dev
-NEXTAUTH_URL=http://localhost:3000
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-RAZORPAY_KEY_ID=rzp_test_XXXXXXXXXX
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_XXXXXXXXXX
-RAZORPAY_KEY_SECRET=
-RAZORPAY_WEBHOOK_SECRET=
-
-RESEND_API_KEY=
-
-NEXT_PUBLIC_GA_MEASUREMENT_ID=
-```
-
-### 2. App
-
-```bash
-npm install
-npm run dev       # :3000
-npm run lint      # must pass before commit
-npm run build     # must pass before deploy
-```
-
-### 3. Supabase (Docker required — run as Admin on Windows)
-
-```bash
-supabase start
-supabase db reset    # applies all 17 migrations + seeds
-supabase status      # copy URL + keys → paste into .env.local
-```
-
----
-
-## 9. CSS Design Tokens
-
-All brand values live in `styles/globals.css`. Never hardcode in components.
-
-```css
---color-bg:         #F4ECDF;   /* Warm Ivory — default background */
---color-green:      #1F3A2D;   /* Deep Forest Green */
---color-rose:       #C99A99;   /* Dusty Rose */
---color-orange:     #B35A2B;   /* Burnt Orange */
---color-gold:       #C8973A;   /* Mustard Gold */
---color-text:       #1A1A1A;
---color-text-muted: #6B6B6B;
---color-border:     #E2D9CC;
-
---font-display: 'Possah Sans', 'Playfair Display', serif;
---font-body:    'Neue Haas Grotesk', 'Inter', sans-serif;
---font-mono:    'GT America Mono', 'JetBrains Mono', monospace;
-```
-
-Full reference → `docs/archive/POSSAH_CREATIVE_DIRECTION.md` → Sections 2 + 3.
-
----
-
-## 10. Canonical Documents
-
-| Document | Purpose |
-|---|---|
-| `POSSAH_MASTER_DOCUMENT.md` ← this | What the system is. Architecture, routes, schema, auth. |
-| `SPRINT.md` | What remains before go-live. Every fix with exact code. Go-live gate checklist. |
-| `docs/archive/POSSAH_CREATIVE_DIRECTION.md` | Brand bible. Colours, fonts, voice, logo, layout. Read before any UI work. |
-| `docs/archive/POSSAH_BUILD_GUIDE.md` | Original build guide. Phase 1+2 implementation detail + test checklists. |
-| `TESTING_PLAN.md` | Test strategy and Vitest/Playwright config reference. |
-| `scripts/admin_test/GUIDE.md` | Admin API test suite runner. |
+### ⚠️ Dev

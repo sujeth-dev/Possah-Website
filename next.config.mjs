@@ -1,3 +1,6 @@
+// @ts-check
+import { withSentryConfig } from '@sentry/nextjs'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -67,4 +70,20 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+export default withSentryConfig(nextConfig, {
+  // Sentry organisation + project — set these as Vercel env vars or .env.local
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Auth token for source-map upload (Vercel: SENTRY_AUTH_TOKEN secret)
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Upload source maps to Sentry for readable stack traces in production.
+  // Source maps are deleted from the deploy bundle after upload.
+  silent: true,
+  hideSourceMaps: true,
+
+  // Automatically tree-shake Sentry code when DSN is not set.
+  disableLogger: true,
+})

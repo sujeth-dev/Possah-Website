@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { formatPrice, whatsappUrl } from '@/lib/utils'
 import { useCartStore } from '@/lib/store/cartStore'
@@ -8,6 +8,7 @@ import { useWishlistStore } from '@/lib/store/wishlistStore'
 import { AudioPlayer } from '@/components/ui/AudioPlayer'
 import { AccordionItem as Accordion, AccordionGroup } from '@/components/ui/Accordion'
 import { Badge } from '@/components/ui/Badge'
+import { trackViewItem, trackAddToCart } from '@/lib/analytics'
 
 interface Variant {
   id: string
@@ -72,6 +73,17 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
   const primaryImage = product.images[0]?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah'
   const showAudio = (product.is_new_arrival || product.is_top_selling) && !!product.audio_url
 
+  // GA4: view_item on mount
+  // useEffect is imported at the top of this file (from 'react')
+  useEffect(() => {
+    trackViewItem({
+      id: product.id,
+      name: product.name,
+      category: product.category_slug,
+      price: product.price,
+    })
+  }, [product.id, product.name, product.category_slug, product.price])
+
   const handleColourChange = (colour: string) => {
     setSelectedColour(colour)
     setSelectedSize('')
@@ -96,6 +108,16 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
     })
     setAddedState('added')
     setTimeout(() => setAddedState('idle'), 2000)
+    // GA4: add_to_cart
+    trackAddToCart({
+      id: product.id,
+      name: product.name,
+      category: product.category_slug,
+      colour: selectedColour,
+      size: selectedSize,
+      price: product.price,
+      qty: 1,
+    })
   }, [selectedSize, selectedVariant, addToCart, product, primaryImage, selectedColour, colourMap])
 
   const handleWishlist = () => {
