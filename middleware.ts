@@ -11,16 +11,25 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const isAdminRoute = pathname.startsWith('/admin')
 
+  // Don't run auth checks if already on signin page
+  if (pathname.includes('/auth/signin')) {
+    return NextResponse.next()
+  }
+
   if (isAdminRoute) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     })
 
-    if (!token || !token.isAdmin) {
+    if (!token) {
       const loginUrl = new URL('/auth/signin', request.url)
-      loginUrl.searchParams.set('callbackUrl', request.url)
+      loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
+    }
+
+    if (!token.isAdmin) {
+      return NextResponse.redirect(new URL('/', request.url))
     }
   }
 
