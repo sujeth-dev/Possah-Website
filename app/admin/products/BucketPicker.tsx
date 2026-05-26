@@ -68,7 +68,15 @@ export function BucketPicker({ onSelect, onClose }: BucketPickerProps) {
     setUploadErr(null)
     try {
       const webpFile    = await convertToWebp(file)
-      const storagePath = `products/${Date.now()}-${webpFile.name}`
+      // Sanitize filename: lowercase, replace spaces/parens/special chars
+      // with hyphens. Prevents Supabase %20 URLs being double-encoded to
+      // %2520 by next/image (causes 400 Bad Request).
+      const safeName    = webpFile.name
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]/g, '-')
+        .replace(/-{2,}/g, '-')
+        .replace(/^-|-$/g, '')
+      const storagePath = `products/${Date.now()}-${safeName}`
       const fd          = new FormData()
       fd.append('file', webpFile)
       fd.append('path', storagePath)

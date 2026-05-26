@@ -7,6 +7,11 @@ interface OccasionGridProps {
 }
 
 export function OccasionGrid({ tiles }: OccasionGridProps) {
+  // Filter tiles with no image — prevents next/image 'missing src' crash
+  // when admin hasn't assigned occasion tile images in the CMS yet.
+  const validTiles = tiles.filter((t) => t.image && t.image.trim() !== '')
+  if (validTiles.length === 0) return null
+
   return (
     <section className="section-gap" aria-label="Shop by occasion">
       <div className="container-site">
@@ -26,7 +31,7 @@ export function OccasionGrid({ tiles }: OccasionGridProps) {
 
         {/* 2×4 grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {tiles.map((tile) => (
+          {validTiles.map((tile) => (
             <Link
               key={tile.id}
               href={tile.link}

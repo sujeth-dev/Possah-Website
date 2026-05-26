@@ -60,8 +60,16 @@ export function MediaLibrary({ initialFiles }: MediaLibraryProps) {
         ? await convertToWebp(file)
         : file
 
-      const timestamp  = Date.now()
-      const safeName   = uploadFile.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase()
+      // Sanitize: lowercase, replace ALL non-alphanumeric chars
+      // (spaces, parens, percent signs, etc.) with hyphens, collapse runs,
+      // strip leading/trailing hyphens. Prevents %20 in Supabase storage
+      // URLs which next/image double-encodes to %2520 (400 Bad Request).
+      const timestamp   = Date.now()
+      const safeName    = uploadFile.name
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]/g, '-')
+        .replace(/-{2,}/g, '-')
+        .replace(/^-|-$/g, '')
       const storagePath = `${timestamp}-${safeName}`
 
       const fd = new FormData()
