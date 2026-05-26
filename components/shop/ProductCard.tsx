@@ -77,9 +77,10 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           alt={primaryImage?.alt ?? product.name}
           fill
           priority={priority}
+          quality={80}
           className="object-cover object-top transition-opacity duration-400"
           style={{ opacity: hovered && hoverImage !== primaryImage ? 0 : 1 }}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
         {/* Hover image */}
@@ -88,9 +89,10 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             src={hoverImage.url}
             alt={hoverImage.alt ?? product.name}
             fill
+            quality={80}
             className="object-cover object-top transition-opacity duration-400"
             style={{ opacity: hovered ? 1 : 0 }}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         )}
 

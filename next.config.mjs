@@ -3,6 +3,10 @@ const nextConfig = {
   images: {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Cache optimised images at Vercel edge for 1 year.
+    // Without this the default is 60 s — Vercel re-fetches from Supabase on
+    // every cache expiry, defeating the CDN entirely.
+    minimumCacheTTL: 31536000,
     remotePatterns: [
       {
         protocol: 'https',
@@ -23,6 +27,9 @@ const nextConfig = {
         hostname: '**.vercel.app',
       },
     ],
+    // Serve AVIF first (smallest), fall back to WebP — both auto-converted
+    // by Vercel's image optimisation layer; original files on Supabase are
+    // never modified.
     formats: ['image/avif', 'image/webp'],
   },
   experimental: {

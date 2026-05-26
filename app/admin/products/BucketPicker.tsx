@@ -253,7 +253,7 @@ export function BucketPicker({ onSelect, onClose }: BucketPickerProps) {
                     {/* Thumbnail */}
                     <div style={{ position: 'relative', width: '100%', paddingBottom: '80%', backgroundColor: 'var(--color-bg)' }}>
                       {isImage(file.url) ? (
-                        <Image src={file.url} alt={file.name} fill style={{ objectFit: 'cover' }} sizes="140px" unoptimized />
+                        <Image src={file.url} alt={file.name} fill style={{ objectFit: 'cover' }} sizes="140px" />
                       ) : (
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" strokeWidth="1.5">

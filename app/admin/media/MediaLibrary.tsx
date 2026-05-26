@@ -227,7 +227,7 @@ export function MediaLibrary({ initialFiles }: MediaLibraryProps) {
             <div key={file.fullPath} style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden' }}>
               <div style={{ position: 'relative', width: '100%', paddingBottom: '75%', backgroundColor: 'var(--color-bg)' }}>
                 {isImage(file.url) ? (
-                  <Image src={file.url} alt={file.name} fill style={{ objectFit: 'cover' }} sizes="200px" unoptimized />
+                  <Image src={file.url} alt={file.name} fill style={{ objectFit: 'cover' }} sizes="200px" />
                 ) : (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" strokeWidth="1.5">
@@ -273,7 +273,7 @@ export function MediaLibrary({ initialFiles }: MediaLibraryProps) {
                   <td style={{ padding: '10px 14px' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '4px', overflow: 'hidden', backgroundColor: 'var(--color-border)', position: 'relative' }}>
                       {isImage(file.url) ? (
-                        <Image src={file.url} alt={file.name} fill style={{ objectFit: 'cover' }} sizes="40px" unoptimized />
+                        <Image src={file.url} alt={file.name} fill style={{ objectFit: 'cover' }} sizes="40px" />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" strokeWidth="1.5">
