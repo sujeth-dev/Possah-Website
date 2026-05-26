@@ -17,7 +17,7 @@ export function AdminLayoutClient({ children, isDev }: AdminLayoutClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-dvh overflow-hidden">
+    <div className="flex overflow-hidden" style={{ height: '100dvh', minHeight: '100vh' }}>
       {/* Sidebar */}
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -65,7 +65,15 @@ export function AdminLayoutClient({ children, isDev }: AdminLayoutClientProps) {
           <button
             onClick={() => setSidebarOpen(true)}
             className="flex items-center justify-center w-9 h-9 flex-shrink-0"
-            style={{ color: 'var(--color-bg)' }}
+            style={{
+              color: 'var(--color-bg)',
+              WebkitTapHighlightColor: 'transparent',
+              WebkitAppearance: 'none',
+              appearance: 'none',
+              border: 'none',
+              backgroundColor: 'transparent',
+              cursor: 'pointer',
+            }}
             aria-label="Open admin navigation"
             aria-expanded={sidebarOpen}
             aria-controls="admin-sidebar"
@@ -91,7 +99,10 @@ export function AdminLayoutClient({ children, isDev }: AdminLayoutClientProps) {
         {/* Page content */}
         <main
           className="flex-1 overflow-y-auto overscroll-contain"
-          style={{ backgroundColor: 'var(--color-bg)' }}
+          style={{
+            backgroundColor: 'var(--color-bg)',
+            overscrollBehavior: 'contain' as any,
+          }}
           id="admin-main-content"
         >
           {children}

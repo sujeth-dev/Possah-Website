@@ -46,12 +46,18 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       <aside
         className={[
           'fixed md:sticky md:top-0 left-0 z-50 md:z-auto',
-          'flex flex-col h-dvh md:h-dvh',
+          'flex flex-col overflow-hidden md:overflow-auto',
           'w-60 flex-shrink-0',
           'transition-transform duration-250 ease-in-out md:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         ].join(' ')}
-        style={{ backgroundColor: 'var(--color-green)' }}
+        style={{
+          backgroundColor: 'var(--color-green)',
+          height: '100dvh',
+          minHeight: '100vh',
+          top: 0,
+          overscrollBehavior: 'contain' as any,
+        }}
         aria-label="Admin navigation"
       >
         {/* Logo area */}
@@ -137,6 +143,8 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                       fontWeight: active ? '500' : '400',
                       letterSpacing: '0.02em',
                       textDecoration: 'none',
+                      WebkitTapHighlightColor: 'transparent',
+                      cursor: 'pointer',
                     }}
                     aria-current={active ? 'page' : undefined}
                   >
