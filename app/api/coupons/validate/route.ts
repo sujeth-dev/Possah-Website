@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { createServerClient } from '@/lib/supabase/server'
 
 const schema = z.object({
-  code: z.string().min(1).max(32).toUpperCase(),
+  code: z.string().min(1).max(32).transform(s => s.toUpperCase()),
   subtotal: z.number().positive(),
 })
 
@@ -24,7 +24,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const supabase = createServerClient()
-    const now = new Date().toISOString()
+    // DATE comparison — always compare 'YYYY-MM-DD' to 'YYYY-MM-DD'.
+    // Coupon is valid ALL DAY on expiry_date, expires at start of the next day.
+    const today = new Date().toISOString().split('T')[0]
 
     const { data: coupon } = await supabase
       .from('coupons')
@@ -37,17 +39,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, message: 'This code is not valid.' })
     }
 
-    // Check expiry
-    if (coupon.expiry_date && coupon.expiry_date < now) {
+    if (coupon.expiry_date && coupon.expiry_date < today) {
       return NextResponse.json({ valid: false, message: 'This code has expired.' })
     }
 
-    // Check usage limit
     if (coupon.usage_limit !== null && coupon.usage_count >= coupon.usage_limit) {
       return NextResponse.json({ valid: false, message: 'This code has reached its usage limit.' })
     }
 
-    // Check minimum order value
     if (coupon.min_order_value && subtotal < coupon.min_order_value) {
       return NextResponse.json({
         valid: false,
@@ -55,10 +54,8 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // 'percent' -> percentage off subtotal
-    // 'flat'    -> fixed Rs. amount off
-    // 'free_shipping' -> zero out shipping (handled client-side)
-    const discountType: 'percent' | 'flat' | 'free_shipping' = coupon.type as 'percent' | 'flat' | 'free_shipping'
+    const discountType: 'percent' | 'flat' | 'free_shipping' =
+      coupon.type as 'percent' | 'flat' | 'free_shipping'
     const discountValue: number = coupon.value
 
     let message: string
@@ -78,6 +75,9 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     console.error('[coupons/validate] Error:', err)
-    return NextResponse.json({ valid: false, message: 'Unable to validate coupon. Please try again.' }, { status: 500 })
+    return NextResponse.json(
+      { valid: false, message: 'Unable to validate coupon. Please try again.' },
+      { status: 500 },
+    )
   }
 }

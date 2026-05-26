@@ -1254,3 +1254,486 @@ These do not block go-live.
 | Sprint 4 | 13–16 | Sentry + Vercel + health check + go-live gate | All gate items ✅ |
 
 **Total:** 16 working days solo (~10 days with 2 devs running Sprint 2+3 in parallel).
+
+---
+
+---
+
+# REALITY-CHECKED PLAN — Sprint 3 + 4 Remaining Work
+
+**Verified against live DB on 2026-05-26 and actual file system.**
+Sprint 1 ✅ fully done. Sprint 2 DB ✅ done, tests ❌ not written. Below is what remains.
+
+---
+
+## Pre-Sprint 3 Gate: Run Migration 022 First
+
+Before writing any test or code that touches `orders.updated_at`, `coupons.updated_at`, etc., run this in Supabase SQL Editor (both staging and production when ready):
+
+```
+supabase/migrations/022_missing_updated_at.sql
+```
+
+Verify with:
+```sql
+SELECT table_name FROM information_schema.columns
+WHERE table_schema = 'public' AND column_name = 'updated_at'
+ORDER BY table_name;
+```
+Must include: `cart_items, categories, coupons, homepage_config, journal_articles, orders, product_variants, products, reviews, store_settings, user_addresses, user_measurements, users`
+
+---
+
+## ⚠️ Schema Drift — Audit Before Tests
+
+Two columns in the live DB do NOT match what the old docs (and possibly the code) assume. **Check these files before writing any tests that mock the DB:**
+
+### reviews.is_approved (not status)
+
+Live DB: `is_approved BOOLEAN` — no `status` TEXT column.
+
+Check `app/api/admin/reviews/route.ts` and `app/admin/reviews/ReviewManager.tsx`. Any query using `.eq('status', 'pending')` is silently failing. The correct queries are:
+```ts
+// Pending (not yet reviewed)
+.eq('is_approved', false)   // or IS NULL depending on your default
+
+// Approved
+.eq('is_approved', true)
+
+// Rejected — no rejected state in current schema. 
+// Either add a status column or handle reject as delete.
+```
+
+If the admin UI shows 3 states (pending/approve/reject) but the DB only has a boolean, a migration is needed to add a `status` column OR the UI needs to be simplified to approve/remove only.
+
+### coupons.expiry_date (not expires_at)
+
+Live DB: `expiry_date DATE` — not `expires_at TIMESTAMPTZ`.
+
+Check `app/api/coupons/validate/route.ts`. The expiry check must compare against `expiry_date`, not `expires_at`:
+```ts
+// Correct
+.gte('expiry_date', new Date().toISOString().split('T')[0])  // date comparison
+// or in SQL:
+WHERE expiry_date >= CURRENT_DATE OR expiry_date IS NULL
+```
+
+---
+
+## Sprint 3 — Remaining Tasks (8 tasks)
+
+### S3-A: FIX-SEC-07 — Migrate @supabase/auth-helpers-nextjs → @supabase/ssr
+
+**Do this first. Everything else (typecheck, build, CI) depends on a clean client.**
+
+```bash
+npm uninstall @supabase/auth-helpers-nextjs
+npm install @supabase/ssr
+```
+
+**Rewrite `lib/supabase/server.ts`:**
+```ts
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export function createClient() {
+  const cookieStore = cookies()
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {}
+        },
+      },
+    }
+  )
+}
+```
+
+Rename export from `createServerClient` to `createClient` OR update all call sites — whichever is less churn. Check with grep:
+```bash
+grep -rn "createServerClient\|auth-helpers-nextjs" app/ lib/ --include="*.ts" --include="*.tsx"
+```
+
+After rewrite: `npm run typecheck` must pass, `npm run build` must pass.
+
+**Gate:** `@supabase/auth-helpers-nextjs` no longer in `package.json`.
+
+---
+
+### S3-B: FIX-FE-01 + FIX-FE-02 — Missing loading.tsx + error.tsx
+
+Files that exist: `(shop)/loading.tsx`, `(shop)/shop/[category]/loading.tsx`, `(shop)/shop/[category]/[slug]/loading.tsx`, `(shop)/cart/loading.tsx`, `(shop)/account/loading.tsx`, `admin/loading.tsx`, all matching error.tsx files.
+
+**Still missing — create these 6 files:**
+
+`app/admin/orders/loading.tsx`:
+```tsx
+export default function Loading() {
+  return (
+    <div className="animate-pulse space-y-3 p-6">
+      <div className="h-8 bg-[var(--color-border)] rounded w-48 mb-6" />
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="h-12 bg-[var(--color-border)] rounded" />
+      ))}
+    </div>
+  )
+}
+```
+
+`app/admin/products/loading.tsx` — same pattern, 10 rows.
+
+`app/(shop)/cart/error.tsx`:
+```tsx
+'use client'
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-center px-4">
+      <p className="font-mono text-xs text-[var(--color-text-muted)] uppercase tracking-widest">Something went wrong</p>
+      <p className="text-[var(--color-text-muted)] text-sm">Your cart is safe — no payment was taken.</p>
+      <button onClick={reset} className="px-6 py-3 bg-[var(--color-green)] text-[var(--color-bg)] text-xs font-mono uppercase tracking-widest">Try Again</button>
+    </div>
+  )
+}
+```
+
+`app/(shop)/account/error.tsx` — same pattern, message: "Could not load your account."
+
+`app/admin/orders/error.tsx` — same pattern, message: "Could not load orders."
+
+`app/admin/products/error.tsx` — same pattern, message: "Could not load products."
+
+---
+
+### S3-C: FIX-FE-05 — Wire GA4 Events
+
+Base `gtag` script is in `app/layout.tsx`. Use the raw `window.gtag` pattern (not `@next/third-parties` — not installed).
+
+Add a shared helper `lib/analytics.ts`:
+```ts
+export function trackEvent(
+  name: string,
+  params: Record<string, string | number | boolean>
+) {
+  if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+    ;(window as any).gtag('event', name, params)
+  }
+}
+```
+
+Wire 4 calls:
+
+**1. view_item** — `app/(shop)/shop/[category]/[slug]/page.tsx` — inside the client component or useEffect after product data is available:
+```ts
+import { trackEvent } from '@/lib/analytics'
+// inside useEffect or after product loads:
+trackEvent('view_item', { item_id: product.id, item_name: product.name, value: product.price, currency: 'INR' })
+```
+
+**2. add_to_cart** — find where add-to-cart action fires (likely `components/pdp/ProductInfo.tsx` or similar). Add:
+```ts
+trackEvent('add_to_cart', { item_id: productId, item_name: productName, value: price, currency: 'INR' })
+```
+
+**3. begin_checkout** — `app/(shop)/checkout/CheckoutForm.tsx` — at top of `onSubmit` before the fetch:
+```ts
+trackEvent('begin_checkout', { value: total, currency: 'INR' })
+```
+
+**4. purchase** — `CheckoutForm.tsx` — inside `onSuccess` handler, after `clearCart()`:
+```ts
+trackEvent('purchase', { transaction_id: order_number, value: total, currency: 'INR' })
+```
+
+Verify: GA4 Dashboard → Reports → Realtime → Events. Run a test checkout on staging, confirm `purchase` event appears.
+
+---
+
+### S3-D: FIX-TEST-01 — Write Vitest Unit Tests
+
+Vitest config exists. `vitest.setup.ts` — check if it exists:
+```bash
+ls vitest.setup.ts
+```
+If missing, create:
+```ts
+import '@testing-library/jest-dom'
+```
+
+Create `__tests__/unit/razorpay.test.ts` — **must hit 100% coverage on `lib/razorpay.ts`:**
+```ts
+import { describe, it, expect } from 'vitest'
+import { verifyRazorpayWebhookSignature, verifyRazorpayPaymentSignature } from '@/lib/razorpay'
+
+describe('verifyRazorpayWebhookSignature', () => {
+  it('returns true for valid signature', () => { /* ... */ })
+  it('returns false for tampered payload', () => { /* ... */ })
+  it('returns false for wrong secret', () => { /* ... */ })
+})
+
+describe('verifyRazorpayPaymentSignature', () => {
+  it('returns true for valid HMAC', () => { /* ... */ })
+  it('returns false for tampered order_id', () => { /* ... */ })
+})
+```
+
+Create `__tests__/unit/auth.test.ts`:
+- JWT callback: active admin email → `token.isAdmin = true`
+- JWT callback: `is_active = false` → `token.isAdmin = false`
+- JWT callback: unknown email → `token.isAdmin = false`
+
+Create `__tests__/unit/coupon.test.ts`:
+- `percent` type: 10% on ₹1000 → ₹100 discount
+- `flat` type: ₹200 on ₹1000 → ₹200 discount
+- `free_shipping` type → shipping = 0
+- min_order_value not met → rejected
+- `expiry_date` past → rejected ← **use `expiry_date DATE`, not `expires_at`**
+- `usage_count >= usage_limit` → rejected
+
+Run: `npm test` → all green.
+
+---
+
+### S3-E: FIX-TEST-02 — Write Integration Tests
+
+Create `__tests__/integration/` — use `msw` to mock Supabase HTTP and Razorpay.
+
+`orders-create.test.ts`:
+- Valid cart → 200, order row in DB
+- Price spoofed by client → 400, order not created
+- Insufficient stock → 400 with stock message
+- Invalid coupon → 400 with coupon message
+
+`payments-webhook.test.ts`:
+- `payment.captured` valid sig → order marked paid, stock decremented
+- `payment.captured` already paid → idempotent, no double email
+- `payment.failed` → order marked failed, email sent
+- Invalid webhook signature → 400
+
+`payments-verify.test.ts`:
+- Valid HMAC → 200, order updated
+- Tampered signature → 400
+- Duplicate verify → idempotent
+
+`coupons-validate.test.ts`:
+- Active coupon + above min → discount returned
+- Expired (`expiry_date < today`) → 400 ← **use `expiry_date`**
+- usage_count = usage_limit → 400
+- Below min_order_value → 400
+
+`admin-auth.test.ts`:
+- No token → 401
+- Non-admin token → 403
+- Valid admin token → 200
+
+---
+
+### S3-F: FIX-TEST-03 — Write Playwright E2E Tests
+
+`playwright.config.ts` exists. Create `e2e/` folder with 5 files:
+
+`e2e/catalog.spec.ts`:
+```ts
+import { test, expect } from '@playwright/test'
+
+test('homepage → category → PDP → add to bag', async ({ page }) => {
+  await page.goto('/')
+  // click first category link
+  // expect product grid
+  // click first product card
+  // expect PDP title present
+  // click add to bag
+  // expect cart count header badge increments
+})
+```
+
+`e2e/auth.spec.ts`:
+- `/account` loads (dev mode mock or sign-in redirect)
+- Sign-out clears session
+
+`e2e/admin.spec.ts`:
+- `/admin` loads
+- `/admin/orders` table renders
+- Click order row → detail page
+
+`e2e/checkout.spec.ts`:
+- Add to cart → `/checkout` → fill form → Razorpay modal opens
+- Apply coupon on cart → discount reflected
+
+`e2e/admin-orders.spec.ts`:
+- Admin sign-in → `/admin/orders` → update status → badge updates
+
+Run: `npm run test:e2e` → all 5 specs green.
+
+**Sprint 3 gate:**
+- [ ] `@supabase/auth-helpers-nextjs` gone from `package.json`
+- [ ] `npm run typecheck` → 0 errors
+- [ ] `npm run build` → passes
+- [ ] 6 loading/error files exist for admin/orders and admin/products, cart, account
+- [ ] GA4 purchase event visible in Realtime on staging test checkout
+- [ ] `npm test` → all unit + integration green, razorpay.ts at 100% coverage
+- [ ] `npm run test:e2e` → all 5 specs green
+
+---
+
+## Sprint 4 — Remaining Tasks (4 code + 2 external)
+
+### S4-A: FIX-INFRA-02 — Install Sentry
+
+```bash
+npm install @sentry/nextjs
+npx @sentry/wizard@latest -i nextjs
+```
+
+Wizard creates:
+- `sentry.client.config.ts`
+- `sentry.server.config.ts`
+- `sentry.edge.config.ts`
+- patches `next.config.mjs`
+
+Add to Vercel env: `SENTRY_DSN=https://...@sentry.io/...`
+
+Add to `.env.local.example`: `SENTRY_DSN=`
+
+Test: throw deliberate error in any server component on staging → Sentry dashboard event within 30s.
+
+---
+
+### S4-B: FIX-SEC-08 — Generate Supabase Type Generic
+
+```bash
+npx supabase gen types typescript --project-id [your-supabase-project-ref] > types/supabase.ts
+```
+
+Update all 3 Supabase client files to use the `Database` generic:
+```ts
+import type { Database } from '@/types/supabase'
+// ...
+createServerClient<Database>(url, key, options)
+createBrowserClient<Database>(url, key)
+// etc.
+```
+
+Run `npm run typecheck` — must pass with 0 errors.
+
+Note: `lib/supabase/server.ts` currently has a comment "Database generic intentionally omitted" — this task removes that intentional omission now that the type file will exist.
+
+---
+
+### S4-C: FIX-TEST-04 — k6 Load Test Script
+
+Install k6 locally (not in CI): https://k6.io/docs/get-started/installation/
+
+Create `scripts/load-test.js`:
+```js
+import http from 'k6/http'
+import { check, sleep } from 'k6'
+
+export const options = {
+  vus: 50,
+  duration: '60s',
+  thresholds: {
+    http_req_duration: ['p(95)<2000'],
+    http_req_failed: ['rate<0.01'],
+  },
+}
+
+export default function () {
+  const payload = JSON.stringify({
+    items: [{ product_id: 'test-id', variant_id: 'test-variant', name: 'Test', image: '', price: 1000, qty: 1, colour: 'Red', size: 'S' }],
+    contact: { first_name: 'Test', last_name: 'User', email: 'test@test.com', phone: '9999999999' },
+    address: { line1: '123 Test St', city: 'Mumbai', state: 'Maharashtra', pincode: '400001' },
+    delivery_option: 'standard',
+    gift_wrap: false,
+    coupon_code: null,
+    subtotal: 1000,
+    shipping: 199,
+    coupon_discount: 0,
+    gift_wrap_cost: 0,
+    total: 1199,
+  })
+
+  const res = http.post(
+    `${__ENV.BASE_URL}/api/orders/create`,
+    payload,
+    { headers: { 'Content-Type': 'application/json' } }
+  )
+
+  check(res, { 'status 200 or 400': (r) => r.status === 200 || r.status === 400 })
+  sleep(1)
+}
+```
+
+Run against staging:
+```bash
+k6 run -e BASE_URL=https://[staging-url] scripts/load-test.js
+```
+
+Acceptable: p95 < 2000ms, error rate < 1%.
+
+---
+
+### S4-D: Go-Live Gate — Full Checklist Sweep
+
+Run every item in the Go-Live Gate Checklist (above in this doc). Do it on staging before touching production. Nothing goes to production until every box is ticked.
+
+---
+
+### S4-EXT-1: Vercel Setup *(you do this in Vercel Dashboard)*
+
+1. `npm i -g vercel` → `vercel` in repo root → link project
+2. Dashboard → Project Settings → Region: `bom1` (Mumbai)
+3. Add all env vars from `.env.local.example` (14 vars) with staging values
+4. GitHub → Repo Settings → Branches → protect `main`: require CI + 1 review
+5. DNS (Cloudflare): CNAME `@` → `cname.vercel-dns.com` proxy OFF, same for `www`
+6. Vercel → Domains → Add `thepossah.com` → SSL auto-provisions
+
+---
+
+### S4-EXT-2: Razorpay Webhook Registration *(you do this in Razorpay Dashboard)*
+
+**Staging:**
+Razorpay Dashboard → Settings → Webhooks → Add
+- URL: `https://[staging-url]/api/payments/webhook`
+- Secret: generate random string → paste into Vercel env `RAZORPAY_WEBHOOK_SECRET`
+- Events: `payment.captured` ✓ `payment.failed` ✓
+- Use "Test webhook" button → verify order updates in staging DB
+
+**Production:** Same steps with `https://thepossah.com/api/payments/webhook`
+
+---
+
+## Sprint 4 Execution Order
+
+```
+Run 022 migration in Supabase SQL Editor (staging)
+  ↓
+S3-A: Supabase SSR migration → typecheck + build green
+  ↓
+S3-B: 6 missing loading/error files (30 min)
+  ↓
+S3-C: GA4 events wired (lib/analytics.ts + 4 call sites)
+  ↓
+S3-D → S3-E → S3-F: Tests (unit → integration → E2E)
+  ↓
+S4-EXT-1: Vercel setup (you) ← do in parallel during test writing
+  ↓
+S4-A: Sentry install
+  ↓
+S4-B: Supabase type gen
+  ↓
+S4-C: k6 load test script
+  ↓
+S4-EXT-2: Razorpay webhook (staging, then prod)
+  ↓
+S4-D: Go-live gate checklist sweep → promote to production
+```

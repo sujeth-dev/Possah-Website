@@ -185,8 +185,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
-    // Only send failure email once (DB constraint: 'pending'|'paid'|'failed'|'refunded')
-    if (order.payment_status !== 'failed') {
+    // Only mark failed if still pending — never downgrade a paid order.
+    // A late payment.failed can arrive after payment.captured (race condition on Razorpay's side).
+    // Guard: only transition pending → failed. paid stays paid. failed stays failed (idempotent).
+    if (order.payment_status === 'pending') {
       await supabase
         .from('orders')
         .update({ payment_status: 'failed' })

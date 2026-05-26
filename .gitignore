@@ -31,3 +31,4 @@ tsconfig.tsbuildinfo
 
 # Test run reports (generated output — not source)
 scripts/admin_test/reports/
+scripts/payment_test/reports/

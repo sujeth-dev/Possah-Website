@@ -1,6 +1,6 @@
 # The Possah — Master Project Document
 
-**Last Updated:** May 2026
+**Last Updated:** 26 May 2026
 **Project:** `thepossah.com`
 **Stack:** Next.js 14 App Router · Supabase (PostgreSQL) · NextAuth · Razorpay · Resend · Zustand · TypeScript
 
@@ -14,25 +14,36 @@ This is the single source of truth for the live codebase. Read this before touch
 |---|---|---|
 | Phase 1 — Foundation + Frontend | ✅ Complete | All 21 public storefront pages |
 | Phase 2 — Admin Dashboard | ✅ Complete | All 10 admin sections, CRUD, deploy-ready |
-| Phase 3 — Go-Live Sprint | ⏳ In progress | See `SPRINT.md` |
+| Sprint 1 — Critical Security + Payment | ✅ Complete | Bypass removed, headers, payment.failed, CI |
+| Sprint 2 — DB + Test Scaffolding | ✅ Complete | Migration 022 run, payment test suite written |
+| Sprint 3 — Frontend Quality + SEO | ⚠️ Partial | ISR/OG/JSON-LD done, GA4 events + Supabase SSR pending |
+| Sprint 4 — Infrastructure + Go-Live | ⏳ Not started | Sentry, Vercel, type gen, k6 |
 
-**Current build:**
+**Current build (verified 26 May 2026):**
+- `tsc --noEmit` → **0 errors** (clean)
 - `npm run lint` → passing
-- `npm run build` → passing
-- Public pages use dedicated public Supabase client — no cookie-bound reads during build
-- Sitemap generates cleanly
-- Admin auth routes correctly to `/auth/signin`
+- CI pipeline exists (`.github/workflows/ci.yml`)
+- Security headers on all routes
+- Dev admin bypass removed
+- payment.captured + payment.failed both handled in webhook
+- Coupon expiry DATE comparison bug fixed in both `coupons/validate` and `orders/create`
+- Payment test suite complete: `npm run test:payment`
+- Admin test suite: `npm run test:api`
 
 **What is NOT done yet** — all tracked in `SPRINT.md`:
-- Dev admin bypass still in `middleware.ts` (🔴 must remove before production)
-- No CI/CD pipeline
-- No test suite (zero test files)
-- No loading.tsx / error.tsx on any route
-- No Sentry error tracking
-- Supabase client on deprecated `@supabase/auth-helpers-nextjs`
-- `payment.failed` not handled in CheckoutForm or webhook
-- No ISR / `generateStaticParams` on product/category pages
-- No GA4 event calls wired
+- Zero Vitest/Playwright test files written (scaffolding exists; `__tests__/` and `e2e/` are empty)
+- Supabase client still on deprecated `@supabase/auth-helpers-nextjs` — must migrate to `@supabase/ssr`
+- GA4 events not wired: view_item, add_to_cart, begin_checkout, purchase (base script in layout.tsx only)
+- Missing loading.tsx: `admin/orders/`, `admin/products/`
+- Missing error.tsx: `cart/`, `account/`, `admin/orders/`, `admin/products/`
+- Sentry not installed
+- Supabase Database type generic not generated (`database.types.ts`)
+- k6 load test script not written
+
+**Schema drift — resolved:**
+- `reviews.is_approved BOOLEAN` — code was already correct. No migration needed. See `docs/reviews-schema-plan.md`.
+- `coupons.expiry_date DATE` — was comparing against ISO timestamp (bug). Fixed. Both routes now use date-only comparison.
+- Migration 022 (`updated_at` triggers on 7 tables) — **run this in Supabase before Sprint 3 work touches updated_at**.
 
 ---
 
@@ -44,7 +55,7 @@ The Possah is a custom luxury Indian fashion storefront with an integrated admin
 
 **Admin:** Full CRUD for products (with variants, images, audio), categories, orders (fulfilment + tracking), homepage config, coupons, reviews, journal articles, media library, and store settings.
 
-**Payments:** Razorpay — server-side order creation with price validation, client modal, HMAC signature verification, webhook handler for `payment.captured`.
+**Payments:** Razorpay — server-side order creation with price validation (server always re-fetches DB price, never trusts client), client modal, HMAC signature verification, webhook handler for `payment.captured` and `payment.failed`. Full idempotency guard: paid orders cannot be downgraded by late webhooks.
 
 **Auth:** NextAuth Google sign-in. Admin access gated by `admin_users` table allowlist + `isAdmin` JWT flag.
 
@@ -112,7 +123,8 @@ Possah_1.0/
 │   └── migrations/     ← 001–017 (see Section 5)
 │
 └── scripts/
-    └── admin_test/     ← admin API test suite (see GUIDE.md)
+    ├── admin_test/     ← admin API test suite (see GUIDE.md) — 8 modules, ~60 cases
+    └── payment_test/   ← payment flow test suite (see GUIDE.md) — 5 modules, ~56 cases
 ```
 
 ---
@@ -179,33 +191,76 @@ Possah_1.0/
 
 ## 5. Database Schema
 
-17 migrations in `supabase/migrations/`:
+**Live DB verified 2026-05-26.** 22 migrations applied. 21 tables in public schema.
 
-| Migration | Table | Key fields |
-|---|---|---|
-| `001_products.sql` | `products` | slug, name, price, fabric, is_active, is_new_arrival, is_top_selling, audio_url |
-| `002_categories.sql` | `categories` | slug, name, parent_id, nav_section, position, banner_image |
-| `003_orders.sql` | `orders` | order_number, customer_email, line_items (jsonb), total, payment_status, fulfillment_status, tracking_number, courier |
-| `004_users.sql` | `users` | email, name, google_id |
-| `005_user_measurements.sql` | `user_measurements` | user_id, bust_cm, waist_cm, hips_cm, height_cm |
-| `006_user_addresses.sql` | `user_addresses` | user_id, full_name, phone, line1, city, state, pincode, is_default |
-| `007_wishlists.sql` | `wishlists` | user_id, product_id |
-| `008_coupons.sql` | `coupons` | code, type (percent/flat/free_shipping), value, min_order_value, usage_limit, usage_count, expires_at, is_active |
-| `009_reviews.sql` | `reviews` | product_id, reviewer_name, rating, body, status (pending/approved/rejected) |
-| `010_homepage_config.sql` | `homepage_config` | hero_slides (jsonb), collection_banner, occasion_tiles (jsonb) |
-| `011_admin_users.sql` | `admin_users` | email, is_active, role |
-| `012_gift_sets.sql` | `gift_sets` | name, items (jsonb), price |
-| `013_journal_articles.sql` | `journal_articles` | slug, title, body, category, author, featured_image, is_published, published_at |
-| `014_lookbooks.sql` | `lookbooks` | season, images (jsonb) |
-| `015_rpc_functions.sql` | RPCs | `decrement_variant_stock`, `validate_and_apply_coupon` |
-| `016_add_ready_to_ship.sql` | `products` | adds `is_ready_to_ship` column |
-| `017_store_settings.sql` | `store_settings` | announcement_bar_text, store_email, whatsapp_number, free_shipping_threshold, express_delivery_fee |
+### ⚠️ Schema Discrepancies — Code Must Match These, Not the Old Docs
 
-**Pending migrations** (Sprint):
-- `018_fix_admin_users.sql` — drop `password_hash NOT NULL` from admin_users
-- `019_categories_timestamps.sql` — `updated_at` + trigger on categories
-- `020_missing_timestamps.sql` — `updated_at` triggers on all remaining tables without it
-- `021_indexes.sql` — composite indexes for common query patterns
+| Table | Old Doc Said | **Actual Column** | Files to Audit |
+|---|---|---|---|
+| `reviews` | `status TEXT` (pending/approved/rejected) | **`is_approved BOOLEAN`** | `app/api/admin/reviews/`, `app/admin/reviews/ReviewManager.tsx` |
+| `coupons` | `expires_at TIMESTAMPTZ` | **`expiry_date DATE`** | `app/api/coupons/validate/route.ts`, `app/admin/coupons/CouponManager.tsx` |
+| `orders` | has `user_id` | **no `user_id` — email-keyed** | Any query using `.eq('user_id', ...)` on orders is broken |
+
+If code references `status`, `expires_at`, or `user_id` on these tables, it is silently failing.
+
+---
+
+### Migration History (applied)
+
+| Migration | What it did |
+|---|---|
+| `001_products.sql` | `products` table — core product fields |
+| `002_categories.sql` | `categories` table |
+| `003_orders.sql` | `orders` table — NO user_id, keyed by customer_email |
+| `004_users.sql` | `users` table |
+| `005_user_measurements.sql` | `user_measurements` table |
+| `006_user_addresses.sql` | `user_addresses` table |
+| `007_wishlists.sql` | `wishlists` table |
+| `008_coupons.sql` | `coupons` table — expiry field is `expiry_date DATE` (not expires_at) |
+| `009_reviews.sql` | `reviews` table — moderation via `is_approved BOOLEAN` (not status text) |
+| `010_homepage_config.sql` | `homepage_config` table |
+| `011_admin_users.sql` | `admin_users` table — no password_hash (dropped in 018b) |
+| `012_gift_sets.sql` | `gift_sets` table |
+| `013_journal_articles.sql` | `journal_articles` table — no updated_at yet (added in 022) |
+| `014_lookbooks.sql` | `lookbooks` + `lookbook_looks` tables |
+| `015_rpc_functions.sql` | RPCs: `decrement_variant_stock`, `decrement_coupon_usage`, `increment_coupon_usage`, `update_updated_at`, `update_updated_at_column` |
+| `016_add_ready_to_ship.sql` | `products.is_ready_to_ship BOOLEAN` |
+| `017_store_settings.sql` | `store_settings` table |
+| `018_rls_policies.sql` | RLS policies (intentionally off for most tables at current scale) |
+| `018b_admin_users_fix.sql` | Dropped `password_hash` from admin_users |
+| `019_categories_updated_at.sql` | `updated_at` + trigger on categories |
+| `020_performance_indexes.sql` | Composite indexes + FTS `search_vector` column on products |
+| `021_cart_items.sql` | `cart_items` table (server-side cart persistence) |
+| `022_missing_updated_at.sql` | `updated_at` + trigger on orders, coupons, journal_articles, reviews, users, user_addresses, product_variants |
+
+### Tables in Public Schema (21)
+
+`admin_users` · `cart_items` · `categories` · `coupons` · `gift_sets` · `homepage_config` · `journal_articles` · `lookbook_looks` · `lookbooks` · `orders` · `product_images` · `product_look_links` · `product_tags` · `product_variants` · `products` · `reviews` · `store_settings` · `user_addresses` · `user_measurements` · `users` · `wishlists`
+
+### Key Column Reference (exact — use these, not the old docs)
+
+**products** — id, slug, name, description, fabric, craft_description, care_instructions, drape_guide, price, compare_price, category_id, sub_line, stock_qty, is_featured, is_new_arrival, is_top_selling, is_active, is_ready_to_ship, meta_title, meta_description, audio_url, craft_story_title, craft_story_body, craft_story_image, search_vector (tsvector generated), created_at, updated_at
+
+**orders** — id, order_number, customer_name, customer_email, customer_phone, shipping_address (jsonb), line_items (jsonb), subtotal, shipping_fee, discount_amount, coupon_code, tax, total, payment_status, fulfillment_status, payment_gateway, gateway_order_id, gateway_payment_id, tracking_number, courier, internal_notes, is_gift, gift_message, created_at, updated_at (added 022)
+
+**coupons** — id, code, type, value, min_order_value, **expiry_date DATE**, usage_limit, usage_count, is_active, created_at, updated_at (added 022)
+
+**reviews** — id, product_id, **is_approved BOOLEAN**, created_at, updated_at (added 022) — *(verify remaining columns directly)*
+
+**admin_users** — id, email, role, is_active, created_at — **no password_hash**
+
+### RLS State
+
+`lookbook_looks` and `users` have RLS enabled. All other tables have RLS off. Intentional — Vercel CDN + Razorpay handle perimeter security at current scale.
+
+### RPCs
+
+| Function | Purpose |
+|---|---|
+| `decrement_variant_stock(p_variant_id, p_qty)` | Atomic stock decrement — returns FALSE if oversell |
+| `decrement_coupon_usage(code)` | Decrements usage_count |
+| `increment_coupon_usage(code)` | Increments usage_count |
+| `update_updated_at()` / `update_updated_at_column()` | Trigger functions for updated_at automation |
 
 ---
 

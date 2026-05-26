@@ -16,7 +16,11 @@
     "seed:test": "node scripts/admin_test/seed.mjs",
     "cleanup:test": "node scripts/admin_test/cleanup.mjs",
     "test:api": "NODE_ENV=development node scripts/admin_test/run.mjs",
-    "test:api:keep": "NODE_ENV=development SKIP_CLEANUP=1 node scripts/admin_test/run.mjs"
+    "test:api:keep": "NODE_ENV=development SKIP_CLEANUP=1 node scripts/admin_test/run.mjs",
+    "seed:payment": "node scripts/payment_test/seed.mjs",
+    "cleanup:payment": "node scripts/payment_test/cleanup.mjs",
+    "test:payment": "NODE_ENV=development node scripts/payment_test/run.mjs",
+    "test:payment:keep": "NODE_ENV=development SKIP_CLEANUP=1 node scripts/payment_test/run.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
