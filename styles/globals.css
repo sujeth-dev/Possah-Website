@@ -58,11 +58,19 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
+    /* iOS Safari fixes */
+    -webkit-text-size-adjust: 100%;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   body {
     background-color: var(--color-bg);
     min-height: 100dvh;
+    min-height: 100vh;
+    -webkit-user-select: text;
+    overscroll-behavior: contain;
+    -webkit-overscroll-behavior: contain;
   }
 
   /* ─── Typography base ─────────────────────────────────────── */
@@ -94,6 +102,66 @@
   /* ─── Inputs — prevent zoom on mobile (font-size ≥ 16px) ─── */
   input, select, textarea {
     font-size: 16px;
+  }
+
+  /* ─── iOS-specific fixes ──────────────────────────────────── */
+  /* Remove iOS blue highlight on tap */
+  button, input, select, textarea, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Fix iOS Safari button styling */
+  button, input[type='button'], input[type='submit'] {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: var(--radius-btn);
+    cursor: pointer;
+  }
+
+  /* Fix select dropdown styling on iOS */
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='2'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 20px;
+    padding-right: 32px;
+  }
+
+  /* Prevent image long-press menu on iOS */
+  img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Fix iOS Safari position fixed navbar glitch */
+  input[type='search']::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+
+  /* iOS link styling */
+  a {
+    -webkit-touch-callout: none;
+    cursor: pointer;
+  }
+
+  /* iOS input focus styling */
+  input, textarea, select {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: var(--radius-input);
+  }
+
+  /* Prevent zoom on input focus on iOS */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  /* iOS smooth scrolling */
+  main, [role='main'], .overflow-y-auto, .overflow-auto {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
