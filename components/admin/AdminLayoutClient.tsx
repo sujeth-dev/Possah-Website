@@ -17,7 +17,7 @@ export function AdminLayoutClient({ children, isDev }: AdminLayoutClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-dvh overflow-hidden">
       {/* Sidebar */}
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -90,7 +90,7 @@ export function AdminLayoutClient({ children, isDev }: AdminLayoutClientProps) {
 
         {/* Page content */}
         <main
-          className="flex-1 overflow-auto"
+          className="flex-1 overflow-y-auto overscroll-contain"
           style={{ backgroundColor: 'var(--color-bg)' }}
           id="admin-main-content"
         >

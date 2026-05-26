@@ -46,7 +46,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       <aside
         className={[
           'fixed md:sticky md:top-0 left-0 z-50 md:z-auto',
-          'flex flex-col h-screen md:h-screen',
+          'flex flex-col h-dvh md:h-dvh',
           'w-60 flex-shrink-0',
           'transition-transform duration-250 ease-in-out md:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
