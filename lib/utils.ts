@@ -5,7 +5,7 @@
 
 /** Format a number as Indian Rupees — e.g. 18999 → "₹18,999" */
 export function formatPrice(amount: number): string {
-  return `₹${amount.toLocaleString('en-IN')}`
+  return `₹${(amount ?? 0).toLocaleString('en-IN')}`
 }
 
 /** Generate an order number — e.g. PSH-2026-0001 */
