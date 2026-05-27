@@ -35,6 +35,10 @@ const nextConfig = {
     // never modified.
     formats: ['image/avif', 'image/webp'],
   },
+  webpack: (config) => {
+    config.infrastructureLogging = { level: 'error' }
+    return config
+  },
   experimental: {
     // FIX-INFRA-04: expanded package imports optimisation
     optimizePackageImports: [
