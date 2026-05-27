@@ -93,7 +93,7 @@ async function seedProducts() {
         product_id: productId,
         url,
         position: i + 1,
-        alt_text: `${product.name} — image ${i + 1}`,
+        alt: `${product.name} — image ${i + 1}`,
       }))
       const { error: imgErr } = await supabase.from('product_images').insert(imageRows)
       check(`insert images ${product.slug}`, imgErr)
@@ -108,10 +108,8 @@ async function seedProducts() {
       const variantRows = SIZES.map(size => ({
         product_id: productId,
         size,
-        colour: product.colour,
-        sku: `PSH-${product.skuCode}-${size}`,
+        colour_name: product.colour,
         stock_qty: STOCK_PER_VARIANT,
-        price_override: null,
       }))
       const { error: varErr } = await supabase.from('product_variants').insert(variantRows)
       check(`insert variants ${product.slug}`, varErr)

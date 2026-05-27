@@ -154,7 +154,7 @@ async function seedOrders() {
       // Look up variant
       const { data: variant, error: vErr } = await supabase
         .from('product_variants')
-        .select('id, sku')
+        .select('id')
         .eq('product_id', product.id)
         .eq('size', spec.size)
         .single()
@@ -168,7 +168,6 @@ async function seedOrders() {
         {
           product_id: product.id,
           variant_id: variant.id,
-          sku: variant.sku,
           name: product.name,
           size: spec.size,
           qty: spec.qty,
@@ -185,15 +184,15 @@ async function seedOrders() {
         shipping_address: spec.shipping_address,
         line_items,
         subtotal,
-        shipping_cost: spec.shipping_cost,
+        shipping_fee: spec.shipping_cost,
         discount_amount: spec.discount_amount,
         total,
         payment_status: spec.payment_status,
         fulfillment_status: spec.fulfillment_status,
-        payment_provider: spec.payment_provider,
-        payment_id: spec.payment_id,
+        payment_gateway: spec.payment_provider,
+        gateway_payment_id: spec.payment_id,
         coupon_code: spec.coupon_code,
-        notes: spec.notes,
+        internal_notes: spec.notes,
       })
       check(`insert order ${spec.order_number}`, insertErr)
 

@@ -618,7 +618,7 @@ export const ETHNIC_PRODUCTS = [
     description:
       'Emerald green pure silk saree with gold zari borders — the Jade Drape is Possah\'s homage to heritage weaves and modern sensibility. Lustrous, weighty, and magnificent.',
     care: 'Dry clean only. Store in muslin pouch.',
-    tags: ['Wedding', 'Festive', 'Sangeet'],
+    tags: ['Wedding', 'Sangeet'],
     skuCode: 'SR-002',
     unsplashId: 'photo-1679006831648-7c9ea12e5807',
   },
@@ -633,7 +633,7 @@ export const ETHNIC_PRODUCTS = [
     description:
       'Crimson Banarasi silk with gold woven motifs — the Ember Saree is a bridal masterpiece made for the woman who chooses red not as a tradition but as a statement.',
     care: 'Dry clean only. Store separately.',
-    tags: ['Wedding', 'Bridal', 'Sangeet'],
+    tags: ['Wedding', 'Sangeet'],
     skuCode: 'SR-003',
     unsplashId: 'photo-1769500804057-ca1391bf4617',
   },
@@ -648,7 +648,7 @@ export const ETHNIC_PRODUCTS = [
     description:
       'Midnight blue organza with scattered gold sequins — the Dusk Saree belongs to the hour between sundown and starlight. Ethereal, dreamy, impossible to forget.',
     care: 'Dry clean only. Handle with care.',
-    tags: ['Evening', 'Festive', 'Sangeet'],
+    tags: ['Evening', 'Sangeet'],
     skuCode: 'SR-004',
     unsplashId: 'photo-1641699862936-be9f49b1c38d',
   },
@@ -667,7 +667,7 @@ export const ETHNIC_PRODUCTS = [
     description:
       'The Scarlet Lehenga — red raw silk with intricate gold zardozi embroidery. A bridal lehenga built for the woman who wants her entrance remembered long after the night ends.',
     care: 'Dry clean only. Store flat in box.',
-    tags: ['Bridal', 'Wedding', 'Sangeet'],
+    tags: ['Wedding', 'Sangeet'],
     skuCode: 'LH-001',
     unsplashId: 'photo-1762201698238-bf412e297016',
   },
@@ -682,7 +682,7 @@ export const ETHNIC_PRODUCTS = [
     description:
       'Saffron yellow silk lehenga with maroon border embroidery — joyful, festive, and deeply rooted in celebration. Made for haldi ceremonies and mehndi mornings.',
     care: 'Dry clean only.',
-    tags: ['Haldi', 'Mehendi', 'Festive'],
+    tags: ['Haldi', 'Mehendi'],
     skuCode: 'LH-002',
     unsplashId: 'photo-1767955694884-d4bf352c23c2',
   },
@@ -697,7 +697,7 @@ export const ETHNIC_PRODUCTS = [
     description:
       'Ivory net over satin with gold thread and pearl embellishments — the Pearl Lehenga is quiet luxury at its most precise. For the bride who chooses elegance over ceremony.',
     care: 'Dry clean only. Store in provided garment bag.',
-    tags: ['Bridal', 'Wedding'],
+    tags: ['Wedding'],
     skuCode: 'LH-003',
     unsplashId: 'photo-1601432093209-8af1fd74b054',
   },
@@ -712,7 +712,7 @@ export const ETHNIC_PRODUCTS = [
     description:
       'Forest green velvet lehenga with subtle gold piping — a non-bridal choice that outshines the bridal party. Opulent texture, measured silhouette.',
     care: 'Dry clean only.',
-    tags: ['Wedding', 'Sangeet', 'Festive'],
+    tags: ['Wedding', 'Sangeet'],
     skuCode: 'LH-004',
     unsplashId: 'photo-1619715613791-89d35b51ff81',
   },

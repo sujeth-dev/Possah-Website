@@ -32,3 +32,8 @@ tsconfig.tsbuildinfo
 # Test run reports (generated output — not source)
 scripts/admin_test/reports/
 scripts/payment_test/reports/
+
+# Data ops generated artifacts (runtime output — not source)
+scripts/data_ops/backup/
+scripts/data_ops/category_map.json
+scripts/data_ops/image_manifest.json
