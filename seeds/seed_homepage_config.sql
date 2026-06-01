@@ -40,7 +40,8 @@ INSERT INTO homepage_config (
     { "id": "sangeet",   "label": "SANGEET",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/lehengas?occasion=Sangeet"  },
     { "id": "mehendi",   "label": "MEHENDI",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/sarees?occasion=Mehendi"   },
     { "id": "haldi",     "label": "HALDI",     "image": "/images/placeholder-occasion.jpg", "link": "/shop/kurta-sets?occasion=Haldi" },
-    { "id": "wedding",   "label": "WEDDING",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/lehengas?occasion=Wedding"  }
+    { "id": "wedding",   "label": "WEDDING",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/lehengas?occasion=Wedding"  },
+    { "id": "cocktail",  "label": "COCKTAIL",  "image": "/images/placeholder-occasion.jpg", "link": "/shop/sarees?occasion=Cocktail"  }
   ]'::jsonb
 );
 

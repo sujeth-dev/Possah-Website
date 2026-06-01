@@ -9,6 +9,8 @@ INSERT INTO categories (id, name, slug, parent_id, nav_section, position) VALUES
   -- Top-level western
   ('11111111-0001-0001-0001-000000000004', 'Co-Ords',    'co-ords',    NULL, 'Women > Western', 4),
   ('11111111-0001-0001-0001-000000000005', 'Dresses',    'dresses',    NULL, 'Women > Western', 5),
+  -- Separates: KEPT for data integrity (existing products reference this id).
+  -- Removed from storefront nav. Reassign products before deleting this row.
   ('11111111-0001-0001-0001-000000000006', 'Separates',  'separates',  NULL, 'Women > Western', 6),
   -- Bridal
   ('11111111-0001-0001-0001-000000000007', 'Bridal',     'bridal',     NULL, 'Bridal', 7),

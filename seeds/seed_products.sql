@@ -185,7 +185,7 @@ INSERT INTO products (
   'Hand-embroidered on georgette. Wear with sarees, palazzos, or denim.',
   'Hand wash cold with mild detergent.',
   8500, NULL,
-  '11111111-0001-0001-0001-000000000006',
+  '11111111-0001-0001-0001-000000000012', -- Tops (was Separates — nav-retired)
   'THE EDIT', 25,
   FALSE, FALSE, FALSE, TRUE,
   'The Rose Separate Top — Dusty Rose Chikankari Georgette | The Possah',
@@ -260,5 +260,153 @@ INSERT INTO product_tags (product_id, tag) VALUES
   ('aaaaaaaa-0009-0009-0009-000000000009', 'Everyday'),
   ('aaaaaaaa-0009-0009-0009-000000000009', 'Brunch'),
   ('aaaaaaaa-0010-0010-0010-000000000010', 'Everyday'),
-  ('aaaaaaaa-0010-0010-0010-000000000010', 'Brunch')
+  ('aaaaaaaa-0010-0010-0010-000000000010', 'Brunch'),
+  -- Cocktail tags (added in taxonomy refresh)
+  ('aaaaaaaa-0003-0003-0003-000000000003', 'Cocktail'),
+  ('aaaaaaaa-0005-0005-0005-000000000005', 'Cocktail'),
+  ('aaaaaaaa-0008-0008-0008-000000000008', 'Cocktail')
+ON CONFLICT DO NOTHING;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Additional seed products for new categories (taxonomy refresh)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+INSERT INTO products (
+  id, slug, name, description, fabric, craft_description, care_instructions,
+  price, compare_price, category_id, sub_line, stock_qty,
+  is_featured, is_new_arrival, is_top_selling, is_active,
+  meta_title, meta_description,
+  craft_story_title, craft_story_body
+) VALUES
+
+-- 11. Dress Material
+(
+  'aaaaaaaa-0011-0011-0011-000000000011',
+  'the-ivory-dress-material',
+  'The Ivory Dress Material',
+  'Unstitched ivory chanderi fabric — 2.5 metres. Cut, stitch, own.',
+  'Chanderi Silk',
+  'Woven on traditional looms in Chanderi, MP. The zari border is woven in, not applied.',
+  'Dry clean or hand wash cold. Store folded in muslin.',
+  6500, NULL,
+  '11111111-0001-0001-0001-000000000009',
+  'THE DRAPE', 30,
+  FALSE, TRUE, FALSE, TRUE,
+  'Ivory Chanderi Dress Material — The Possah',
+  'Shop unstitched Ivory Chanderi dress material from The Possah. 2.5 metres. Craft your own story.',
+  NULL, NULL
+),
+
+-- 12. Fabrics
+(
+  'aaaaaaaa-0012-0012-0012-000000000012',
+  'the-sage-georgette-fabric',
+  'The Sage Georgette Fabric',
+  'Pure georgette in sage green — sold by the metre. The foundation of everything.',
+  'Pure Georgette',
+  'Sourced from Surat mills known for consistent weight and sheer finish.',
+  'Hand wash cold. Do not wring.',
+  850, NULL,
+  '11111111-0001-0001-0001-000000000010',
+  'THE DRAPE', 100,
+  FALSE, FALSE, FALSE, TRUE,
+  'Sage Georgette Fabric — The Possah',
+  'Buy pure sage green georgette fabric by the metre from The Possah.',
+  NULL, NULL
+),
+
+-- 13. Blouses
+(
+  'aaaaaaaa-0013-0013-0013-000000000013',
+  'the-deep-back-blouse',
+  'The Deep Back Blouse',
+  'A deep green silk blouse with a plunging back. The detail that defines the entire saree.',
+  'Pure Silk',
+  'Hand-finished with a silk cord tie. Each button is hand-sewn.',
+  'Dry clean only.',
+  8500, NULL,
+  '11111111-0001-0001-0001-000000000011',
+  'THE EDIT', 12,
+  FALSE, TRUE, FALSE, TRUE,
+  'The Deep Back Blouse — Pure Silk | The Possah',
+  'Shop The Deep Back Blouse — pure silk in deep green with a plunging back detail.',
+  NULL, NULL
+),
+
+-- 14. Tops
+(
+  'aaaaaaaa-0014-0014-0014-000000000014',
+  'the-cropped-linen-top',
+  'The Cropped Linen Top',
+  'A boxy cropped top in natural linen. Wear it with everything.',
+  'Pure Linen',
+  'Pre-washed for softness. Minimal finishing, maximum wear.',
+  'Machine wash cold, gentle. Lay flat to dry.',
+  5500, NULL,
+  '11111111-0001-0001-0001-000000000012',
+  'THE EDIT', 35,
+  FALSE, TRUE, FALSE, TRUE,
+  'The Cropped Linen Top — The Possah',
+  'Shop The Cropped Linen Top — pure natural linen. Clean, simple, endlessly wearable.',
+  NULL, NULL
+),
+
+-- 15. Bottoms
+(
+  'aaaaaaaa-0015-0015-0015-000000000015',
+  'the-wide-leg-pant',
+  'The Wide Leg Pant',
+  'Wide-leg palazzo trousers in ivory crepe. The finishing piece.',
+  'Crepe',
+  'Side zip, flat front, fully lined.',
+  'Dry clean recommended. Iron on low heat.',
+  9500, NULL,
+  '11111111-0001-0001-0001-000000000013',
+  'THE EDIT', 20,
+  FALSE, TRUE, FALSE, TRUE,
+  'The Wide Leg Pant — Ivory Crepe | The Possah',
+  'Shop The Wide Leg Pant — ivory crepe palazzo trousers from The Possah.',
+  NULL, NULL
+)
+ON CONFLICT (slug) DO NOTHING;
+
+-- Images for new products
+INSERT INTO product_images (product_id, url, alt, position) VALUES
+  ('aaaaaaaa-0011-0011-0011-000000000011', '/images/placeholder-product.jpg', 'Ivory Chanderi Dress Material',  0),
+  ('aaaaaaaa-0012-0012-0012-000000000012', '/images/placeholder-product.jpg', 'Sage Georgette Fabric',          0),
+  ('aaaaaaaa-0013-0013-0013-000000000013', '/images/placeholder-product.jpg', 'The Deep Back Blouse',           0),
+  ('aaaaaaaa-0014-0014-0014-000000000014', '/images/placeholder-product.jpg', 'The Cropped Linen Top',          0),
+  ('aaaaaaaa-0015-0015-0015-000000000015', '/images/placeholder-product.jpg', 'The Wide Leg Pant',              0)
+ON CONFLICT DO NOTHING;
+
+-- Variants for new products
+INSERT INTO product_variants (product_id, colour_name, colour_hex, size, stock_qty) VALUES
+  ('aaaaaaaa-0011-0011-0011-000000000011', 'Ivory',        '#FFFFF0', 'Free Size',   30),
+  ('aaaaaaaa-0012-0012-0012-000000000012', 'Sage Green',   '#7D9B7A', 'Free Size',  100),
+  ('aaaaaaaa-0013-0013-0013-000000000013', 'Deep Green',   '#1F3A2D', 'S',            4),
+  ('aaaaaaaa-0013-0013-0013-000000000013', 'Deep Green',   '#1F3A2D', 'M',            4),
+  ('aaaaaaaa-0013-0013-0013-000000000013', 'Deep Green',   '#1F3A2D', 'L',            4),
+  ('aaaaaaaa-0014-0014-0014-000000000014', 'Natural',      '#E8DCC8', 'XS',          10),
+  ('aaaaaaaa-0014-0014-0014-000000000014', 'Natural',      '#E8DCC8', 'S',           10),
+  ('aaaaaaaa-0014-0014-0014-000000000014', 'Natural',      '#E8DCC8', 'M',           10),
+  ('aaaaaaaa-0014-0014-0014-000000000014', 'Natural',      '#E8DCC8', 'L',            5),
+  ('aaaaaaaa-0015-0015-0015-000000000015', 'Ivory',        '#FFFFF0', 'XS',           5),
+  ('aaaaaaaa-0015-0015-0015-000000000015', 'Ivory',        '#FFFFF0', 'S',            6),
+  ('aaaaaaaa-0015-0015-0015-000000000015', 'Ivory',        '#FFFFF0', 'M',            5),
+  ('aaaaaaaa-0015-0015-0015-000000000015', 'Ivory',        '#FFFFF0', 'L',            4)
+ON CONFLICT DO NOTHING;
+
+-- Tags for new products
+INSERT INTO product_tags (product_id, tag) VALUES
+  ('aaaaaaaa-0011-0011-0011-000000000011', 'Everyday'),
+  ('aaaaaaaa-0011-0011-0011-000000000011', 'Wedding'),
+  ('aaaaaaaa-0012-0012-0012-000000000012', 'Everyday'),
+  ('aaaaaaaa-0013-0013-0013-000000000013', 'Evening'),
+  ('aaaaaaaa-0013-0013-0013-000000000013', 'Cocktail'),
+  ('aaaaaaaa-0013-0013-0013-000000000013', 'Wedding'),
+  ('aaaaaaaa-0014-0014-0014-000000000014', 'Everyday'),
+  ('aaaaaaaa-0014-0014-0014-000000000014', 'Brunch'),
+  ('aaaaaaaa-0015-0015-0015-000000000015', 'Everyday'),
+  ('aaaaaaaa-0015-0015-0015-000000000015', 'Brunch')
 ON CONFLICT DO NOTHING;
