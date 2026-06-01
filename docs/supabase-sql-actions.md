@@ -33,7 +33,19 @@ SELECT slug FROM products WHERE category_id = '11111111-0001-0001-0001-000000000
 
 ## STEP 3 — Add Cocktail tags to 7 evening/party products
 
+**Run the constraint update first, then the insert.**
+
 ```sql
+-- 3a: Extend the tag CHECK constraint to include 'Cocktail'
+ALTER TABLE product_tags DROP CONSTRAINT IF EXISTS product_tags_tag_check;
+
+ALTER TABLE product_tags
+  ADD CONSTRAINT product_tags_tag_check
+  CHECK (tag IN ('Everyday', 'Brunch', 'Workwear', 'Evening', 'Cocktail', 'Sangeet', 'Mehendi', 'Haldi', 'Wedding'));
+```
+
+```sql
+-- 3b: Insert Cocktail tags
 INSERT INTO product_tags (product_id, tag)
 SELECT id, 'Cocktail'
 FROM products
