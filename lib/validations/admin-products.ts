@@ -43,6 +43,8 @@ export const ProductCreateSchema = z.object({
   is_new_arrival:     z.boolean().default(false),
   is_top_selling:     z.boolean().default(false),
   is_featured:        z.boolean().default(false),
+  is_festive:         z.boolean().default(false),
+  is_bridal:          z.boolean().default(false),
   is_active:          z.boolean().default(true),
   tags:               z.array(OccasionTagEnum).default([]),
   variants:           z.array(VariantSchema).min(1, 'At least one variant required'),

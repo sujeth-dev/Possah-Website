@@ -64,6 +64,8 @@ export interface ProductFormData {
   is_new_arrival: boolean
   is_top_selling: boolean
   is_featured: boolean
+  is_festive: boolean
+  is_bridal:  boolean
   is_active: boolean
   tags: OccasionTag[]
   variants: Variant[]
@@ -103,6 +105,8 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
     is_new_arrival:    initialData?.is_new_arrival    ?? false,
     is_top_selling:    initialData?.is_top_selling    ?? false,
     is_featured:       initialData?.is_featured       ?? false,
+    is_festive:        initialData?.is_festive        ?? false,
+    is_bridal:         initialData?.is_bridal         ?? false,
     is_active:         initialData?.is_active         ?? true,
     tags:              (initialData?.tags as OccasionTag[]) ?? [],
     variants:          initialData?.variants          ?? [{ colour_name: '', colour_hex: '#C99A99', size: 'S', stock_qty: 0 }],
@@ -454,6 +458,18 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
               hint="Shown in curated sections."
               checked={form.is_featured}
               onChange={(v) => set('is_featured', v)}
+            />
+            <Toggle
+              label="Festive"
+              hint="Show in Festive editorial grid."
+              checked={form.is_festive}
+              onChange={(v) => set('is_festive', v)}
+            />
+            <Toggle
+              label="Bridal"
+              hint="Show in Bridal editorial grid."
+              checked={form.is_bridal}
+              onChange={(v) => set('is_bridal', v)}
             />
             <Toggle
               label="Active / Visible"

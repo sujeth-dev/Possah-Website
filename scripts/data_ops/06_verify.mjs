@@ -10,7 +10,7 @@ import { ALL_PRODUCTS } from './lib/products.mjs'
 const EXPECTED = {
   products: ALL_PRODUCTS.length,                         // 42
   variants: ALL_PRODUCTS.length * 4,                     // 168 (4 sizes each)
-  categories: 8,
+  categories: 13,
   orders: 4,
   orderStatuses: [
     { number: 'PSH-2026-0001', payment: 'paid',    fulfillment: 'delivered'   },

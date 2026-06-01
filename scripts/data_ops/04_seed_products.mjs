@@ -74,6 +74,8 @@ async function seedProducts() {
             care_instructions: product.care,
             is_active: true,
             is_new_arrival: true,
+            is_festive: product.is_festive ?? false,
+            is_bridal:  product.is_bridal  ?? false,
           },
           { onConflict: 'slug' },
         )

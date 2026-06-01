@@ -24,8 +24,9 @@ async function getFestiveProducts(): Promise<ProductCardData[]> {
         product_tags (tag)
       `)
       .eq('is_active', true)
+      .eq('is_festive', true)
       .order('created_at', { ascending: false })
-      .limit(12)
+      .limit(24)
 
     return (data ?? []).map((p) => ({
       id: p.id,

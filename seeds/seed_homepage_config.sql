@@ -29,7 +29,7 @@ INSERT INTO homepage_config (
   }'::jsonb,
 
   -- New arrival product IDs
-  '["aaaaaaaa-0001-0001-0001-000000000001", "aaaaaaaa-0002-0002-0002-000000000002", "aaaaaaaa-0004-0004-0004-000000000004", "aaaaaaaa-0005-0005-0005-000000000005", "aaaaaaaa-0009-0009-0009-000000000009", "aaaaaaaa-0010-0010-0010-000000000010"]'::jsonb,
+  '[]'::jsonb, -- set via admin after products are seeded
 
   -- Occasion tiles (8 tiles)
   '[
@@ -89,32 +89,8 @@ INSERT INTO journal_articles (slug, title, category, author, body, is_featured, 
 ON CONFLICT (slug) DO NOTHING;
 
 -- Seed: Sample reviews
-INSERT INTO reviews (product_id, reviewer_name, reviewer_city, rating, body, is_approved) VALUES
-(
-  'aaaaaaaa-0001-0001-0001-000000000001',
-  'Priya M.',
-  'Mumbai',
-  5,
-  'I wore this to my cousin''s wedding and I have never felt more like myself. The drape holds beautifully all day. Absolutely worth every rupee.',
-  TRUE
-),
-(
-  'aaaaaaaa-0001-0001-0001-000000000001',
-  'Anjali S.',
-  'Delhi',
-  5,
-  'The quality is exceptional. You can feel the difference the moment you unfold it. The chikankari work is incredibly fine. Will be ordering again.',
-  TRUE
-),
-(
-  'aaaaaaaa-0003-0003-0003-000000000003',
-  'Roshni K.',
-  'Bangalore',
-  5,
-  'This lehenga is a piece of art. I wore it for my sangeet and got compliments all night. The embroidery detail is unreal — you have to see it in person.',
-  TRUE
-)
-ON CONFLICT DO NOTHING;
+-- Reviews referencing placeholder product IDs removed.
+-- Add real reviews via admin panel once products are seeded.
 
 -- Seed: Sample coupons
 INSERT INTO coupons (code, type, value, min_order_value, usage_limit, is_active) VALUES

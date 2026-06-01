@@ -15,16 +15,6 @@ async function getBridalProducts(): Promise<ProductCardData[]> {
   try {
     const supabase = createPublicClient()
 
-    // Step 1: get product IDs that have any bridal tag
-    const { data: tagRows } = await supabase
-      .from('product_tags')
-      .select('product_id')
-      .in('tag', ['Wedding', 'Sangeet', 'Mehendi', 'Haldi'])
-
-    const productIds = [...new Set(((tagRows ?? []) as { product_id: string }[]).map((r) => r.product_id))]
-    if (productIds.length === 0) return []
-
-    // Step 2: fetch those products
     const { data } = await supabase
       .from('products')
       .select(`
@@ -35,9 +25,9 @@ async function getBridalProducts(): Promise<ProductCardData[]> {
         product_tags (tag)
       `)
       .eq('is_active', true)
-      .in('id', productIds)
+      .eq('is_bridal', true)
       .order('created_at', { ascending: false })
-      .limit(12)
+      .limit(24)
 
     return (data ?? []).map((p) => ({
       id: p.id,

@@ -1,6 +1,6 @@
 /**
  * PHASE 1 — VERIFY CATEGORIES
- * Checks all 8 required categories exist. Upserts any missing ones.
+ * Checks all 13 required categories exist. Upserts any missing ones.
  * Does NOT delete anything.
  *
  * Run: node scripts/data_ops/01_verify_categories.mjs
@@ -19,8 +19,14 @@ const REQUIRED_CATEGORIES = [
   { id: '11111111-0001-0001-0001-000000000004', name: 'Co-Ords',    slug: 'co-ords',    breadcrumb: 'Women > Western',  sort_order: 4 },
   { id: '11111111-0001-0001-0001-000000000005', name: 'Dresses',    slug: 'dresses',    breadcrumb: 'Women > Western',  sort_order: 5 },
   { id: '11111111-0001-0001-0001-000000000006', name: 'Separates',  slug: 'separates',  breadcrumb: 'Women > Western',  sort_order: 6 },
-  { id: '11111111-0001-0001-0001-000000000007', name: 'Bridal',     slug: 'bridal',     breadcrumb: 'Bridal',           sort_order: 7 },
-  { id: '11111111-0001-0001-0001-000000000008', name: 'Festive',    slug: 'festive',    breadcrumb: 'Festive',          sort_order: 8 },
+  { id: '11111111-0001-0001-0001-000000000007', name: 'Bridal',        slug: 'bridal',        breadcrumb: 'Bridal',          sort_order: 7  },
+  { id: '11111111-0001-0001-0001-000000000008', name: 'Festive',       slug: 'festive',       breadcrumb: 'Festive',         sort_order: 8  },
+  // New categories — taxonomy refresh
+  { id: '11111111-0001-0001-0001-000000000009', name: 'Dress Material',slug: 'dress-material',breadcrumb: 'Women > Ethnic',  sort_order: 9  },
+  { id: '11111111-0001-0001-0001-000000000010', name: 'Fabrics',       slug: 'fabrics',       breadcrumb: 'Women > Ethnic',  sort_order: 10 },
+  { id: '11111111-0001-0001-0001-000000000011', name: 'Blouses',       slug: 'blouses',       breadcrumb: 'Women > Ethnic',  sort_order: 11 },
+  { id: '11111111-0001-0001-0001-000000000012', name: 'Tops',          slug: 'tops',          breadcrumb: 'Women > Western', sort_order: 12 },
+  { id: '11111111-0001-0001-0001-000000000013', name: 'Bottoms',       slug: 'bottoms',       breadcrumb: 'Women > Western', sort_order: 13 },
 ]
 
 async function verifyCategories() {
