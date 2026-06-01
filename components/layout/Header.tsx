@@ -14,13 +14,13 @@ const NAV_ITEMS = [
     href: '/women',
     submenu: [
       { label: 'Ethnic', children: [
-        { label: 'Sarees',        href: '/shop/sarees'        },
-        { label: 'Lehengas',      href: '/shop/lehengas'      },
-        { label: 'Kurta Sets',    href: '/shop/kurta-sets'    },
+        { label: 'Sarees',        href: '/shop/sarees'         },
+        { label: 'Lehengas',      href: '/shop/lehengas'       },
+        { label: 'Kurta Sets',    href: '/shop/kurta-sets'     },
         { label: 'Dress Material',href: '/shop/dress-material' },
-        { label: 'Fabrics',       href: '/shop/fabrics'       },
-        { label: 'Blouses',       href: '/shop/blouses'       },
-      ]},
+        { label: 'Fabrics',       href: '/shop/fabrics'        },
+        { label: 'Blouses',       href: '/shop/blouses'        },
+      ], splitAt: 3 },
       { label: 'Western', children: [
         { label: 'Co-Ords',  href: '/shop/co-ords'  },
         { label: 'Dresses',  href: '/shop/dresses'  },
@@ -270,7 +270,62 @@ export function Header() {
             }}
           >
             <div className="max-w-[1440px] mx-auto px-8 py-8 flex items-start gap-16">
-              {activeItem.submenu.map((section) => (
+              {activeItem.submenu.map((section) => {
+                const split = (section as typeof section & { splitAt?: number }).splitAt
+                if (split) {
+                  // Render as two side-by-side columns under one shared label
+                  const col1 = section.children.slice(0, split)
+                  const col2 = section.children.slice(split)
+                  return (
+                    <div key={section.label} className="flex gap-8">
+                      <div className="min-w-[120px]">
+                        <p
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '9px',
+                            letterSpacing: '0.22em',
+                            textTransform: 'uppercase',
+                            color: 'var(--color-text-muted)',
+                            marginBottom: '12px',
+                          }}
+                        >
+                          {section.label}
+                        </p>
+                        <ul className="flex flex-col gap-3">
+                          {col1.map((child) => (
+                            <li key={child.label}>
+                              <Link
+                                href={child.href}
+                                onClick={() => setOpenMenu(null)}
+                                style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: '400', color: 'var(--color-text)', letterSpacing: '0.02em', textDecoration: 'none', display: 'block' }}
+                                className="hover:opacity-55 transition-opacity duration-150"
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="min-w-[120px] mt-[25px]">
+                        <ul className="flex flex-col gap-3">
+                          {col2.map((child) => (
+                            <li key={child.label}>
+                              <Link
+                                href={child.href}
+                                onClick={() => setOpenMenu(null)}
+                                style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: '400', color: 'var(--color-text)', letterSpacing: '0.02em', textDecoration: 'none', display: 'block' }}
+                                className="hover:opacity-55 transition-opacity duration-150"
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )
+                }
+                return (
                 <div key={section.label} className="min-w-[120px]">
                   <p
                     style={{
@@ -307,7 +362,8 @@ export function Header() {
                     ))}
                   </ul>
                 </div>
-              ))}
+                )
+              })}
 
               {/* Right side — women page link */}
               <div className="ml-auto self-center">

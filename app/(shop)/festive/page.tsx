@@ -50,11 +50,11 @@ async function getFestiveProducts(): Promise<ProductCardData[]> {
 // Festive occasion tiles — confirmed set (Bridesmaid, Workwear, Everyday Wear excluded).
 // Imagery is reused/fallback; swap src values once bespoke assets land.
 const OCCASIONS = [
-  { label: 'Wedding',  image: '/images/festive-hero.jpg'     },
-  { label: 'Sangeet',  image: '/images/festive-sangeet.jpg'  },
-  { label: 'Mehendi',  image: '/images/festive-navratri.jpg' },
-  { label: 'Haldi',    image: '/images/festive-diwali.jpg'   },
-  { label: 'Cocktail', image: '/images/festive-eid.jpg'      },
+  { label: 'Cocktail & Party', image: '/images/festive-eid.jpg'       },
+  { label: 'Vacation Glam',    image: '/images/festive-navratri.jpg'  },
+  { label: 'Festive Edit',     image: '/images/festive-diwali.jpg'    },
+  { label: 'Everyday Luxe',    image: '/images/festive-sangeet.jpg'   },
+  { label: 'Custom Couture',   image: '/images/festive-hero.jpg'      },
 ]
 
 export default async function FestivePage() {
@@ -107,7 +107,17 @@ export default async function FestivePage() {
             {OCCASIONS.map(({ label, image }) => (
               <Link
                 key={label}
-                href={`/shop/sarees?occasion=${label}`}
+                href={
+                  label === 'Custom Couture'
+                    ? '/made-to-measure'
+                    : label === 'Everyday Luxe'
+                    ? '/shop/kurta-sets'
+                    : label === 'Vacation Glam'
+                    ? '/shop/co-ords'
+                    : label === 'Festive Edit'
+                    ? '/shop/lehengas'
+                    : '/shop/sarees?occasion=Cocktail'
+                }
                 className="group relative overflow-hidden block"
                 style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
               >

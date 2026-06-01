@@ -60,10 +60,12 @@ async function getBridalProducts(): Promise<ProductCardData[]> {
 }
 
 const OCCASIONS = [
-  { label: 'Mehendi', image: '/images/bridal-mehendi.jpg', tag: 'Mehendi' },
-  { label: 'Haldi',   image: '/images/bridal-haldi.jpg',   tag: 'Haldi'   },
-  { label: 'Sangeet', image: '/images/bridal-sangeet.jpg', tag: 'Sangeet' },
-  { label: 'Wedding', image: '/images/bridal-wedding.jpg', tag: 'Wedding' },
+  { label: 'Reception Glam',     image: '/images/bridal-wedding.jpg', href: '/shop/lehengas?occasion=Wedding'  },
+  { label: "Mehendi's Edit",     image: '/images/bridal-mehendi.jpg', href: '/shop/sarees?occasion=Mehendi'   },
+  { label: 'Sangeet Edit',       image: '/images/bridal-sangeet.jpg', href: '/shop/lehengas?occasion=Sangeet' },
+  { label: 'Haldi Edit',         image: '/images/bridal-haldi.jpg',   href: '/shop/sarees?occasion=Haldi'     },
+  { label: 'Wedding Guest Edit', image: '/images/bridal-wedding.jpg', href: '/shop/sarees?occasion=Wedding'   },
+  { label: 'Cocktail Night',     image: '/images/bridal-sangeet.jpg', href: '/shop/sarees?occasion=Cocktail'  },
 ]
 
 export default async function BridalPage() {
@@ -135,11 +137,13 @@ export default async function BridalPage() {
           >
             Shop by occasion
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {OCCASIONS.map(({ label, image, tag }) => (
+
+          {/* Row 1 — 4 tiles */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            {OCCASIONS.slice(0, 4).map(({ label, image, href }) => (
               <Link
                 key={label}
-                href={`/shop/sarees?occasion=${tag}`}
+                href={href}
                 className="group relative overflow-hidden block"
                 style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
               >
@@ -169,6 +173,109 @@ export default async function BridalPage() {
                 </span>
               </Link>
             ))}
+          </div>
+
+          {/* Row 2 — 2 tiles + Bridal Trousseau CTA */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {OCCASIONS.slice(4).map(({ label, image, href }) => (
+              <Link
+                key={label}
+                href={href}
+                className="group relative overflow-hidden block"
+                style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
+              >
+                <Image
+                  src={image}
+                  alt={label}
+                  fill
+                  className="object-cover object-center img-hover-scale"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.6) 0%, transparent 50%)' }}
+                  aria-hidden="true"
+                />
+                <span
+                  className="absolute bottom-4 left-4"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '11px',
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                    color: 'var(--color-white)',
+                  }}
+                >
+                  {label}
+                </span>
+              </Link>
+            ))}
+
+            {/* Bridal Trousseau — full-height CTA tile */}
+            <Link
+              href="/made-to-measure"
+              className="group relative overflow-hidden flex flex-col items-center justify-center gap-4 transition-opacity duration-200 hover:opacity-90"
+              style={{
+                borderRadius: 'var(--radius-card)',
+                aspectRatio: '3/4',
+                backgroundColor: 'var(--color-green)',
+                border: '1.5px solid var(--color-green)',
+              }}
+            >
+              <div className="flex flex-col items-center gap-3 px-6 text-center">
+                <p
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    letterSpacing: '0.26em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(244,236,223,0.6)',
+                  }}
+                >
+                  THE POSSAH
+                </p>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'clamp(20px, 2.5vw, 28px)',
+                    fontWeight: '400',
+                    color: 'var(--color-white)',
+                    lineHeight: 1.15,
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  Bridal<br />Trousseau
+                </h3>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
+                    color: 'rgba(244,236,223,0.75)',
+                    lineHeight: 1.55,
+                    maxWidth: '180px',
+                  }}
+                >
+                  Bespoke pieces made for every ritual of your wedding.
+                </p>
+                <span
+                  className="inline-flex items-center gap-2 mt-2"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    color: 'var(--color-white)',
+                    borderBottom: '1px solid rgba(244,236,223,0.4)',
+                    paddingBottom: '2px',
+                  }}
+                >
+                  Enquire Now
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M2 5h6M5 2l3 3-3 3" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
