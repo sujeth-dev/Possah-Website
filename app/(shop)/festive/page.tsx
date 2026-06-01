@@ -135,7 +135,7 @@ export default async function FestivePage({
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {OCCASIONS.map(({ label, image, tag, externalHref }) => {
               const isActive = tag !== null && tag === activeOccasion
-              const href = externalHref ?? (tag ? (isActive ? '/festive' : `/festive?occasion=${tag}#products`) : '/festive')
+              const href = externalHref ?? (tag ? (isActive ? '/festive#products' : `/festive?occasion=${tag}#products`) : '/festive#products')
               return (
                 <Link
                   key={label}
