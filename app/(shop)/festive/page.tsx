@@ -11,10 +11,37 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://thepossah.com/festive' },
 }
 
-async function getFestiveProducts(): Promise<ProductCardData[]> {
+type OccasionTile = {
+  label: string
+  image: string
+  tag: string | null
+  externalHref?: string
+}
+
+const OCCASIONS: OccasionTile[] = [
+  { label: 'Cocktail & Party', image: '/images/festive-eid.jpg',      tag: 'Cocktail' },
+  { label: 'Vacation Glam',    image: '/images/festive-navratri.jpg', tag: 'Evening'  },
+  { label: 'Festive Edit',     image: '/images/festive-diwali.jpg',   tag: null       },
+  { label: 'Everyday Luxe',    image: '/images/festive-sangeet.jpg',  tag: 'Everyday' },
+  { label: 'Custom Couture',   image: '/images/festive-hero.jpg',     tag: null, externalHref: '/made-to-measure' },
+]
+
+async function getFestiveProducts(occasion: string | null): Promise<ProductCardData[]> {
   try {
     const supabase = createPublicClient()
-    const { data } = await supabase
+
+    let productIds: string[] | null = null
+
+    if (occasion) {
+      const { data: tagged } = await supabase
+        .from('product_tags')
+        .select('product_id')
+        .eq('tag', occasion)
+      productIds = (tagged ?? []).map((t: { product_id: string }) => t.product_id)
+      if (productIds.length === 0) return []
+    }
+
+    let query = supabase
       .from('products')
       .select(`
         id, slug, name, fabric, price, compare_price,
@@ -27,6 +54,12 @@ async function getFestiveProducts(): Promise<ProductCardData[]> {
       .eq('is_festive', true)
       .order('created_at', { ascending: false })
       .limit(24)
+
+    if (productIds) {
+      query = query.in('id', productIds)
+    }
+
+    const { data } = await query
 
     return (data ?? []).map((p) => ({
       id: p.id,
@@ -48,18 +81,13 @@ async function getFestiveProducts(): Promise<ProductCardData[]> {
   }
 }
 
-// Festive occasion tiles — confirmed set (Bridesmaid, Workwear, Everyday Wear excluded).
-// Imagery is reused/fallback; swap src values once bespoke assets land.
-const OCCASIONS = [
-  { label: 'Cocktail & Party', image: '/images/festive-eid.jpg'       },
-  { label: 'Vacation Glam',    image: '/images/festive-navratri.jpg'  },
-  { label: 'Festive Edit',     image: '/images/festive-diwali.jpg'    },
-  { label: 'Everyday Luxe',    image: '/images/festive-sangeet.jpg'   },
-  { label: 'Custom Couture',   image: '/images/festive-hero.jpg'      },
-]
-
-export default async function FestivePage() {
-  const products = await getFestiveProducts()
+export default async function FestivePage({
+  searchParams,
+}: {
+  searchParams: { occasion?: string }
+}) {
+  const activeOccasion = searchParams.occasion ?? null
+  const products = await getFestiveProducts(activeOccasion)
 
   return (
     <>
@@ -105,43 +133,47 @@ export default async function FestivePage() {
       <section className="section-gap">
         <div className="container-site">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {OCCASIONS.map(({ label, image }) => (
-              <Link
-                key={label}
-                href={
-                  label === 'Custom Couture'
-                    ? '/made-to-measure'
-                    : label === 'Everyday Luxe'
-                    ? '/shop/kurta-sets'
-                    : label === 'Vacation Glam'
-                    ? '/shop/co-ords'
-                    : label === 'Festive Edit'
-                    ? '/shop/lehengas'
-                    : '/shop/sarees?occasion=Cocktail'
-                }
-                className="group relative overflow-hidden block"
-                style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
-              >
-                <Image
-                  src={image}
-                  alt={label}
-                  fill
-                  className="object-cover object-center img-hover-scale"
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.55) 0%, transparent 50%)' }}
-                  aria-hidden="true"
-                />
-                <span
-                  className="absolute bottom-4 left-4"
-                  style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--color-white)' }}
+            {OCCASIONS.map(({ label, image, tag, externalHref }) => {
+              const isActive = tag !== null && tag === activeOccasion
+              const href = externalHref ?? (tag ? (isActive ? '/festive' : `/festive?occasion=${tag}`) : '/festive')
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  className="group relative overflow-hidden block"
+                  style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
                 >
-                  {label}
-                </span>
-              </Link>
-            ))}
+                  <Image
+                    src={image}
+                    alt={label}
+                    fill
+                    className="object-cover object-center img-hover-scale"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.55) 0%, transparent 50%)' }}
+                    aria-hidden="true"
+                  />
+                  {isActive && (
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        boxShadow: 'inset 0 0 0 2.5px var(--color-white)',
+                        borderRadius: 'var(--radius-card)',
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span
+                    className="absolute bottom-4 left-4"
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--color-white)' }}
+                  >
+                    {label}
+                  </span>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -149,7 +181,7 @@ export default async function FestivePage() {
       {/* Products */}
       <section className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
         <div className="container-site">
-          <div className="mb-8">
+          <div className="flex items-baseline justify-between mb-8">
             <h2
               style={{
                 fontFamily: 'var(--font-display)',
@@ -161,8 +193,23 @@ export default async function FestivePage() {
             >
               The Festive Edit
             </h2>
+            {activeOccasion && (
+              <Link
+                href="/festive"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}
+                className="hover:opacity-60 transition-opacity duration-200"
+              >
+                {activeOccasion} ×
+              </Link>
+            )}
           </div>
-          <ProductGrid products={products} columns={3} />
+          {products.length > 0 ? (
+            <ProductGrid products={products} columns={3} />
+          ) : (
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)', textAlign: 'center', padding: '48px 0' }}>
+              No pieces in this occasion yet — check back soon.
+            </p>
+          )}
         </div>
       </section>
     </>

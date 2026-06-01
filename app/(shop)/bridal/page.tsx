@@ -11,11 +11,37 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://thepossah.com/bridal' },
 }
 
-async function getBridalProducts(): Promise<ProductCardData[]> {
+type OccasionTile = {
+  label: string
+  image: string
+  tag: string | null
+}
+
+const OCCASIONS: OccasionTile[] = [
+  { label: 'Reception Glam',     image: '/images/bridal-wedding.jpg', tag: 'Wedding'  },
+  { label: "Mehendi's Edit",     image: '/images/bridal-mehendi.jpg', tag: 'Mehendi'  },
+  { label: 'Sangeet Edit',       image: '/images/bridal-sangeet.jpg', tag: 'Sangeet'  },
+  { label: 'Haldi Edit',         image: '/images/bridal-haldi.jpg',   tag: 'Haldi'    },
+  { label: 'Wedding Guest Edit', image: '/images/bridal-wedding.jpg', tag: 'Wedding'  },
+  { label: 'Cocktail Night',     image: '/images/bridal-sangeet.jpg', tag: 'Cocktail' },
+]
+
+async function getBridalProducts(occasion: string | null): Promise<ProductCardData[]> {
   try {
     const supabase = createPublicClient()
 
-    const { data } = await supabase
+    let productIds: string[] | null = null
+
+    if (occasion) {
+      const { data: tagged } = await supabase
+        .from('product_tags')
+        .select('product_id')
+        .eq('tag', occasion)
+      productIds = (tagged ?? []).map((t: { product_id: string }) => t.product_id)
+      if (productIds.length === 0) return []
+    }
+
+    let query = supabase
       .from('products')
       .select(`
         id, slug, name, fabric, price, compare_price,
@@ -28,6 +54,12 @@ async function getBridalProducts(): Promise<ProductCardData[]> {
       .eq('is_bridal', true)
       .order('created_at', { ascending: false })
       .limit(24)
+
+    if (productIds) {
+      query = query.in('id', productIds)
+    }
+
+    const { data } = await query
 
     return (data ?? []).map((p) => ({
       id: p.id,
@@ -49,17 +81,13 @@ async function getBridalProducts(): Promise<ProductCardData[]> {
   }
 }
 
-const OCCASIONS = [
-  { label: 'Reception Glam',     image: '/images/bridal-wedding.jpg', href: '/shop/lehengas?occasion=Wedding'  },
-  { label: "Mehendi's Edit",     image: '/images/bridal-mehendi.jpg', href: '/shop/sarees?occasion=Mehendi'   },
-  { label: 'Sangeet Edit',       image: '/images/bridal-sangeet.jpg', href: '/shop/lehengas?occasion=Sangeet' },
-  { label: 'Haldi Edit',         image: '/images/bridal-haldi.jpg',   href: '/shop/sarees?occasion=Haldi'     },
-  { label: 'Wedding Guest Edit', image: '/images/bridal-wedding.jpg', href: '/shop/sarees?occasion=Wedding'   },
-  { label: 'Cocktail Night',     image: '/images/bridal-sangeet.jpg', href: '/shop/sarees?occasion=Cocktail'  },
-]
-
-export default async function BridalPage() {
-  const products = await getBridalProducts()
+export default async function BridalPage({
+  searchParams,
+}: {
+  searchParams: { occasion?: string }
+}) {
+  const activeOccasion = searchParams.occasion ?? null
+  const products = await getBridalProducts(activeOccasion)
 
   return (
     <>
@@ -130,76 +158,104 @@ export default async function BridalPage() {
 
           {/* Row 1 — 4 tiles */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            {OCCASIONS.slice(0, 4).map(({ label, image, href }) => (
-              <Link
-                key={label}
-                href={href}
-                className="group relative overflow-hidden block"
-                style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
-              >
-                <Image
-                  src={image}
-                  alt={label}
-                  fill
-                  className="object-cover object-center img-hover-scale"
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.6) 0%, transparent 50%)' }}
-                  aria-hidden="true"
-                />
-                <span
-                  className="absolute bottom-4 left-4"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: 'var(--color-white)',
-                  }}
+            {OCCASIONS.slice(0, 4).map(({ label, image, tag }) => {
+              const isActive = tag !== null && tag === activeOccasion
+              const href = tag ? (isActive ? '/bridal' : `/bridal?occasion=${tag}`) : '/bridal'
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  className="group relative overflow-hidden block"
+                  style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
                 >
-                  {label}
-                </span>
-              </Link>
-            ))}
+                  <Image
+                    src={image}
+                    alt={label}
+                    fill
+                    className="object-cover object-center img-hover-scale"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.6) 0%, transparent 50%)' }}
+                    aria-hidden="true"
+                  />
+                  {isActive && (
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        boxShadow: 'inset 0 0 0 2.5px var(--color-white)',
+                        borderRadius: 'var(--radius-card)',
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span
+                    className="absolute bottom-4 left-4"
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '11px',
+                      letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
+                      color: 'var(--color-white)',
+                    }}
+                  >
+                    {label}
+                  </span>
+                </Link>
+              )
+            })}
           </div>
 
           {/* Row 2 — 2 tiles + Bridal Trousseau CTA */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {OCCASIONS.slice(4).map(({ label, image, href }) => (
-              <Link
-                key={label}
-                href={href}
-                className="group relative overflow-hidden block"
-                style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
-              >
-                <Image
-                  src={image}
-                  alt={label}
-                  fill
-                  className="object-cover object-center img-hover-scale"
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.6) 0%, transparent 50%)' }}
-                  aria-hidden="true"
-                />
-                <span
-                  className="absolute bottom-4 left-4"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: 'var(--color-white)',
-                  }}
+            {OCCASIONS.slice(4).map(({ label, image, tag }) => {
+              const isActive = tag !== null && tag === activeOccasion
+              const href = tag ? (isActive ? '/bridal' : `/bridal?occasion=${tag}`) : '/bridal'
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  className="group relative overflow-hidden block"
+                  style={{ borderRadius: 'var(--radius-card)', aspectRatio: '3/4' }}
                 >
-                  {label}
-                </span>
-              </Link>
-            ))}
+                  <Image
+                    src={image}
+                    alt={label}
+                    fill
+                    className="object-cover object-center img-hover-scale"
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.6) 0%, transparent 50%)' }}
+                    aria-hidden="true"
+                  />
+                  {isActive && (
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        boxShadow: 'inset 0 0 0 2.5px var(--color-white)',
+                        borderRadius: 'var(--radius-card)',
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span
+                    className="absolute bottom-4 left-4"
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '11px',
+                      letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
+                      color: 'var(--color-white)',
+                    }}
+                  >
+                    {label}
+                  </span>
+                </Link>
+              )
+            })}
 
             {/* Bridal Trousseau — full-height CTA tile */}
             <Link
@@ -285,8 +341,23 @@ export default async function BridalPage() {
             >
               The Bridal Edit
             </h2>
+            {activeOccasion && (
+              <Link
+                href="/bridal"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}
+                className="hover:opacity-60 transition-opacity duration-200"
+              >
+                {activeOccasion} ×
+              </Link>
+            )}
           </div>
-          <ProductGrid products={products} columns={3} />
+          {products.length > 0 ? (
+            <ProductGrid products={products} columns={3} />
+          ) : (
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)', textAlign: 'center', padding: '48px 0' }}>
+              No pieces in this occasion yet — check back soon.
+            </p>
+          )}
         </div>
       </section>
 
