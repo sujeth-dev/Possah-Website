@@ -184,6 +184,8 @@ export async function PATCH(
     const finalSlug = (data.slug ?? existing.slug) as string
     const catSlug   = (existing.categories as { slug?: string } | null)?.slug
     revalidatePath('/', 'layout')
+    revalidatePath('/festive')
+    revalidatePath('/bridal')
     if (catSlug) {
       revalidatePath(`/shop/${catSlug}`)
       revalidatePath(`/shop/${catSlug}/${finalSlug}`)

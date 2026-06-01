@@ -204,6 +204,8 @@ export async function POST(request: Request) {
 
     // Bust ISR so new product appears on shop immediately
     revalidatePath('/', 'layout')
+    revalidatePath('/festive')
+    revalidatePath('/bridal')
     if (data.category_id) {
       // Fetch category slug for targeted revalidation
       const { data: cat } = await supabase

@@ -149,7 +149,7 @@ export default async function FestivePage() {
       {/* Products */}
       <section className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
         <div className="container-site">
-          <div className="flex items-baseline justify-between mb-8">
+          <div className="mb-8">
             <h2
               style={{
                 fontFamily: 'var(--font-display)',
@@ -161,13 +161,6 @@ export default async function FestivePage() {
             >
               The Festive Edit
             </h2>
-            <Link
-              href="/shop/sarees"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}
-              className="hover:opacity-60 transition-opacity duration-200"
-            >
-              View All →
-            </Link>
           </div>
           <ProductGrid products={products} columns={3} />
         </div>
