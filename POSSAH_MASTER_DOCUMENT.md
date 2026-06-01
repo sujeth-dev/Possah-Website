@@ -1,6 +1,6 @@
 # The Possah — Master Project Document
 
-**Last Updated:** 26 May 2026
+**Last Updated:** 1 June 2026
 **Project:** `thepossah.com`
 **Stack:** Next.js 14 App Router · Supabase (PostgreSQL) · NextAuth · Razorpay · Resend · Zustand · TypeScript
 
@@ -18,6 +18,7 @@ This is the single source of truth for the live codebase. Read this before touch
 | Sprint 2 — DB + Test Scaffolding | ✅ Complete | Migration 022 run, payment test suite written |
 | Sprint 3 — Frontend Quality + SEO | ✅ Complete | ISR/OG/JSON-LD, GA4 events, loading/error boundaries, Vitest unit tests |
 | Sprint 4 — Infrastructure + Go-Live | ⚠️ Partial | Sentry config written (install pending), k6 script written, webhook registered; Vercel deploy TBD |
+| Sprint 5 — Storefront + Data Refresh | ✅ Complete | Taxonomy refresh, 13 categories, Best Sellers page, same-page pagination, Festive/Bridal flags, data pipeline aligned |
 
 **Current build (verified 26 May 2026):**
 - `tsc --noEmit` → **0 errors** (clean)
@@ -243,7 +244,7 @@ If code references `status`, `expires_at`, or `user_id` on these tables, it is s
 
 ### Key Column Reference (exact — use these, not the old docs)
 
-**products** — id, slug, name, description, fabric, craft_description, care_instructions, drape_guide, price, compare_price, category_id, sub_line, stock_qty, is_featured, is_new_arrival, is_top_selling, is_active, is_ready_to_ship, meta_title, meta_description, audio_url, craft_story_title, craft_story_body, craft_story_image, search_vector (tsvector generated), created_at, updated_at
+**products** — id, slug, name, description, fabric, craft_description, care_instructions, drape_guide, price, compare_price, category_id, sub_line, stock_qty, is_featured, is_new_arrival, is_top_selling, is_active, is_ready_to_ship, **is_festive**, **is_bridal**, meta_title, meta_description, audio_url, craft_story_title, craft_story_body, craft_story_image, search_vector (tsvector generated), created_at, updated_at
 
 **orders** — id, order_number, customer_name, customer_email, customer_phone, shipping_address (jsonb), line_items (jsonb), subtotal, shipping_fee, discount_amount, coupon_code, tax, total, payment_status, fulfillment_status, payment_gateway, gateway_order_id, gateway_payment_id, tracking_number, courier, internal_notes, is_gift, gift_message, created_at, updated_at (added 022)
 
@@ -279,3 +280,55 @@ If code references `status`, `expires_at`, or `user_id` on these tables, it is s
 5. Not admin → redirect to `/auth/signin`
 
 ### ⚠️ Dev
+
+---
+
+## Sprint 5 — Storefront + Data Refresh (June 2026)
+
+### What changed
+
+**Navigation + taxonomy**
+- 13 categories (was 8): added dress-material, fabrics, blouses, tops, bottoms
+- Separates nav-retired → products moved to `tops` category
+- Women dropdown: 3-column layout (Ethnic × 2 cols + Western)
+- Best Sellers page at `/best-sellers` (powered by `is_top_selling`)
+- READY-TO-SHIP removed from nav
+
+**Taxonomy vocab**
+- Occasions: added `Cocktail` (9 total)
+- Fabrics: added Modal, Viscose, Tissue, Velvette, Satin, Tulle, Zari, Poly Blend (14 total)
+- Sizes: `XXL` → `2XL`, added `3XL` (XS–3XL + Free Size + Made-to-Measure)
+
+**Product listing**
+- Show More: same-page expansion (no navigation) via `CategoryListing` client component
+- Public products API: `GET /api/products` with full filter + pagination support
+
+**Editorial pages**
+- Festive: 5 occasion tiles, product grid filtered by `is_festive = TRUE`
+- Bridal: 4+2+CTA tile layout, product grid filtered by `is_bridal = TRUE`
+- Both flags manageable from admin product form
+
+**New DB columns (migration 023 + 024)**
+- `categories`: dress-material, fabrics, blouses, tops, bottoms
+- `products.is_festive BOOLEAN DEFAULT FALSE`
+- `products.is_bridal BOOLEAN DEFAULT FALSE`
+
+**Data pipeline aligned**
+- `scripts/data_ops/lib/products.mjs`: 13 SP products → `tops`, Cocktail tags on 7, is_festive/is_bridal flags set
+- `category_map.json`: 13 entries
+- `01_verify_categories.mjs`: 13 categories
+- `06_verify.mjs`: EXPECTED.categories = 13
+
+### Key new files
+| File | Purpose |
+|---|---|
+| `components/shop/CategoryListing.tsx` | Client component — same-page Show More |
+| `app/api/products/route.ts` | Public paginated products API |
+| `app/(shop)/best-sellers/page.tsx` | Best sellers page |
+| `docs/project-structure.md` | Full folder map |
+| `docs/data-manager-guide.md` | Product/category management guide |
+| `docs/change-flow.md` | How to make every type of change |
+| `docs/qa-checklist.md` | Manual QA checklist |
+| `docs/supabase-sql-actions.md` | Ordered SQL to run in Supabase |
+| `supabase/migrations/023_new_categories.sql` | 5 new categories |
+| `supabase/migrations/024_festive_bridal_flags.sql` | is_festive + is_bridal columns |

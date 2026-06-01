@@ -59,6 +59,8 @@ export async function run(ctx) {
       is_new_arrival: false,
       is_top_selling: false,
       is_featured: false,
+      is_festive: false,
+      is_bridal: false,
       is_active: true,
       tags: ['Evening'],
       variants: [
@@ -101,6 +103,12 @@ export async function run(ctx) {
       'Route must join product_variants. Check .select("*, product_variants(…)").')
     A.ok('GET', 'has product_tags array',     Array.isArray(res.data?.product_tags),
       'Route must join product_tags. Check .select("*, product_tags(…)").')
+    A.ok('GET', 'has is_festive field', typeof res.data?.is_festive === 'boolean',
+      'is_festive column missing — run migration 024.')
+    A.ok('GET', 'has is_bridal field',  typeof res.data?.is_bridal  === 'boolean',
+      'is_bridal column missing — run migration 024.')
+    A.ok('GET', 'productA is_festive = true', res.data?.is_festive === true,
+      'Seed sets is_festive:true for productA. Check seed.mjs.')
   }
 
   // ── GET SINGLE: not found ──────────────────────────────────────────────────────
@@ -114,6 +122,8 @@ export async function run(ctx) {
     const res = await api('PATCH', `/api/admin/products/${ctx.product_a_id}`, {
       name: 'Test Product Alpha (Updated)',
       is_featured: true,
+      is_festive: false,
+      is_bridal: true,
     })
     A.status('UPDATE', `PATCH /products/${ctx.product_a_id.slice(0,8)}… → 200`, res, 200)
     A.ok('UPDATE', 'response ok:true', res.data?.ok === true, 'Route must return { ok: true }.')

@@ -26,6 +26,8 @@ export const SEEDS = {
     is_active: true,
     is_new_arrival: true,
     is_featured: false,
+    is_festive: true,
+    is_bridal: false,
     is_top_selling: false,
   },
   productB: {
@@ -35,6 +37,8 @@ export const SEEDS = {
     is_active: false,   // inactive — used to test active=false filter
     is_new_arrival: false,
     is_featured: false,
+    is_festive: false,
+    is_bridal: true,
     is_top_selling: false,
   },
   orderA: {
