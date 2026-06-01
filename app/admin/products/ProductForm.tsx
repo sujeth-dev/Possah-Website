@@ -31,14 +31,14 @@ interface ProductImage {
 
 type OccasionTag =
   | 'Everyday' | 'Brunch' | 'Workwear' | 'Evening'
-  | 'Sangeet' | 'Mehendi' | 'Haldi' | 'Wedding'
+  | 'Cocktail' | 'Sangeet' | 'Mehendi' | 'Haldi' | 'Wedding'
 
 const ALL_OCCASIONS: OccasionTag[] = [
   'Everyday', 'Brunch', 'Workwear', 'Evening',
-  'Sangeet', 'Mehendi', 'Haldi', 'Wedding',
+  'Cocktail', 'Sangeet', 'Mehendi', 'Haldi', 'Wedding',
 ]
 
-const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Made-to-Measure']
+const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'Free Size', 'Made-to-Measure']
 
 const SUB_LINES = ['THE DRAPE', 'THE EDIT', 'THE ATELIER', 'THE VAULT'] as const
 

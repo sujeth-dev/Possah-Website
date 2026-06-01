@@ -58,7 +58,7 @@ export function CategorySplit() {
         <div className="relative group overflow-hidden" style={{ minHeight: '440px' }}>
           <Image
             src="https://placehold.co/720x900/1F3A2D/F4ECDF.png?text=Western"
-            alt="Western — Co-Ords, Dresses, Separates"
+            alt="Western — Co-Ords, Dresses, Tops, Bottoms"
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
             sizes="(max-width: 768px) 100vw, 50vw"

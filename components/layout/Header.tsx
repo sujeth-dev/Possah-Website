@@ -14,21 +14,25 @@ const NAV_ITEMS = [
     href: '/women',
     submenu: [
       { label: 'Ethnic', children: [
-        { label: 'Sarees',     href: '/shop/sarees'     },
-        { label: 'Lehengas',   href: '/shop/lehengas'   },
-        { label: 'Kurta Sets', href: '/shop/kurta-sets' },
+        { label: 'Sarees',        href: '/shop/sarees'        },
+        { label: 'Lehengas',      href: '/shop/lehengas'      },
+        { label: 'Kurta Sets',    href: '/shop/kurta-sets'    },
+        { label: 'Dress Material',href: '/shop/dress-material' },
+        { label: 'Fabrics',       href: '/shop/fabrics'       },
+        { label: 'Blouses',       href: '/shop/blouses'       },
       ]},
       { label: 'Western', children: [
-        { label: 'Co-Ords',   href: '/shop/co-ords'   },
-        { label: 'Dresses',   href: '/shop/dresses'   },
-        { label: 'Separates', href: '/shop/separates' },
+        { label: 'Co-Ords',  href: '/shop/co-ords'  },
+        { label: 'Dresses',  href: '/shop/dresses'  },
+        { label: 'Tops',     href: '/shop/tops'     },
+        { label: 'Bottoms',  href: '/shop/bottoms'  },
       ]},
     ],
   },
-  { label: 'BRIDAL',        href: '/bridal'        },
-  { label: 'FESTIVE',       href: '/festive'       },
-  { label: 'READY-TO-SHIP', href: '/ready-to-ship' },
-  { label: 'ABOUT',         href: '/about'         },
+  { label: 'BEST SELLERS', href: '/best-sellers' },
+  { label: 'BRIDAL',       href: '/bridal'       },
+  { label: 'FESTIVE',      href: '/festive'      },
+  { label: 'ABOUT',        href: '/about'        },
 ] as const
 
 type NavItem = (typeof NAV_ITEMS)[number]
@@ -92,7 +96,7 @@ export function Header() {
           scrolled ? 'shadow-[0_1px_12px_rgba(0,0,0,0.08)]' : 'border-b border-[var(--color-border)]'
         }`}
       >
-        <div className="relative flex items-center justify-between h-16 md:h-[64px] px-4 md:px-8 max-w-[1440px] mx-auto">
+        <div className="relative flex items-center justify-between h-16 md:h-[72px] px-4 md:px-8 max-w-[1440px] mx-auto">
 
           {/* ── Mobile: hamburger ── */}
           <button
@@ -125,22 +129,22 @@ export function Header() {
               <Image
                 src="/images/logo-gradient.png"
                 alt="The Possah"
-                width={200}
-                height={80}
+                width={240}
+                height={96}
                 priority
                 className="object-contain"
-                style={{ height: '120px', width: 'auto' }}
+                style={{ height: '140px', width: 'auto' }}
               />
             </Link>
             <Link href="/" aria-label="The Possah — Home" className="flex md:hidden items-center gap-2">
               <Image
                 src="/images/logo-symbol.png"
                 alt="The Possah"
-                width={52}
-                height={52}
+                width={60}
+                height={60}
                 priority
                 className="object-contain"
-                style={{ height: '120px', width: 'auto' }}
+                style={{ height: '48px', width: 'auto' }}
               />
             </Link>
           </div>

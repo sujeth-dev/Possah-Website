@@ -6,6 +6,7 @@ import { createPublicClient } from '@/lib/supabase/public'
 
 import { FilterSidebar } from '@/components/shop/FilterSidebar'
 import { ProductGrid } from '@/components/shop/ProductGrid'
+import { CategoryListing } from '@/components/shop/CategoryListing'
 import { SortBar } from '@/components/shop/SortBar'
 import { YouMightAlsoLike } from '@/components/shop/YouMightAlsoLike'
 import { MobileFilterDrawer } from '@/components/shop/MobileFilterDrawer'
@@ -176,8 +177,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   if (!category) notFound()
 
-  const page = parseInt(getString(searchParams.page) ?? '1', 10)
-  const hasMore = page * PAGE_SIZE < total
+  // page/hasMore handled client-side by CategoryListing
 
   return (
     <>
@@ -260,40 +260,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <div className="flex-1 min-w-0">
             <SortBar resultCount={total} showFilterButton />
 
-            <ProductGrid products={products} columns={3} />
-
-            {/* Show More */}
-            {hasMore && (
-              <div className="flex justify-center mt-12">
-                <Link
-                  href={`/shop/${params.category}?${new URLSearchParams({ ...Object.fromEntries(Object.entries(searchParams).map(([k, v]) => [k, Array.isArray(v) ? (v[0] ?? '') : (v ?? '')])), page: String(page + 1) }).toString()}`}
-                  scroll={false}
-                  className="inline-flex items-center gap-2 transition-opacity duration-200 hover:opacity-75 px-10 py-3.5"
-                  style={{
-                    border: '1.5px solid var(--color-green)',
-                    color: 'var(--color-green)',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    borderRadius: 'var(--radius-btn)',
-                  }}
-                >
-                  Show More Pieces
-                </Link>
-              </div>
-            )}
-
-            {/* Pagination indicator */}
-            {total > PAGE_SIZE && (
-              <p
-                className="text-center mt-4"
-                style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', color: 'var(--color-text-muted)' }}
-              >
-                Page {page} of {Math.ceil(total / PAGE_SIZE)}
-              </p>
-            )}
+            <CategoryListing
+              initialProducts={products}
+              total={total}
+              categorySlug={params.category}
+            />
           </div>
         </div>
       </div>

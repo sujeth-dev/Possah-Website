@@ -12,7 +12,8 @@ const WOMEN_SIZES = [
   { size: 'M',   bust: '36–37', waist: '29–30', hip: '39–40', length: '40–41' },
   { size: 'L',   bust: '38–40', waist: '31–33', hip: '41–43', length: '41–42' },
   { size: 'XL',  bust: '41–43', waist: '34–36', hip: '44–46', length: '42–43' },
-  { size: 'XXL', bust: '44–46', waist: '37–39', hip: '47–49', length: '43–44' },
+  { size: '2XL', bust: '44–46', waist: '37–39', hip: '47–49', length: '43–44' },
+  { size: '3XL', bust: '47–49', waist: '40–42', hip: '50–52', length: '44–45' },
 ]
 
 const MEASUREMENT_TIPS = [

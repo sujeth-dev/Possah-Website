@@ -7,7 +7,7 @@ import type { ProductCardData } from '@/app/(shop)/page'
 
 export const metadata: Metadata = {
   title: 'Festive — The Possah',
-  description: 'Festive occasion pieces from The Possah. Sarees, lehengas and co-ords for Diwali, Navratri, Eid, and every celebration.',
+  description: 'Festive occasion pieces from The Possah. Sarees, lehengas and co-ords for every celebration — weddings, sangeets, mehndi, cocktail evenings and more.',
   alternates: { canonical: 'https://thepossah.com/festive' },
 }
 
@@ -47,11 +47,14 @@ async function getFestiveProducts(): Promise<ProductCardData[]> {
   }
 }
 
+// Festive occasion tiles — confirmed set (Bridesmaid, Workwear, Everyday Wear excluded).
+// Imagery is reused/fallback; swap src values once bespoke assets land.
 const OCCASIONS = [
-  { label: 'Diwali',    image: '/images/festive-diwali.jpg'    },
-  { label: 'Navratri', image: '/images/festive-navratri.jpg'  },
-  { label: 'Eid',      image: '/images/festive-eid.jpg'       },
-  { label: 'Sangeet',  image: '/images/festive-sangeet.jpg'   },
+  { label: 'Wedding',  image: '/images/festive-hero.jpg'     },
+  { label: 'Sangeet',  image: '/images/festive-sangeet.jpg'  },
+  { label: 'Mehendi',  image: '/images/festive-navratri.jpg' },
+  { label: 'Haldi',    image: '/images/festive-diwali.jpg'   },
+  { label: 'Cocktail', image: '/images/festive-eid.jpg'      },
 ]
 
 export default async function FestivePage() {
@@ -92,7 +95,7 @@ export default async function FestivePage() {
             FESTIVE
           </h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'rgba(244,236,223,0.8)', marginTop: 10, maxWidth: 420, lineHeight: 1.6 }}>
-            Every celebration deserves a piece that tells a story. Ours are made to be remembered.
+            From intimate mehndi evenings to grand wedding celebrations — pieces made to be worn, remembered, and passed on.
           </p>
         </div>
       </div>
@@ -100,7 +103,7 @@ export default async function FestivePage() {
       {/* Occasion tiles */}
       <section className="section-gap">
         <div className="container-site">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {OCCASIONS.map(({ label, image }) => (
               <Link
                 key={label}

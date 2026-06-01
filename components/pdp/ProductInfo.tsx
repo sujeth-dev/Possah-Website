@@ -39,7 +39,7 @@ interface ProductInfoProps {
   variants: Variant[]
 }
 
-const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size', 'Made-to-Measure']
+const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'Free Size', 'Made-to-Measure']
 
 export function ProductInfo({ product, variants }: ProductInfoProps) {
   const addToCart = useCartStore((s) => s.addItem)

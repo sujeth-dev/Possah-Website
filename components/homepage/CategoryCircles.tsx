@@ -7,7 +7,7 @@ const CATEGORIES = [
   { label: 'CO-ORDS',   href: '/shop/co-ords',    image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Co-Ords'   },
   { label: 'DRESSES',   href: '/shop/dresses',    image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Dresses'   },
   { label: 'KURTA SETS',href: '/shop/kurta-sets', image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Kurtas'    },
-  { label: 'SEPARATES', href: '/shop/separates',  image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Separates' },
+  { label: 'TOPS',      href: '/shop/tops',       image: 'https://placehold.co/400x400/1F3A2D/F4ECDF.png?text=Tops' },
 ]
 
 export function CategoryCircles() {

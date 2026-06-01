@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const OccasionTagEnum = z.enum([
   'Everyday', 'Brunch', 'Workwear', 'Evening',
-  'Sangeet', 'Mehendi', 'Haldi', 'Wedding',
+  'Cocktail', 'Sangeet', 'Mehendi', 'Haldi', 'Wedding',
 ])
 
 export const SubLineEnum = z.enum(['THE DRAPE', 'THE EDIT', 'THE ATELIER', 'THE VAULT'])

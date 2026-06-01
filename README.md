@@ -14,6 +14,7 @@ Luxury Indian fashion e-commerce. Next.js 14 · Supabase · NextAuth · Razorpay
 | `SPRINT.md` | Doing work. Every remaining fix with exact code + go-live gate checklist. |
 | `docs/archive/POSSAH_CREATIVE_DIRECTION.md` | Building any UI. Colours, fonts, voice, logo, layout rules. |
 | `docs/archive/POSSAH_BUILD_GUIDE.md` | Referencing Phase 1+2 build steps and test checklists. |
+| `docs/env-setup.md` | Local `.env.local` setup and required project variables. |
 | `TESTING_PLAN.md` | Setting up Vitest or Playwright. Tool config + test structure. |
 | `scripts/admin_test/GUIDE.md` | Running the admin API test suite. |
 

@@ -7,7 +7,7 @@ import type { ProductCardData } from '@/app/(shop)/page'
 
 export const metadata: Metadata = {
   title: 'Women — The Possah',
-  description: 'Shop women\'s ethnic and western fashion at The Possah — sarees, lehengas, kurta sets, co-ords, dresses and separates.',
+  description: 'Shop women\'s ethnic and western fashion at The Possah — sarees, lehengas, kurta sets, dress material, fabrics, blouses, co-ords, dresses, tops and bottoms.',
   alternates: { canonical: 'https://thepossah.com/women' },
 }
 
@@ -30,6 +30,24 @@ const ETHNIC_CATEGORIES = [
     href: '/shop/kurta-sets',
     description: 'Effortless everyday elegance.',
   },
+  {
+    label: 'Dress Material',
+    slug: 'dress-material',
+    href: '/shop/dress-material',
+    description: 'Craft your own story.',
+  },
+  {
+    label: 'Fabrics',
+    slug: 'fabrics',
+    href: '/shop/fabrics',
+    description: 'The raw material of luxury.',
+  },
+  {
+    label: 'Blouses',
+    slug: 'blouses',
+    href: '/shop/blouses',
+    description: 'The detail that defines it.',
+  },
 ]
 
 const WESTERN_CATEGORIES = [
@@ -46,10 +64,16 @@ const WESTERN_CATEGORIES = [
     description: 'One piece. Every occasion.',
   },
   {
-    label: 'Separates',
-    slug: 'separates',
-    href: '/shop/separates',
-    description: 'Build your own edit.',
+    label: 'Tops',
+    slug: 'tops',
+    href: '/shop/tops',
+    description: 'Effortless on its own.',
+  },
+  {
+    label: 'Bottoms',
+    slug: 'bottoms',
+    href: '/shop/bottoms',
+    description: 'Ground every look.',
   },
 ]
 

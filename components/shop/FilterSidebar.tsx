@@ -19,50 +19,60 @@ interface FilterSection {
 const FILTER_SECTIONS: FilterSection[] = [
   {
     key: 'occasion',
-    label: 'OCCASION',
+    label: 'Occasion',
     type: 'checkbox',
     options: [
-      { value: 'Everyday', label: 'Everyday' },
-      { value: 'Brunch',   label: 'Brunch'   },
-      { value: 'Workwear', label: 'Workwear' },
-      { value: 'Evening',  label: 'Evening'  },
-      { value: 'Sangeet',  label: 'Sangeet'  },
-      { value: 'Mehendi',  label: 'Mehendi'  },
-      { value: 'Haldi',    label: 'Haldi'    },
-      { value: 'Wedding',  label: 'Wedding'  },
+      { value: 'Everyday',  label: 'Everyday'  },
+      { value: 'Brunch',    label: 'Brunch'    },
+      { value: 'Workwear',  label: 'Workwear'  },
+      { value: 'Evening',   label: 'Evening'   },
+      { value: 'Cocktail',  label: 'Cocktail'  },
+      { value: 'Sangeet',   label: 'Sangeet'   },
+      { value: 'Mehendi',   label: 'Mehendi'   },
+      { value: 'Haldi',     label: 'Haldi'     },
+      { value: 'Wedding',   label: 'Wedding'   },
     ],
   },
   {
     key: 'fabric',
-    label: 'FABRIC',
+    label: 'Fabric',
     type: 'checkbox',
     options: [
-      { value: 'Silk',    label: 'Silk'    },
-      { value: 'Linen',   label: 'Linen'   },
-      { value: 'Cotton',  label: 'Cotton'  },
-      { value: 'Georgette', label: 'Georgette' },
-      { value: 'Crepe',   label: 'Crepe'   },
-      { value: 'Chiffon', label: 'Chiffon' },
+      { value: 'Silk',       label: 'Silk'       },
+      { value: 'Linen',      label: 'Linen'      },
+      { value: 'Cotton',     label: 'Cotton'     },
+      { value: 'Georgette',  label: 'Georgette'  },
+      { value: 'Crepe',      label: 'Crepe'      },
+      { value: 'Chiffon',    label: 'Chiffon'    },
+      { value: 'Modal',      label: 'Modal'      },
+      { value: 'Viscose',    label: 'Viscose'    },
+      { value: 'Tissue',     label: 'Tissue'     },
+      { value: 'Velvette',   label: 'Velvette'   },
+      { value: 'Satin',      label: 'Satin'      },
+      { value: 'Tulle',      label: 'Tulle'      },
+      { value: 'Zari',       label: 'Zari'       },
+      { value: 'Poly Blend', label: 'Poly Blend' },
     ],
   },
   {
     key: 'size',
-    label: 'SIZE',
+    label: 'Size',
     type: 'checkbox',
     options: [
-      { value: 'XS',  label: 'XS'  },
-      { value: 'S',   label: 'S'   },
-      { value: 'M',   label: 'M'   },
-      { value: 'L',   label: 'L'   },
-      { value: 'XL',  label: 'XL'  },
-      { value: 'XXL', label: 'XXL' },
-      { value: 'Free Size', label: 'Free Size' },
+      { value: 'XS',              label: 'XS'              },
+      { value: 'S',               label: 'S'               },
+      { value: 'M',               label: 'M'               },
+      { value: 'L',               label: 'L'               },
+      { value: 'XL',              label: 'XL'              },
+      { value: '2XL',             label: '2XL'             },
+      { value: '3XL',             label: '3XL'             },
+      { value: 'Free Size',       label: 'Free Size'       },
       { value: 'Made-to-Measure', label: 'Made-to-Measure' },
     ],
   },
   {
     key: 'sub_line',
-    label: 'COLLECTION',
+    label: 'Collection',
     type: 'checkbox',
     options: [
       { value: 'THE DRAPE',   label: 'The Drape'   },
@@ -107,7 +117,6 @@ export function FilterSidebar({ className = '' }: FilterSidebarProps) {
       } else {
         params.set(key, next.join(','))
       }
-      // Reset page on filter change
       params.delete('page')
       router.push(`${pathname}?${params.toString()}`, { scroll: false })
     },
@@ -133,7 +142,6 @@ export function FilterSidebar({ className = '' }: FilterSidebarProps) {
     })
   }
 
-  // Count active filters across all sections
   const activeCount = FILTER_SECTIONS.reduce(
     (sum, s) => sum + getActiveValues(s.key).length,
     0
@@ -203,24 +211,26 @@ export function FilterSidebar({ className = '' }: FilterSidebarProps) {
               className="border-b"
               style={{ borderColor: 'var(--color-border)' }}
             >
-              {/* Section toggle */}
+              {/* Section toggle — lighter heading treatment */}
               <button
                 type="button"
                 onClick={() => toggleSection(section.key)}
-                className="flex items-center justify-between w-full py-3.5 hover:opacity-70 transition-opacity duration-200"
+                className="flex items-center justify-between w-full py-3 hover:opacity-70 transition-opacity duration-200"
                 aria-expanded={isExpanded}
               >
                 <span
                   style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '10px',
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: activeValues.length > 0 ? 'var(--color-green)' : 'var(--color-text)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    letterSpacing: '0.04em',
+                    color: activeValues.length > 0 ? 'var(--color-green)' : 'var(--color-text-muted)',
                   }}
                 >
                   {section.label}
-                  {activeValues.length > 0 && ` (${activeValues.length})`}
+                  {activeValues.length > 0 && (
+                    <span style={{ fontWeight: '400', marginLeft: 4 }}>({activeValues.length})</span>
+                  )}
                 </span>
                 <svg
                   width="10"
@@ -240,7 +250,7 @@ export function FilterSidebar({ className = '' }: FilterSidebarProps) {
 
               {/* Options */}
               {isExpanded && (
-                <div className="pb-3 space-y-1">
+                <div className="pb-3 space-y-0.5">
                   {section.options.map((opt) => {
                     const checked = activeValues.includes(opt.value)
                     return (

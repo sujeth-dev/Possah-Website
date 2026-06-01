@@ -13,5 +13,12 @@ INSERT INTO categories (id, name, slug, parent_id, nav_section, position) VALUES
   -- Bridal
   ('11111111-0001-0001-0001-000000000007', 'Bridal',     'bridal',     NULL, 'Bridal', 7),
   -- Festive
-  ('11111111-0001-0001-0001-000000000008', 'Festive',    'festive',    NULL, 'Festive', 8)
+  ('11111111-0001-0001-0001-000000000008', 'Festive',    'festive',    NULL, 'Festive', 8),
+  -- New ethnic sub-categories (taxonomy refresh)
+  ('11111111-0001-0001-0001-000000000009', 'Dress Material', 'dress-material', NULL, 'Women > Ethnic',   9),
+  ('11111111-0001-0001-0001-000000000010', 'Fabrics',        'fabrics',        NULL, 'Women > Ethnic',  10),
+  ('11111111-0001-0001-0001-000000000011', 'Blouses',        'blouses',        NULL, 'Women > Ethnic',  11),
+  -- New western sub-categories (Separates replaced by Tops + Bottoms)
+  ('11111111-0001-0001-0001-000000000012', 'Tops',           'tops',           NULL, 'Women > Western', 12),
+  ('11111111-0001-0001-0001-000000000013', 'Bottoms',        'bottoms',        NULL, 'Women > Western', 13)
 ON CONFLICT (slug) DO NOTHING;

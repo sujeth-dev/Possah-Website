@@ -10,7 +10,7 @@ const FOOTER_COLUMNS = [
       { label: 'Western', href: '/shop/co-ords' },
       { label: 'Bridal', href: '/bridal' },
       { label: 'Festive', href: '/festive' },
-      { label: 'Ready to Ship', href: '/shop/sarees?filter=ready-to-ship' },
+      { label: 'Best Sellers', href: '/best-sellers' },
     ],
   },
   {
@@ -21,7 +21,6 @@ const FOOTER_COLUMNS = [
       { label: 'Co-Ords', href: '/shop/co-ords' },
       { label: 'Dresses', href: '/shop/dresses' },
       { label: 'Kurta Sets', href: '/shop/kurta-sets' },
-      { label: 'Separates', href: '/shop/separates' },
     ],
   },
   {
