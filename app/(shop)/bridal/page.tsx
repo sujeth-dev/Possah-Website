@@ -160,7 +160,7 @@ export default async function BridalPage({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {OCCASIONS.slice(0, 4).map(({ label, image, tag }) => {
               const isActive = tag !== null && tag === activeOccasion
-              const href = tag ? (isActive ? '/bridal' : `/bridal?occasion=${tag}`) : '/bridal'
+              const href = tag ? (isActive ? '/bridal' : `/bridal?occasion=${tag}#products`) : '/bridal'
               return (
                 <Link
                   key={label}
@@ -211,7 +211,7 @@ export default async function BridalPage({
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {OCCASIONS.slice(4).map(({ label, image, tag }) => {
               const isActive = tag !== null && tag === activeOccasion
-              const href = tag ? (isActive ? '/bridal' : `/bridal?occasion=${tag}`) : '/bridal'
+              const href = tag ? (isActive ? '/bridal' : `/bridal?occasion=${tag}#products`) : '/bridal'
               return (
                 <Link
                   key={label}
@@ -327,7 +327,7 @@ export default async function BridalPage({
       </section>
 
       {/* Product grid */}
-      <section className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
+      <section id="products" className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
         <div className="container-site">
           <div className="flex items-baseline justify-between mb-8">
             <h2

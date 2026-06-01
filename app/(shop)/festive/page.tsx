@@ -135,7 +135,7 @@ export default async function FestivePage({
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {OCCASIONS.map(({ label, image, tag, externalHref }) => {
               const isActive = tag !== null && tag === activeOccasion
-              const href = externalHref ?? (tag ? (isActive ? '/festive' : `/festive?occasion=${tag}`) : '/festive')
+              const href = externalHref ?? (tag ? (isActive ? '/festive' : `/festive?occasion=${tag}#products`) : '/festive')
               return (
                 <Link
                   key={label}
@@ -179,7 +179,7 @@ export default async function FestivePage({
       </section>
 
       {/* Products */}
-      <section className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
+      <section id="products" className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
         <div className="container-site">
           <div className="flex items-baseline justify-between mb-8">
             <h2
