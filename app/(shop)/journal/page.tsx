@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createPublicClient } from '@/lib/supabase/public'
 
 export const metadata: Metadata = {
-  title: 'Journal — The Possah',
+  title: 'Journal',
   description: 'Stories about craft, culture, and considered dressing from The Possah.',
   alternates: { canonical: 'https://thepossah.com/journal' },
 }

@@ -6,8 +6,8 @@ import { ProductGrid } from '@/components/shop/ProductGrid'
 import type { ProductCardData } from '@/app/(shop)/page'
 
 export const metadata: Metadata = {
-  title: 'Festive — The Possah',
-  description: 'Festive occasion pieces from The Possah. Sarees, lehengas and co-ords for every celebration — weddings, sangeets, mehndi, cocktail evenings and more.',
+  title: 'Festive',
+  description: 'Festive occasion pieces. Sarees, lehengas and co-ords for every celebration — weddings, sangeets, mehndi, cocktail evenings and more.',
   alternates: { canonical: 'https://thepossah.com/festive' },
 }
 

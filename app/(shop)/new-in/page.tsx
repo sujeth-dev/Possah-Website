@@ -110,7 +110,7 @@ async function getNewArrivals(searchParams: Record<string, string | string[] | u
 }
 
 export const metadata: Metadata = {
-  title: 'New In — The Possah',
+  title: 'New In',
   description: 'The latest arrivals from The Possah Atelier — handcrafted sarees, lehengas, co-ords and more.',
   alternates: { canonical: 'https://thepossah.com/new-in' },
 }

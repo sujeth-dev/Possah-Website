@@ -109,7 +109,7 @@ async function getReadyToShip(searchParams: Record<string, string | string[] | u
 }
 
 export const metadata: Metadata = {
-  title: 'Ready to Ship — The Possah',
+  title: 'Ready to Ship',
   description: 'In-stock pieces ready to ship immediately — no wait, no crafting time. Shop sarees, lehengas and more.',
   alternates: { canonical: 'https://thepossah.com/ready-to-ship' },
 }

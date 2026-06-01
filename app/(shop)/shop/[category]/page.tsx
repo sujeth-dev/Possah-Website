@@ -159,15 +159,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       .eq('slug', params.category)
       .single()
 
-    if (!category) return { title: 'Shop — The Possah' }
+    if (!category) return { title: 'Shop' }
 
     return {
-      title: `${category.name} — The Possah`,
+      title: `${category.name}`,
       description: `Shop ${category.name} at The Possah — handcrafted luxury Indian fashion. Sarees, lehengas, co-ords and more.`,
       alternates: { canonical: `https://thepossah.com/shop/${category.slug}` },
     }
   } catch {
-    return { title: 'Shop — The Possah' }
+    return { title: 'Shop' }
   }
 }
 

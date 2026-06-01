@@ -7,7 +7,7 @@ import { formatPrice } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 
 export const metadata: Metadata = {
-  title: 'My Orders — The Possah',
+  title: 'My Orders',
   robots: { index: false, follow: false },
 }
 

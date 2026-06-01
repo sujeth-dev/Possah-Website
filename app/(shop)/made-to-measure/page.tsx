@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { whatsappUrl } from '@/lib/utils'
 
 export const metadata: Metadata = {
-  title: 'Made-to-Measure — The Possah',
+  title: 'Made-to-Measure',
   description: 'Bespoke Indian fashion handcrafted to your exact measurements at The Possah. Sarees, lehengas, co-ords and more.',
   alternates: { canonical: 'https://thepossah.com/made-to-measure' },
 }

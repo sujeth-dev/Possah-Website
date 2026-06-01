@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'About — The Possah',
+  title: 'About',
   description: 'Handcrafted luxury Indian fashion from Lucknow. The Possah is a celebration of craft, culture, and considered dressing.',
   alternates: { canonical: 'https://thepossah.com/about' },
 }

@@ -16,11 +16,16 @@ const FOOTER_COLUMNS = [
   {
     heading: 'CATEGORIES',
     links: [
-      { label: 'Sarees', href: '/shop/sarees' },
-      { label: 'Lehengas', href: '/shop/lehengas' },
-      { label: 'Co-Ords', href: '/shop/co-ords' },
-      { label: 'Dresses', href: '/shop/dresses' },
-      { label: 'Kurta Sets', href: '/shop/kurta-sets' },
+      { label: 'Sarees',        href: '/shop/sarees'         },
+      { label: 'Lehengas',      href: '/shop/lehengas'       },
+      { label: 'Kurta Sets',    href: '/shop/kurta-sets'     },
+      { label: 'Dress Material',href: '/shop/dress-material' },
+      { label: 'Fabrics',       href: '/shop/fabrics'        },
+      { label: 'Blouses',       href: '/shop/blouses'        },
+      { label: 'Co-Ords',       href: '/shop/co-ords'        },
+      { label: 'Dresses',       href: '/shop/dresses'        },
+      { label: 'Tops',          href: '/shop/tops'           },
+      { label: 'Bottoms',       href: '/shop/bottoms'        },
     ],
   },
   {

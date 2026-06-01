@@ -3,7 +3,7 @@ import { AccordionItem, AccordionGroup } from '@/components/ui/Accordion'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'FAQ — The Possah',
+  title: 'FAQ',
   description: 'Frequently asked questions about orders, shipping, returns, and made-to-measure at The Possah.',
   alternates: { canonical: 'https://thepossah.com/faq' },
 }

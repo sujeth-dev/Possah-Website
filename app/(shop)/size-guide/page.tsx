@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Size Guide — The Possah',
+  title: 'Size Guide',
   description: 'Find your perfect fit with The Possah\'s size guide for sarees, lehengas, co-ords and more.',
   alternates: { canonical: 'https://thepossah.com/size-guide' },
 }

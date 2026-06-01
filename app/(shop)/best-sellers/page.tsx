@@ -13,7 +13,7 @@ export const revalidate = 60
 const PAGE_SIZE = 24
 
 export const metadata: Metadata = {
-  title: 'Best Sellers — The Possah',
+  title: 'Best Sellers',
   description: 'Our most-loved pieces — the ones customers come back for. Shop The Possah\'s best-selling sarees, lehengas, co-ords and more.',
   alternates: { canonical: 'https://thepossah.com/best-sellers' },
 }

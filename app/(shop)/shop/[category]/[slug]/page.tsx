@@ -183,11 +183,11 @@ async function getProductData(slug: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const data = await getProductData(params.slug)
-  if (!data) return { title: 'Product — The Possah' }
+  if (!data) return { title: 'Product ' }
   const { product, categoryName } = data
   const firstImage = product.images[0]?.url
   return {
-    title: `${product.name} — The Possah`,
+    title: `${product.name} `,
     description: product.description
       ?? `${product.name} — ${product.fabric ?? categoryName} at The Possah. Handcrafted luxury Indian fashion.`,
     alternates: { canonical: `https://thepossah.com/shop/${product.category_slug}/${product.slug}` },

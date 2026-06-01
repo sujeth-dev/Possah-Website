@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'My Account — The Possah',
+  title: 'My Account',
   robots: { index: false, follow: false },
 }
 

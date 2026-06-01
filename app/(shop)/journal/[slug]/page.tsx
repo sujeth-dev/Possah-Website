@@ -37,7 +37,7 @@ async function getArticle(slug: string): Promise<Article | null> {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const article = await getArticle(params.slug)
-  if (!article) return { title: 'Journal — The Possah' }
+  if (!article) return { title: 'Journal' }
 
   return {
     title: `${article.title} — The Possah Journal`,

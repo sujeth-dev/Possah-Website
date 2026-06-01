@@ -6,7 +6,7 @@ import { ProductGrid } from '@/components/shop/ProductGrid'
 import type { ProductCardData } from '@/app/(shop)/page'
 
 export const metadata: Metadata = {
-  title: 'Women — The Possah',
+  title: 'Women',
   description: 'Shop women\'s ethnic and western fashion at The Possah — sarees, lehengas, kurta sets, dress material, fabrics, blouses, co-ords, dresses, tops and bottoms.',
   alternates: { canonical: 'https://thepossah.com/women' },
 }

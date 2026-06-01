@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { SearchView } from './SearchView'
 
 export const metadata: Metadata = {
-  title: 'Search — The Possah',
+  title: 'Search',
   robots: { index: false, follow: false },
 }
 

@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { OrderConfirmationView } from './OrderConfirmationView'
 
 export const metadata: Metadata = {
-  title: 'Order Confirmed — The Possah',
+  title: 'Order Confirmed',
   robots: { index: false, follow: false },
 }
 

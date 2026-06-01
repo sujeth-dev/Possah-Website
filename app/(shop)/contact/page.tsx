@@ -3,7 +3,7 @@ import { whatsappUrl } from '@/lib/utils'
 import { ContactForm } from './ContactForm'
 
 export const metadata: Metadata = {
-  title: 'Contact — The Possah',
+  title: 'Contact',
   description: 'Get in touch with The Possah for orders, bespoke enquiries, or just to talk about craft.',
   alternates: { canonical: 'https://thepossah.com/contact' },
 }

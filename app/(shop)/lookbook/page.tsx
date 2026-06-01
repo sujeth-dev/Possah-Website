@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createPublicClient } from '@/lib/supabase/public'
 
 export const metadata: Metadata = {
-  title: 'Lookbook — The Possah',
+  title: 'Lookbook',
   description: 'Curated editorial lookbooks from The Possah. Discover how to wear Indian handloom for every moment.',
   alternates: { canonical: 'https://thepossah.com/lookbook' },
 }
