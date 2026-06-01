@@ -142,6 +142,8 @@ export async function POST(request: Request) {
         is_new_arrival:     data.is_new_arrival,
         is_top_selling:     data.is_top_selling,
         is_featured:        data.is_featured,
+        is_festive:         data.is_festive,
+        is_bridal:          data.is_bridal,
         is_active:          data.is_active,
         stock_qty:          data.variants.reduce((sum, v) => sum + v.stock_qty, 0),
       })

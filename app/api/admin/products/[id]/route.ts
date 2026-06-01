@@ -113,7 +113,7 @@ export async function PATCH(
       'care_instructions', 'drape_guide', 'craft_story_title',
       'craft_story_body', 'craft_story_image', 'audio_url',
       'meta_title', 'meta_description', 'is_new_arrival',
-      'is_top_selling', 'is_featured', 'is_active',
+      'is_top_selling', 'is_featured', 'is_festive', 'is_bridal', 'is_active',
     ] as const
 
     for (const field of scalarFields) {
