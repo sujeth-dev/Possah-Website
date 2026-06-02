@@ -1,5 +1,4 @@
 // @ts-check
-import { withSentryConfig } from '@sentry/nextjs'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -7,8 +6,6 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Cache optimised images at Vercel edge for 1 year.
-    // Without this the default is 60 s — Vercel re-fetches from Supabase on
-    // every cache expiry, defeating the CDN entirely.
     minimumCacheTTL: 31536000,
     remotePatterns: [
       {
@@ -25,14 +22,10 @@ const nextConfig = {
         hostname: 'placehold.co',
       },
       {
-        // Admin / preview images from Vercel deployments
         protocol: 'https',
         hostname: '**.vercel.app',
       },
     ],
-    // Serve AVIF first (smallest), fall back to WebP — both auto-converted
-    // by Vercel's image optimisation layer; original files on Supabase are
-    // never modified.
     formats: ['image/avif', 'image/webp'],
   },
   webpack: (config) => {
@@ -40,7 +33,6 @@ const nextConfig = {
     return config
   },
   experimental: {
-    // FIX-INFRA-04: expanded package imports optimisation
     optimizePackageImports: [
       'swiper',
       '@radix-ui/react-accordion',
@@ -50,8 +42,6 @@ const nextConfig = {
       'lucide-react',
     ],
   },
-  // FIX-SEC-02: security response headers — no CSP yet (Razorpay + GA4 origins
-  // need cataloguing first; add in report-only mode after launch).
   async headers() {
     return [
       {
@@ -74,20 +64,4 @@ const nextConfig = {
   },
 }
 
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-export default withSentryConfig(nextConfig, {
-  // Sentry organisation + project — set these as Vercel env vars or .env.local
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-
-  // Auth token for source-map upload (Vercel: SENTRY_AUTH_TOKEN secret)
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-
-  // Upload source maps to Sentry for readable stack traces in production.
-  // Source maps are deleted from the deploy bundle after upload.
-  silent: true,
-  hideSourceMaps: true,
-
-  // Automatically tree-shake Sentry code when DSN is not set.
-  disableLogger: true,
-})
+export default nextConfig

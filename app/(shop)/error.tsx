@@ -13,7 +13,6 @@ export default function ShopError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Will log to Sentry once FIX-INFRA-03 is complete
     console.error('[ShopError]', error)
   }, [error])
 

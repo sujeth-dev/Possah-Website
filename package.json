@@ -28,7 +28,6 @@
     "@radix-ui/react-dialog": "^1.1.0",
     "@radix-ui/react-select": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
-    "@sentry/nextjs": "^10.53.1",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.45.0",
     "date-fns": "^3.6.0",
