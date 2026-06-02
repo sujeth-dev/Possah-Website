@@ -74,4 +74,7 @@ See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
 - Payments: Razorpay — captured + failed webhooks handled
 - Taxonomy: occasion (9 tags incl. Cocktail), fabric (14 options), size (XS–3XL + Free Size + MtM)
 - Festive + Bridal pages: editorially curated via `is_festive` / `is_bridal` product flags
+- Product gallery: click-to-zoom fullscreen lightbox with swipe + keyboard nav
+- Coupons: applied in cart persist into checkout via Zustand store (no re-entry needed)
+- Logo: header reads `public/images/logo.png` + `public/images/name.png` side-by-side — drop files to activate
 
