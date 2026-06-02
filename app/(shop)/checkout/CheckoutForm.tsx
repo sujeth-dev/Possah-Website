@@ -8,6 +8,7 @@ import { z } from 'zod'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store/cartStore'
+import { useCouponStore } from '@/lib/store/couponStore'
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics'
 import { formatPrice } from '@/lib/utils'
 
@@ -183,17 +184,24 @@ export function CheckoutForm() {
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
-  // FIX-SEC-07: coupon code managed as state — never in URL
   const hasGiftWrap = searchParams.get('gift') === '1'
-  const [couponInput, setCouponInput] = useState('')
-  const [couponCode, setCouponCode] = useState('')
+  const coupon = useCouponStore()
+  const [couponInput, setCouponInput]     = useState(coupon.code)
   const [couponApplying, setCouponApplying] = useState(false)
-  const [couponError, setCouponError] = useState<string | null>(null)
-  const [couponDiscount, setCouponDiscount] = useState(0)
-  const [isFreeShippingCoupon, setIsFreeShippingCoupon] = useState(false)
+  const [couponError, setCouponError]     = useState<string | null>(null)
 
-  const sub = subtotal()
+  const sub   = subtotal()
   const count = items.reduce((s, i) => s + i.qty, 0)
+
+  // Derive discount from persisted coupon store
+  let couponDiscount = 0
+  if (coupon.code && coupon.discountType) {
+    if (coupon.discountType === 'percent') {
+      couponDiscount = Math.round((sub * coupon.discountValue) / 100)
+    } else if (coupon.discountType === 'flat') {
+      couponDiscount = coupon.discountValue
+    }
+  }
 
   // GA4: begin_checkout fires once on mount when cart is non-empty
   useEffect(() => {
@@ -222,12 +230,11 @@ export function CheckoutForm() {
   })
 
   const deliveryOption = watch('delivery_option')
-  const freeShipping = sub >= SHIPPING_THRESHOLD || isFreeShippingCoupon
+  const freeShipping = sub >= SHIPPING_THRESHOLD || coupon.isFreeShipping
   const shippingCost = freeShipping ? 0 : deliveryOption === 'express' ? EXPRESS_COST : STANDARD_COST
   const giftCost = hasGiftWrap ? GIFT_WRAP_COST : 0
   const total = sub + shippingCost + giftCost - couponDiscount
 
-  // FIX-SEC-07: coupon apply handler — called from UI button, not URL
   const applyCoupon = async () => {
     if (!couponInput.trim()) return
     setCouponApplying(true)
@@ -240,20 +247,10 @@ export function CheckoutForm() {
       })
       const data = await res.json()
       if (data.valid) {
-        setCouponCode(couponInput.trim().toUpperCase())
-        if (data.discount_type === 'free_shipping') {
-          setIsFreeShippingCoupon(true)
-          setCouponDiscount(0)
-        } else if (data.discount_type === 'percent') {
-          setCouponDiscount(Math.round((sub * data.discount_value) / 100))
-        } else {
-          setCouponDiscount(data.discount_value ?? 0)
-        }
+        coupon.setCoupon(couponInput.trim().toUpperCase(), data.discount_type, data.discount_value ?? 0)
       } else {
         setCouponError(data.message ?? 'Invalid coupon code')
-        setCouponCode('')
-        setCouponDiscount(0)
-        setIsFreeShippingCoupon(false)
+        coupon.clearCoupon()
       }
     } catch {
       setCouponError('Could not validate coupon. Check your connection.')
@@ -263,11 +260,9 @@ export function CheckoutForm() {
   }
 
   const removeCoupon = () => {
-    setCouponCode('')
     setCouponInput('')
-    setCouponDiscount(0)
-    setIsFreeShippingCoupon(false)
     setCouponError(null)
+    coupon.clearCoupon()
   }
 
   // Redirect to cart if empty
@@ -310,7 +305,7 @@ export function CheckoutForm() {
           })),
           delivery_option: data.delivery_option,
           gift_wrap: hasGiftWrap,
-          coupon_code: couponCode || null,
+          coupon_code: coupon.code || null,
           notes: data.notes ?? '',
           subtotal: sub,
           shipping: shippingCost,
@@ -382,6 +377,7 @@ export function CheckoutForm() {
               })),
             })
             clearCart()
+            coupon.clearCoupon()
             router.push(`/order/confirmation?order=${order_number}`)
           },
           onDismiss: () => {
@@ -392,6 +388,7 @@ export function CheckoutForm() {
       } else {
         // Fallback: COD / Razorpay script not loaded — still go to confirmation
         clearCart()
+        coupon.clearCoupon()
         router.push(`/order/confirmation?order=${order_number}`)
       }
     } catch {
@@ -584,13 +581,13 @@ export function CheckoutForm() {
                 >
                   Coupon Code
                 </h2>
-                {couponCode ? (
+                {coupon.code ? (
                   <div
                     className="flex items-center justify-between px-4 py-3"
                     style={{ border: '1px solid var(--color-success)', borderRadius: 'var(--radius-card)', backgroundColor: 'rgba(39,174,96,0.06)' }}
                   >
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-success)' }}>
-                      ✓ {couponCode} applied
+                      ✓ {coupon.code} applied
                     </span>
                     <button
                       type="button"
@@ -614,7 +611,7 @@ export function CheckoutForm() {
                     <button
                       type="button"
                       onClick={applyCoupon}
-                      disabled={couponApplying || !couponInput.trim()}
+                      disabled={couponApplying || !couponInput.trim() || !!coupon.code}
                       style={{
                         padding: '0 20px',
                         fontFamily: 'var(--font-mono)',
@@ -867,7 +864,7 @@ export function CheckoutForm() {
                 </div>
                 {couponDiscount > 0 && (
                   <div className="flex justify-between">
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-green)' }}>Discount ({couponCode})</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-green)' }}>Discount ({coupon.code})</span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-green)' }}>-{formatPrice(couponDiscount)}</span>
                   </div>
                 )}

@@ -125,26 +125,46 @@ export function Header() {
 
           {/* ── Logo (centred) ── */}
           <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-            <Link href="/" aria-label="The Possah — Home" className="hidden md:flex items-center">
+            {/* Desktop: logo symbol + brand name side-by-side */}
+            <Link href="/" aria-label="The Possah — Home" className="hidden md:flex items-center gap-3">
               <Image
-                src="/images/logo-gradient.png"
+                src="/images/logo.png"
+                alt=""
+                width={56}
+                height={56}
+                priority
+                className="object-contain flex-shrink-0"
+                style={{ height: '52px', width: 'auto' }}
+              />
+              <Image
+                src="/images/name.png"
                 alt="The Possah"
-                width={240}
-                height={96}
+                width={160}
+                height={52}
                 priority
                 className="object-contain"
-                style={{ height: '140px', width: 'auto' }}
+                style={{ height: '44px', width: 'auto' }}
               />
             </Link>
+            {/* Mobile: both at smaller sizes to fit the 64px header */}
             <Link href="/" aria-label="The Possah — Home" className="flex md:hidden items-center gap-2">
               <Image
-                src="/images/logo-symbol.png"
+                src="/images/logo.png"
+                alt=""
+                width={36}
+                height={36}
+                priority
+                className="object-contain flex-shrink-0"
+                style={{ height: '34px', width: 'auto' }}
+              />
+              <Image
+                src="/images/name.png"
                 alt="The Possah"
-                width={60}
-                height={60}
+                width={110}
+                height={34}
                 priority
                 className="object-contain"
-                style={{ height: '48px', width: 'auto' }}
+                style={{ height: '26px', width: 'auto' }}
               />
             </Link>
           </div>

@@ -4,64 +4,65 @@ import { useState, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store/cartStore'
+import { useCouponStore } from '@/lib/store/couponStore'
 import { formatPrice, calculateDiscount } from '@/lib/utils'
-
-interface CouponResult {
-  valid: boolean
-  discount_type?: 'percent' | 'fixed'
-  discount_value?: number
-  message?: string
-}
 
 const SHIPPING_THRESHOLD = 2500
 const SHIPPING_COST = 199
 
 export function CartView() {
   const { items, removeItem, updateQty, clearCart, subtotal, itemCount } = useCartStore()
-  const [couponCode, setCouponCode] = useState('')
-  const [couponResult, setCouponResult] = useState<CouponResult | null>(null)
+  const coupon = useCouponStore()
+  const [couponInput, setCouponInput] = useState(coupon.code)
+  const [couponError, setCouponError]   = useState<string | null>(null)
   const [couponLoading, setCouponLoading] = useState(false)
   const [giftWrap, setGiftWrap] = useState(false)
   const GIFT_WRAP_COST = 150
 
   const sub = subtotal()
   const count = itemCount()
-  const freeShipping = sub >= SHIPPING_THRESHOLD
+  const freeShipping = sub >= SHIPPING_THRESHOLD || coupon.isFreeShipping
   const shipping = freeShipping ? 0 : SHIPPING_COST
 
-  // Calculate coupon discount
+  // Derive discount from store
   let couponDiscount = 0
-  if (couponResult?.valid && couponResult.discount_type) {
-    if (couponResult.discount_type === 'percent') {
-      couponDiscount = Math.round((sub * (couponResult.discount_value ?? 0)) / 100)
-    } else {
-      couponDiscount = couponResult.discount_value ?? 0
+  if (coupon.code && coupon.discountType) {
+    if (coupon.discountType === 'percent') {
+      couponDiscount = Math.round((sub * coupon.discountValue) / 100)
+    } else if (coupon.discountType === 'flat') {
+      couponDiscount = coupon.discountValue
     }
   }
 
   const total = sub + shipping + (giftWrap ? GIFT_WRAP_COST : 0) - couponDiscount
 
   const validateCoupon = useCallback(async () => {
-    if (!couponCode.trim()) return
+    if (!couponInput.trim()) return
     setCouponLoading(true)
+    setCouponError(null)
     try {
       const res = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: couponCode.trim().toUpperCase(), subtotal: sub }),
+        body: JSON.stringify({ code: couponInput.trim().toUpperCase(), subtotal: sub }),
       })
-      const data: CouponResult = await res.json()
-      setCouponResult(data)
+      const data = await res.json()
+      if (data.valid) {
+        coupon.setCoupon(couponInput.trim().toUpperCase(), data.discount_type, data.discount_value ?? 0)
+      } else {
+        setCouponError(data.message ?? 'Invalid coupon code')
+      }
     } catch {
-      setCouponResult({ valid: false, message: 'Could not validate code. Try again.' })
+      setCouponError('Could not validate code. Try again.')
     } finally {
       setCouponLoading(false)
     }
-  }, [couponCode, sub])
+  }, [couponInput, sub, coupon])
 
   const removeCoupon = () => {
-    setCouponCode('')
-    setCouponResult(null)
+    setCouponInput('')
+    setCouponError(null)
+    coupon.clearCoupon()
   }
 
   // Empty cart
@@ -346,7 +347,7 @@ export function CartView() {
 
           {/* Promo code */}
           <div className="flex flex-col gap-2">
-            {couponResult?.valid ? (
+            {coupon.code ? (
               <div
                 className="flex items-center justify-between py-2 px-3"
                 style={{
@@ -367,7 +368,7 @@ export function CartView() {
                       color: 'var(--color-green)',
                     }}
                   >
-                    {couponCode.toUpperCase()} applied
+                    {coupon.code} applied
                   </span>
                 </div>
                 <button
@@ -382,10 +383,10 @@ export function CartView() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={couponCode}
+                  value={couponInput}
                   onChange={(e) => {
-                    setCouponCode(e.target.value)
-                    if (couponResult) setCouponResult(null)
+                    setCouponInput(e.target.value)
+                    if (couponError) setCouponError(null)
                   }}
                   onKeyDown={(e) => { if (e.key === 'Enter') validateCoupon() }}
                   placeholder="PROMO CODE"
@@ -396,7 +397,7 @@ export function CartView() {
                     fontSize: '11px',
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
-                    border: `1px solid ${couponResult?.valid === false ? 'var(--color-rose)' : 'var(--color-border)'}`,
+                    border: `1px solid ${couponError ? 'var(--color-rose)' : 'var(--color-border)'}`,
                     borderRadius: 'var(--radius-btn)',
                     backgroundColor: 'var(--color-bg)',
                     color: 'var(--color-text)',
@@ -406,7 +407,7 @@ export function CartView() {
                 />
                 <button
                   onClick={validateCoupon}
-                  disabled={!couponCode.trim() || couponLoading}
+                  disabled={!couponInput.trim() || couponLoading}
                   className="px-4 py-2.5 transition-opacity duration-150 hover:opacity-80 disabled:opacity-40"
                   style={{
                     backgroundColor: 'var(--color-green)',
@@ -424,7 +425,7 @@ export function CartView() {
                 </button>
               </div>
             )}
-            {couponResult?.valid === false && couponResult.message && (
+            {couponError && (
               <p
                 role="alert"
                 style={{
@@ -433,7 +434,7 @@ export function CartView() {
                   color: 'var(--color-rose)',
                 }}
               >
-                {couponResult.message}
+                {couponError}
               </p>
             )}
           </div>
@@ -548,7 +549,7 @@ export function CartView() {
               </div>
             )}
 
-            {couponResult?.valid && couponDiscount > 0 && (
+            {coupon.code && couponDiscount > 0 && (
               <div className="flex items-center justify-between">
                 <span
                   style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-green)' }}
@@ -557,6 +558,16 @@ export function CartView() {
                 </span>
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-green)' }}>
                   −{formatPrice(couponDiscount)}
+                </span>
+              </div>
+            )}
+            {coupon.isFreeShipping && (
+              <div className="flex items-center justify-between">
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-green)' }}>
+                  Free shipping applied
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-green)', letterSpacing: '0.1em' }}>
+                  FREE
                 </span>
               </div>
             )}
@@ -604,7 +615,6 @@ export function CartView() {
             href={{
               pathname: '/checkout',
               query: {
-                ...(couponResult?.valid ? { coupon: couponCode.toUpperCase() } : {}),
                 ...(giftWrap ? { gift: '1' } : {}),
               },
             }}
