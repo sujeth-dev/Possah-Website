@@ -65,25 +65,24 @@ export function Footer() {
                 className="mb-5"
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  letterSpacing: '0.2em',
-                  opacity: 0.75,
+                  fontSize: '13px',
+                  letterSpacing: '0.18em',
+                  color: 'var(--color-bg)',
                 }}
               >
                 {col.heading}
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="hover:opacity-70 transition-opacity duration-200 block"
+                      className="hover:opacity-60 transition-opacity duration-200 block"
                       style={{
                         fontFamily: 'var(--font-body)',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         lineHeight: 1.5,
                         color: 'var(--color-bg)',
-                        opacity: 0.9,
                       }}
                     >
                       {link.label}

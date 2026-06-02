@@ -136,15 +136,15 @@ export function Header() {
                 className="object-contain flex-shrink-0"
                 style={{ height: '52px', width: 'auto' }}
               />
-              {/* Crop transparent padding: show only text content area */}
-              <div style={{ height: '42px', overflow: 'hidden', flexShrink: 0 }}>
+              {/* name.png has ~31% transparent padding top/bottom — clip to text only */}
+              <div style={{ height: '52px', overflow: 'hidden', flexShrink: 0 }}>
                 <Image
                   src="/images/name.png"
                   alt="The Possah"
                   width={256}
                   height={171}
                   priority
-                  style={{ height: '95px', width: 'auto', marginTop: '-30px' }}
+                  style={{ height: '116px', width: 'auto', marginTop: '-36px' }}
                 />
               </div>
             </Link>
@@ -159,15 +159,15 @@ export function Header() {
                 className="object-contain flex-shrink-0"
                 style={{ height: '36px', width: 'auto' }}
               />
-              {/* Crop transparent padding: show only text content area */}
-              <div style={{ height: '32px', overflow: 'hidden', flexShrink: 0 }}>
+              {/* name.png — clip transparent padding */}
+              <div style={{ height: '36px', overflow: 'hidden', flexShrink: 0 }}>
                 <Image
                   src="/images/name.png"
                   alt="The Possah"
                   width={256}
                   height={171}
                   priority
-                  style={{ height: '72px', width: 'auto', marginTop: '-23px' }}
+                  style={{ height: '80px', width: 'auto', marginTop: '-25px' }}
                 />
               </div>
             </Link>
