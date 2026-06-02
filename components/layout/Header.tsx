@@ -136,15 +136,15 @@ export function Header() {
                 className="object-contain flex-shrink-0"
                 style={{ height: '52px', width: 'auto' }}
               />
-              {/* name.png has ~31% transparent padding top/bottom — clip to text only */}
-              <div style={{ height: '52px', overflow: 'hidden', flexShrink: 0 }}>
+              {/* name.png has ~31% transparent padding — use absolute crop so flex baseline stays clean */}
+              <div style={{ position: 'relative', height: '52px', width: '140px', overflow: 'hidden', flexShrink: 0 }}>
                 <Image
                   src="/images/name.png"
                   alt="The Possah"
                   width={256}
                   height={171}
                   priority
-                  style={{ height: '116px', width: 'auto', marginTop: '-36px' }}
+                  style={{ position: 'absolute', top: '-36px', left: 0, height: '116px', width: 'auto' }}
                 />
               </div>
             </Link>
@@ -159,15 +159,15 @@ export function Header() {
                 className="object-contain flex-shrink-0"
                 style={{ height: '36px', width: 'auto' }}
               />
-              {/* name.png — clip transparent padding */}
-              <div style={{ height: '36px', overflow: 'hidden', flexShrink: 0 }}>
+              {/* name.png — absolute crop, same height as logo so they sit level */}
+              <div style={{ position: 'relative', height: '36px', width: '96px', overflow: 'hidden', flexShrink: 0 }}>
                 <Image
                   src="/images/name.png"
                   alt="The Possah"
                   width={256}
                   height={171}
                   priority
-                  style={{ height: '80px', width: 'auto', marginTop: '-25px' }}
+                  style={{ position: 'absolute', top: '-25px', left: 0, height: '80px', width: 'auto' }}
                 />
               </div>
             </Link>

@@ -99,16 +99,26 @@ export function Footer() {
 
         {/* Bottom row */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Logo */}
-          <div className="flex flex-col items-center md:items-start gap-2">
+          {/* Logo + name */}
+          <div className="flex flex-col items-center md:items-start gap-3">
             <div className="flex items-center gap-3">
               <Image
-                src="/images/logo-gradient.png"
-                alt="The Possah"
-                width={180}
+                src="/images/logo.png"
+                alt=""
+                width={44}
                 height={44}
-                style={{ height: '40px', width: 'auto', opacity: 0.9 }}
+                style={{ height: '40px', width: 'auto', flexShrink: 0 }}
               />
+              {/* name.png — same absolute-crop technique as header */}
+              <div style={{ position: 'relative', height: '40px', width: '120px', overflow: 'hidden', flexShrink: 0 }}>
+                <Image
+                  src="/images/name.png"
+                  alt="The Possah"
+                  width={256}
+                  height={171}
+                  style={{ position: 'absolute', top: '-28px', left: 0, height: '89px', width: 'auto' }}
+                />
+              </div>
             </div>
             <p
               style={{
