@@ -136,17 +136,19 @@ export function Header() {
                 className="object-contain flex-shrink-0"
                 style={{ height: '52px', width: 'auto' }}
               />
-              <Image
-                src="/images/name.png"
-                alt="The Possah"
-                width={180}
-                height={56}
-                priority
-                className="object-contain"
-                style={{ height: '52px', width: 'auto' }}
-              />
+              {/* Crop transparent padding: show only text content area */}
+              <div style={{ height: '42px', overflow: 'hidden', flexShrink: 0 }}>
+                <Image
+                  src="/images/name.png"
+                  alt="The Possah"
+                  width={256}
+                  height={171}
+                  priority
+                  style={{ height: '95px', width: 'auto', marginTop: '-30px' }}
+                />
+              </div>
             </Link>
-            {/* Mobile: both sized to fill the 64px header comfortably */}
+            {/* Mobile */}
             <Link href="/" aria-label="The Possah — Home" className="flex md:hidden items-center gap-2">
               <Image
                 src="/images/logo.png"
@@ -155,17 +157,19 @@ export function Header() {
                 height={40}
                 priority
                 className="object-contain flex-shrink-0"
-                style={{ height: '38px', width: 'auto' }}
+                style={{ height: '36px', width: 'auto' }}
               />
-              <Image
-                src="/images/name.png"
-                alt="The Possah"
-                width={130}
-                height={38}
-                priority
-                className="object-contain"
-                style={{ height: '34px', width: 'auto' }}
-              />
+              {/* Crop transparent padding: show only text content area */}
+              <div style={{ height: '32px', overflow: 'hidden', flexShrink: 0 }}>
+                <Image
+                  src="/images/name.png"
+                  alt="The Possah"
+                  width={256}
+                  height={171}
+                  priority
+                  style={{ height: '72px', width: 'auto', marginTop: '-23px' }}
+                />
+              </div>
             </Link>
           </div>
 
