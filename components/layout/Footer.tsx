@@ -65,9 +65,9 @@ export function Footer() {
                 className="mb-5"
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: 'var(--text-label)',
+                  fontSize: '12px',
                   letterSpacing: '0.2em',
-                  opacity: 0.6,
+                  opacity: 0.75,
                 }}
               >
                 {col.heading}
@@ -80,10 +80,10 @@ export function Footer() {
                       className="hover:opacity-70 transition-opacity duration-200 block"
                       style={{
                         fontFamily: 'var(--font-body)',
-                        fontSize: '13px',
+                        fontSize: '14px',
                         lineHeight: 1.5,
                         color: 'var(--color-bg)',
-                        opacity: 0.85,
+                        opacity: 0.9,
                       }}
                     >
                       {link.label}
@@ -106,17 +106,17 @@ export function Footer() {
               <Image
                 src="/images/logo-gradient.png"
                 alt="The Possah"
-                width={140}
-                height={32}
-                style={{ height: '28px', width: 'auto', opacity: 0.9 }}
+                width={180}
+                height={44}
+                style={{ height: '40px', width: 'auto', opacity: 0.9 }}
               />
             </div>
             <p
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: '9px',
-                letterSpacing: '0.25em',
-                opacity: 0.45,
+                fontSize: '10px',
+                letterSpacing: '0.2em',
+                opacity: 0.55,
               }}
             >
               HAUTE COUTURE · LUCKNOW
@@ -168,9 +168,9 @@ export function Footer() {
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: '9px',
-                letterSpacing: '0.15em',
-                opacity: 0.7,
+                fontSize: '10px',
+                letterSpacing: '0.12em',
+                opacity: 0.8,
               }}
             >
               SECURE PAYMENTS:
@@ -202,9 +202,9 @@ export function Footer() {
           <p
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '9px',
-              letterSpacing: '0.12em',
-              opacity: 0.4,
+              fontSize: '10px',
+              letterSpacing: '0.1em',
+              opacity: 0.5,
             }}
           >
             © {new Date().getFullYear()} THE POSSAH HAUTE COUTURE. ALL RIGHTS RESERVED.
@@ -221,9 +221,9 @@ export function Footer() {
                 className="hover:opacity-70 transition-opacity duration-200"
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '9px',
-                  letterSpacing: '0.12em',
-                  opacity: 0.4,
+                  fontSize: '10px',
+                  letterSpacing: '0.1em',
+                  opacity: 0.5,
                   color: 'var(--color-bg)',
                 }}
               >

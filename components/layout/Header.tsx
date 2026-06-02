@@ -139,32 +139,32 @@ export function Header() {
               <Image
                 src="/images/name.png"
                 alt="The Possah"
-                width={160}
-                height={52}
+                width={180}
+                height={56}
                 priority
                 className="object-contain"
-                style={{ height: '44px', width: 'auto' }}
+                style={{ height: '52px', width: 'auto' }}
               />
             </Link>
-            {/* Mobile: both at smaller sizes to fit the 64px header */}
+            {/* Mobile: both sized to fill the 64px header comfortably */}
             <Link href="/" aria-label="The Possah — Home" className="flex md:hidden items-center gap-2">
               <Image
                 src="/images/logo.png"
                 alt=""
-                width={36}
-                height={36}
+                width={40}
+                height={40}
                 priority
                 className="object-contain flex-shrink-0"
-                style={{ height: '34px', width: 'auto' }}
+                style={{ height: '38px', width: 'auto' }}
               />
               <Image
                 src="/images/name.png"
                 alt="The Possah"
-                width={110}
-                height={34}
+                width={130}
+                height={38}
                 priority
                 className="object-contain"
-                style={{ height: '26px', width: 'auto' }}
+                style={{ height: '34px', width: 'auto' }}
               />
             </Link>
           </div>

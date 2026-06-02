@@ -24,9 +24,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   }
 
   return (
-    <div className="container-site py-24">
+    <div className="container-site py-10 md:py-24">
       <div
-        className="mx-auto flex max-w-[520px] flex-col gap-6 rounded-[32px] px-8 py-10"
+        className="mx-auto flex max-w-[520px] flex-col gap-6 rounded-[20px] md:rounded-[32px] px-5 py-8 md:px-8 md:py-10"
         style={{
           background: 'linear-gradient(180deg, rgba(31,58,45,0.06) 0%, rgba(244,236,223,0.9) 100%)',
           border: '1px solid var(--color-border)',
