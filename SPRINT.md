@@ -35,7 +35,7 @@
 | FIX-FE-07 | 🟡 MEDIUM | Add JSON-LD Product structured data to PDP |
 | FIX-FE-08 | 🟡 MEDIUM | Add Open Graph image meta to PDP generateMetadata |
 | FIX-INFRA-01 | 🔴 CRITICAL | GitHub Actions CI — lint + typecheck + test gate |
-| FIX-INFRA-02 | 🟠 HIGH | Add Sentry — server + client error tracking |
+| FIX-INFRA-02 | ❌ Removed | Sentry — removed from project (June 2026) |
 | FIX-INFRA-03 | 🟠 HIGH | Set up Vercel project — env vars, bom1 region, branch protection |
 | FIX-INFRA-04 | 🟡 MEDIUM | Add /api/health endpoint |
 | FIX-TEST-01 | 🔴 CRITICAL | Install Vitest + unit tests for razorpay.ts, auth.ts, coupon calc |

@@ -32,7 +32,6 @@ Open `.env.local` and replace placeholders with your own values:
 - `RESEND_API_KEY` — Resend email API key
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — optional GA4 ID
 - `ADMIN_EMAIL` — order notification email
-- Sentry vars are optional and should be configured in production only
 
 ## 3. Why `.env.local`?
 

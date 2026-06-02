@@ -142,5 +142,3 @@ Return `200 { received: true }` even when no action is taken (order not found, e
 ## 9. Monitoring Failed Webhooks
 
 In Razorpay Dashboard → Settings → Webhooks → click your webhook → **Webhook Logs**. You can see every delivery attempt, response code, and body. Retry manually if needed.
-
-After Sentry is configured (S4-A), any 500 errors in the webhook route will appear in your Sentry dashboard automatically.

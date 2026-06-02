@@ -17,7 +17,7 @@ This is the single source of truth for the live codebase. Read this before touch
 | Sprint 1 — Critical Security + Payment | ✅ Complete | Bypass removed, headers, payment.failed, CI |
 | Sprint 2 — DB + Test Scaffolding | ✅ Complete | Migration 022 run, payment test suite written |
 | Sprint 3 — Frontend Quality + SEO | ✅ Complete | ISR/OG/JSON-LD, GA4 events, loading/error boundaries, Vitest unit tests |
-| Sprint 4 — Infrastructure + Go-Live | ⚠️ Partial | Sentry config written (install pending), k6 script written, webhook registered; Vercel deploy TBD |
+| Sprint 4 — Infrastructure + Go-Live | ⚠️ Partial | Sentry removed (decision: not using); k6 script written, webhook registered; Vercel deploy TBD |
 | Sprint 5 — Storefront + Data Refresh | ✅ Complete | Taxonomy refresh, 13 categories, Best Sellers page, same-page pagination, Festive/Bridal flags, data pipeline aligned |
 
 **Current build (verified 26 May 2026):**
@@ -34,13 +34,11 @@ This is the single source of truth for the live codebase. Read this before touch
 - Vitest unit tests: `tests/unit/razorpay.test.ts` + `tests/unit/utils.test.ts` (run `npm test` locally)
 - GA4 events wired: `view_item` (PDP), `add_to_cart` (ProductInfo), `begin_checkout` + `purchase` (CheckoutForm)
 - All loading.tsx + error.tsx boundaries created for admin/orders, admin/products, cart, account
-- Sentry config files written; `npm install @sentry/nextjs` + env vars needed to activate
 - k6 load test: `scripts/load_test/k6.js` — targets orders/create and payments/webhook
 - Webhook setup guide: `docs/webhook-setup.md`
 - Razorpay webhook registered in dashboard (test + live); URL: `https://thepossah.com/api/payments/webhook`
 
 **What is NOT done yet** — all tracked in `SPRINT.md`:
-- `npm install @sentry/nextjs` — config files written (`sentry.client/server/edge.config.ts`, `next.config.mjs` wrapped with `withSentryConfig`), env vars documented, but package not yet installed. After install: remove Sentry excludes from `tsconfig.json`.
 - Vercel project setup + live deploy (S4-EXT-1) — manual step by user
 - Final SEO pass (excluded by user from this sprint)
 - Playwright E2E tests (`tests/e2e/`) — scaffolded, not yet authored
