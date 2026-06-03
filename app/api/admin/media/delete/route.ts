@@ -1,23 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const MEDIA_BUCKET = 'possah-media'
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return (
-    cookie.includes('next-auth.session-token') ||
-    cookie.includes('__Secure-next-auth.session-token')
-  )
-}
 
 // ─── DELETE /api/admin/media/delete ──────────────────────────────────────────
 // Body: { paths: string[] }  — storage paths relative to bucket root
 // Returns: { deleted: string[], ok: true }
 
-export async function DELETE(request: Request) {
-  if (!requireAdminAuth(request)) {
+export async function DELETE(request: NextRequest) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

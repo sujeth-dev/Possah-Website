@@ -1,13 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return cookie.includes('next-auth.session-token') || cookie.includes('__Secure-next-auth.session-token')
-}
 
 const HeroSlideSchema = z.object({
   image_url:    z.string().url(),
@@ -40,8 +35,8 @@ const HomepageUpdateSchema = z.object({
 const SINGLETON_ID = '00000000-0000-0000-0000-000000000001'
 
 // GET /api/admin/homepage — fetch config
-export async function GET(request: Request) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(request: NextRequest) {
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const supabase = createAdminClient()
@@ -70,8 +65,8 @@ export async function GET(request: Request) {
 }
 
 // PATCH /api/admin/homepage — update config
-export async function PATCH(request: Request) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function PATCH(request: NextRequest) {
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const body   = await request.json()

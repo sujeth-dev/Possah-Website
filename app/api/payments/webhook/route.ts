@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
     // FIX-PAY-03: Admin notification (non-blocking)
     try {
       await sendAdminOrderNotification({
-        to: process.env.ADMIN_EMAIL ?? 'thedenn0007@gmail.com',
+        to: process.env.ADMIN_EMAIL!,
         orderNumber: order.order_number,
         customerName: order.customer_name,
         customerEmail: order.customer_email,

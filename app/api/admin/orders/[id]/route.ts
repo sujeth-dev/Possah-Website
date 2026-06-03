@@ -1,12 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return cookie.includes('next-auth.session-token') || cookie.includes('__Secure-next-auth.session-token')
-}
 
 const OrderUpdateSchema = z.object({
   // Admin can update these — NEVER payment_status (that belongs to Razorpay/webhook)
@@ -18,10 +13,10 @@ const OrderUpdateSchema = z.object({
 
 // GET /api/admin/orders/[id] — order detail
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const supabase = createAdminClient()
@@ -44,10 +39,10 @@ export async function GET(
 
 // PATCH /api/admin/orders/[id] — update fulfillment fields
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const body   = await request.json()

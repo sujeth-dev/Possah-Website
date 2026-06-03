@@ -29,6 +29,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Rebuild native optional deps
+        # Workaround for npm bug: @rollup/rollup-linux-x64-gnu sometimes not installed
+        # https://github.com/npm/cli/issues/4828
+        run: npm rebuild rollup 2>/dev/null || true
+
       - name: Lint
         run: npm run lint
 
@@ -50,3 +55,4 @@ jobs:
           RAZORPAY_KEY_SECRET: placeholder_razorpay_secret
           RAZORPAY_WEBHOOK_SECRET: placeholder_webhook_secret
           RESEND_API_KEY: re_placeholder_resend_key
+          ADMIN_EMAIL: admin@placeholder.com
