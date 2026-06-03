@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
 
@@ -47,7 +47,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
     setTouchStart(null)
   }
 
-  // Close lightbox on Escape
   useEffect(() => {
     if (!lightboxOpen) return
     const onKey = (e: KeyboardEvent) => {
@@ -77,18 +76,22 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '24px',
       }}
     >
-      {/* Close button */}
       <button
-        onClick={() => setLightboxOpen(false)}
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          setLightboxOpen(false)
+        }}
         aria-label="Close image"
         style={{
           position: 'absolute',
           top: 20,
           right: 20,
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           borderRadius: '50%',
           backgroundColor: 'rgba(255,255,255,0.12)',
           border: 'none',
@@ -97,6 +100,8 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           alignItems: 'center',
           justifyContent: 'center',
           color: '#fff',
+          zIndex: 3,
+          touchAction: 'manipulation',
         }}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -104,10 +109,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         </svg>
       </button>
 
-      {/* Prev arrow */}
       {safeImages.length > 1 && (
         <button
-          onClick={(e) => { e.stopPropagation(); goPrev() }}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            goPrev()
+          }}
           aria-label="Previous image"
           style={{
             position: 'absolute',
@@ -124,6 +132,8 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             alignItems: 'center',
             justifyContent: 'center',
             color: '#fff',
+            zIndex: 2,
+            touchAction: 'manipulation',
           }}
         >
           <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -132,13 +142,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         </button>
       )}
 
-      {/* Image */}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
           position: 'relative',
           width: 'min(90vw, 600px)',
-          height: 'min(90vh, 800px)',
+          height: 'min(82vh, 800px)',
+          zIndex: 1,
         }}
       >
         <Image
@@ -152,10 +162,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         />
       </div>
 
-      {/* Next arrow */}
       {safeImages.length > 1 && (
         <button
-          onClick={(e) => { e.stopPropagation(); goNext() }}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            goNext()
+          }}
           aria-label="Next image"
           style={{
             position: 'absolute',
@@ -172,6 +185,8 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             alignItems: 'center',
             justifyContent: 'center',
             color: '#fff',
+            zIndex: 2,
+            touchAction: 'manipulation',
           }}
         >
           <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -180,7 +195,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         </button>
       )}
 
-      {/* Counter */}
       {safeImages.length > 1 && (
         <span
           style={{
@@ -192,6 +206,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             fontSize: 12,
             fontFamily: 'var(--font-mono)',
             letterSpacing: '0.1em',
+            zIndex: 2,
           }}
         >
           {activeIndex + 1} / {safeImages.length}
@@ -204,7 +219,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 md:gap-5 lg:gap-6 md:sticky md:top-[104px] md:self-start">
-        {/* Thumbnails — left column on desktop, row on mobile (below primary) */}
         <div className="order-2 md:order-1 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-1 md:pb-0" style={{ scrollbarWidth: 'none' }}>
           {safeImages.slice(0, 5).map((img, i) => (
             <button
@@ -234,17 +248,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           ))}
         </div>
 
-        {/* Primary image */}
         <div
           className="order-1 md:order-2 relative flex-1 group"
           style={{ borderRadius: 'var(--radius-card)', overflow: 'hidden' }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          <div
-            className="relative w-full"
-            style={{ aspectRatio: '3 / 4' }}
-          >
+          <div className="relative w-full" style={{ aspectRatio: '3 / 4' }}>
             <Image
               key={active.url}
               src={active.url}
@@ -257,7 +267,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             />
           </div>
 
-          {/* Zoom trigger — covers the whole image */}
           <button
             onClick={() => setLightboxOpen(true)}
             aria-label="Zoom image"
@@ -265,7 +274,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             style={{ cursor: 'zoom-in', background: 'transparent', border: 'none' }}
           />
 
-          {/* Zoom icon hint */}
           <div
             className="absolute bottom-3 right-3 flex items-center justify-center w-8 h-8 pointer-events-none
                         opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
@@ -282,7 +290,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             </svg>
           </div>
 
-          {/* Mobile nav arrows — only show if >1 image */}
           {safeImages.length > 1 && (
             <>
               <button
@@ -314,7 +321,6 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 </svg>
               </button>
 
-              {/* Dot indicators — mobile only */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 md:hidden">
                 {safeImages.slice(0, 5).map((_, i) => (
                   <button

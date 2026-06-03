@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useCartStore } from '@/lib/store/cartStore'
 import { useWishlistStore } from '@/lib/store/wishlistStore'
 import { MobileNav } from './MobileNav'
+import { BrandLockup } from './BrandLockup'
 
 const NAV_ITEMS = [
   { label: 'NEW IN', href: '/new-in' },
@@ -75,7 +75,6 @@ export function Header() {
     | (NavItem & { submenu: readonly { label: string; children: readonly { label: string; href: string }[] }[] })
     | undefined
 
-  // For MobileNav we need a compatible type — add href to submenu sections
   const mobileNavItems = NAV_ITEMS.map((item) => ({
     label: item.label,
     href: item.href,
@@ -97,8 +96,6 @@ export function Header() {
         }`}
       >
         <div className="relative flex items-center justify-between h-16 md:h-[72px] px-4 md:px-8 max-w-[1440px] mx-auto">
-
-          {/* ── Mobile: hamburger ── */}
           <button
             onClick={() => setMobileNavOpen(true)}
             className="md:hidden flex items-center justify-center w-10 h-10 -ml-2"
@@ -110,7 +107,6 @@ export function Header() {
             </svg>
           </button>
 
-          {/* ── Desktop: search (left) ── */}
           <Link
             href="/search"
             className="hidden md:flex items-center gap-2 text-[11px] tracking-widest uppercase hover:opacity-70 transition-opacity duration-200"
@@ -123,57 +119,15 @@ export function Header() {
             </svg>
           </Link>
 
-          {/* ── Logo (centred) ── */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-            {/* Desktop: logo symbol + brand name side-by-side */}
-            <Link href="/" aria-label="The Possah — Home" className="hidden md:flex items-center gap-3">
-              <Image
-                src="/images/logo.png"
-                alt=""
-                width={56}
-                height={56}
-                priority
-                className="object-contain flex-shrink-0"
-                style={{ height: '52px', width: 'auto' }}
-              />
-              {/* name.png has ~31% transparent padding — use absolute crop so flex baseline stays clean */}
-              <div style={{ position: 'relative', height: '52px', width: '140px', overflow: 'hidden', flexShrink: 0 }}>
-                <Image
-                  src="/images/name.png"
-                  alt="The Possah"
-                  width={256}
-                  height={171}
-                  priority
-                  style={{ position: 'absolute', top: '-36px', left: 0, height: '116px', width: 'auto' }}
-                />
-              </div>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Link href="/" aria-label="The Possah - Home" className="hidden md:flex">
+              <BrandLockup variant="header-desktop" />
             </Link>
-            {/* Mobile */}
-            <Link href="/" aria-label="The Possah — Home" className="flex md:hidden items-center gap-2">
-              <Image
-                src="/images/logo.png"
-                alt=""
-                width={40}
-                height={40}
-                priority
-                className="object-contain flex-shrink-0"
-                style={{ height: '36px', width: 'auto' }}
-              />
-              {/* name.png — absolute crop, same height as logo so they sit level */}
-              <div style={{ position: 'relative', height: '36px', width: '96px', overflow: 'hidden', flexShrink: 0 }}>
-                <Image
-                  src="/images/name.png"
-                  alt="The Possah"
-                  width={256}
-                  height={171}
-                  priority
-                  style={{ position: 'absolute', top: '-25px', left: 0, height: '80px', width: 'auto' }}
-                />
-              </div>
+            <Link href="/" aria-label="The Possah - Home" className="flex md:hidden">
+              <BrandLockup variant="header-mobile" />
             </Link>
           </div>
 
-          {/* ── Right icons ── */}
           <div className="flex items-center gap-3 md:gap-4">
             <Link href="/search" className="md:hidden flex items-center justify-center w-8 h-8" aria-label="Search">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round">
@@ -184,7 +138,7 @@ export function Header() {
             <Link
               href="/wishlist"
               className="hidden md:flex items-center justify-center w-8 h-8 relative"
-              aria-label={mounted && wishlistCount > 0 ? `Wishlist — ${wishlistCount} items` : 'Wishlist'}
+              aria-label={mounted && wishlistCount > 0 ? `Wishlist - ${wishlistCount} items` : 'Wishlist'}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10 17.5S2 12.5 2 6.5a4 4 0 018-1.3A4 4 0 0118 6.5c0 6-8 11-8 11z" />
@@ -207,7 +161,7 @@ export function Header() {
             <Link
               href="/cart"
               className="flex items-center justify-center w-8 h-8 relative"
-              aria-label={mounted && cartCount > 0 ? `Shopping bag — ${cartCount} items` : 'Shopping bag'}
+              aria-label={mounted && cartCount > 0 ? `Shopping bag - ${cartCount} items` : 'Shopping bag'}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 7V5a4 4 0 018 0v2" />
@@ -225,7 +179,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* ── Desktop: nav bar (below logo row) ── */}
         <nav
           className="hidden md:flex items-center justify-center border-t h-10"
           style={{ borderColor: 'var(--color-border)' }}
@@ -262,8 +215,13 @@ export function Header() {
                     {item.label}
                     {hasSubmenu && (
                       <svg
-                        width="8" height="8" viewBox="0 0 8 8" fill="none"
-                        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+                        width="8"
+                        height="8"
+                        viewBox="0 0 8 8"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
                         className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                         aria-hidden="true"
                       >
@@ -277,7 +235,6 @@ export function Header() {
           </ul>
         </nav>
 
-        {/* ── Dropdown panel ── */}
         {activeItem && (
           <div
             role="region"
@@ -297,7 +254,6 @@ export function Header() {
               {activeItem.submenu.map((section) => {
                 const split = (section as typeof section & { splitAt?: number }).splitAt
                 if (split) {
-                  // Render as two side-by-side columns under one shared label
                   const col1 = section.children.slice(0, split)
                   const col2 = section.children.slice(split)
                   return (
@@ -350,46 +306,45 @@ export function Header() {
                   )
                 }
                 return (
-                <div key={section.label} className="min-w-[120px]">
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '9px',
-                      letterSpacing: '0.22em',
-                      textTransform: 'uppercase',
-                      color: 'var(--color-text-muted)',
-                      marginBottom: '12px',
-                    }}
-                  >
-                    {section.label}
-                  </p>
-                  <ul className="flex flex-col gap-3">
-                    {section.children.map((child) => (
-                      <li key={child.label}>
-                        <Link
-                          href={child.href}
-                          onClick={() => setOpenMenu(null)}
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '14px',
-                            fontWeight: '400',
-                            color: 'var(--color-text)',
-                            letterSpacing: '0.02em',
-                            textDecoration: 'none',
-                            display: 'block',
-                          }}
-                          className="hover:opacity-55 transition-opacity duration-150"
-                        >
-                          {child.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  <div key={section.label} className="min-w-[120px]">
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '9px',
+                        letterSpacing: '0.22em',
+                        textTransform: 'uppercase',
+                        color: 'var(--color-text-muted)',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      {section.label}
+                    </p>
+                    <ul className="flex flex-col gap-3">
+                      {section.children.map((child) => (
+                        <li key={child.label}>
+                          <Link
+                            href={child.href}
+                            onClick={() => setOpenMenu(null)}
+                            style={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              color: 'var(--color-text)',
+                              letterSpacing: '0.02em',
+                              textDecoration: 'none',
+                              display: 'block',
+                            }}
+                            className="hover:opacity-55 transition-opacity duration-150"
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )
               })}
 
-              {/* Right side — women page link */}
               <div className="ml-auto self-center">
                 <Link
                   href="/women"
@@ -415,7 +370,6 @@ export function Header() {
         )}
       </header>
 
-      {/* Dropdown animation keyframe */}
       <style>{`
         @keyframes dropdownIn {
           from { opacity: 0; transform: translateY(-6px); }
@@ -423,7 +377,6 @@ export function Header() {
         }
       `}</style>
 
-      {/* Mobile navigation drawer */}
       <MobileNav
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}

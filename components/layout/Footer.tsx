@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import { BrandLockup } from './BrandLockup'
 
 const FOOTER_COLUMNS = [
   {
@@ -56,7 +56,6 @@ export function Footer() {
       style={{ backgroundColor: 'var(--color-green)', color: 'var(--color-bg)' }}
       aria-label="Site footer"
     >
-      {/* Main footer grid */}
       <div className="container-site py-16 md:py-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
           {FOOTER_COLUMNS.map((col) => (
@@ -94,32 +93,11 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Divider */}
         <div className="mt-14 mb-10 border-t" style={{ borderColor: 'rgba(244,236,223,0.15)' }} />
 
-        {/* Bottom row */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Logo + name */}
           <div className="flex flex-col items-center md:items-start gap-3">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/images/logo.png"
-                alt=""
-                width={44}
-                height={44}
-                style={{ height: '40px', width: 'auto', flexShrink: 0 }}
-              />
-              {/* name.png — same absolute-crop technique as header */}
-              <div style={{ position: 'relative', height: '40px', width: '120px', overflow: 'hidden', flexShrink: 0 }}>
-                <Image
-                  src="/images/name.png"
-                  alt="The Possah"
-                  width={256}
-                  height={171}
-                  style={{ position: 'absolute', top: '-28px', left: 0, height: '89px', width: 'auto' }}
-                />
-              </div>
-            </div>
+            <BrandLockup variant="footer" />
             <p
               style={{
                 fontFamily: 'var(--font-mono)',
@@ -132,7 +110,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Social icons */}
           <div className="flex items-center gap-5">
             <a
               href="https://instagram.com/thepossah"
@@ -172,7 +149,6 @@ export function Footer() {
             </a>
           </div>
 
-          {/* Payment badges */}
           <div className="flex items-center gap-2 opacity-60">
             <span
               style={{
@@ -203,7 +179,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Legal row */}
         <div
           className="mt-8 pt-6 border-t flex flex-col md:flex-row items-center justify-between gap-3"
           style={{ borderColor: 'rgba(244,236,223,0.1)' }}
