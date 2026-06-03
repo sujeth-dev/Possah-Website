@@ -23,6 +23,7 @@ const schema = z.object({
   RAZORPAY_KEY_SECRET: z.string().min(10, 'RAZORPAY_KEY_SECRET is missing'),
   RAZORPAY_WEBHOOK_SECRET: z.string().min(10, 'RAZORPAY_WEBHOOK_SECRET is missing'),
   RESEND_API_KEY: z.string().startsWith('re_', 'RESEND_API_KEY must start with re_'),
+  ADMIN_EMAIL: z.string().email('ADMIN_EMAIL must be a valid email address'),
 })
 
 const parsed = schema.safeParse(process.env)

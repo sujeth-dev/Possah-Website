@@ -1,14 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils'
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return cookie.includes('next-auth.session-token') || cookie.includes('__Secure-next-auth.session-token')
-}
 
 const CategorySchema = z.object({
   name:        z.string().min(1, 'Name required').max(100),
@@ -20,8 +15,8 @@ const CategorySchema = z.object({
 })
 
 // GET /api/admin/categories — all categories
-export async function GET(request: Request) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(request: NextRequest) {
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const supabase = createAdminClient()
@@ -38,8 +33,8 @@ export async function GET(request: Request) {
 }
 
 // POST /api/admin/categories — create category
-export async function POST(request: Request) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function POST(request: NextRequest) {
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const body   = await request.json()
@@ -83,8 +78,8 @@ export async function POST(request: Request) {
 }
 
 // PATCH /api/admin/categories — bulk reorder (array of { id, position })
-export async function PATCH(request: Request) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function PATCH(request: NextRequest) {
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const body = await request.json()

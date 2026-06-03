@@ -1,23 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductCreateSchema, type VariantInput, type ImageInput } from '@/lib/validations/admin-products'
 
-// ─── Auth guard ───────────────────────────────────────────────────────────────
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return cookie.includes('next-auth.session-token') || cookie.includes('__Secure-next-auth.session-token')
-}
-
 // ─── GET /api/admin/products/[id] ─ single product with all relations ─────────
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdminAuth(request)) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -55,10 +48,10 @@ export async function GET(
 const ProductUpdateSchema = ProductCreateSchema.partial()
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdminAuth(request)) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -201,10 +194,10 @@ export async function PATCH(
 // ─── DELETE /api/admin/products/[id] ─ soft delete (set is_active=false) ─────
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdminAuth(request)) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

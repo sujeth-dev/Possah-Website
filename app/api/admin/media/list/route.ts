@@ -1,26 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const MEDIA_BUCKET = 'possah-media'
 // Subfolders to scan in addition to root
 const SUBFOLDERS = ['products']
 
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return (
-    cookie.includes('next-auth.session-token') ||
-    cookie.includes('__Secure-next-auth.session-token')
-  )
-}
-
 // ─── GET /api/admin/media/list ────────────────────────────────────────────────
 // Returns all files from bucket root + known subfolders, merged and sorted newest first.
 // Shape: { files: MediaFile[] }
 // MediaFile: { name, url, size, created_at, fullPath, folder? }
 
-export async function GET(request: Request) {
-  if (!requireAdminAuth(request)) {
+export async function GET(request: NextRequest) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

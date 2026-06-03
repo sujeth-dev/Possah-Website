@@ -1,18 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return cookie.includes('next-auth.session-token') || cookie.includes('__Secure-next-auth.session-token')
-}
 
 const VALID_STATUSES = ['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled'] as const
 const VALID_PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'] as const
 
 // GET /api/admin/orders — list with filters + pagination + CSV export
-export async function GET(request: Request) {
-  if (!requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(request: NextRequest) {
+  if (!await requireAdminAuth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const { searchParams } = new URL(request.url)

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default function ContactPage() {
-  const waLink = whatsappUrl('+919876543210', 'Hi! I have a question about The Possah.')
+  const waLink = whatsappUrl('+919151512323', 'Hi! I have a question about ThePossah.')
 
   return (
     <div className="container-site py-16 pb-24">
@@ -57,7 +57,7 @@ export default function ContactPage() {
                 color: 'var(--color-text)',
               }}
             >
-              +91 98765 43210
+              +91 91515 12323
             </a>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
               Replies within 2 hours, 10am–8pm IST
@@ -115,9 +115,9 @@ export default function ContactPage() {
                 fontStyle: 'normal',
               }}
             >
-              The Possah Atelier<br />
-              Hazratganj, Lucknow<br />
-              Uttar Pradesh — 226001
+              ThePossah Haute Couture<br />
+              Shop No. 1, 1st Main Rd, Munireddy Layout<br />
+              Horamavu, Bengaluru — 560113
             </address>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
               By appointment only — please WhatsApp to schedule

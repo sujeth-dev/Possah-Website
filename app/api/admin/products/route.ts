@@ -1,22 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductCreateSchema, type ProductCreateInput } from '@/lib/validations/admin-products'
 
-// ─── Auth guard (skipped in dev) ─────────────────────────────────────────────
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  // In prod, middleware already verified the JWT token before this runs.
-  // Double-check the session cookie presence as a second layer.
-  const cookie = request.headers.get('cookie') ?? ''
-  return cookie.includes('next-auth.session-token') || cookie.includes('__Secure-next-auth.session-token')
-}
-
 // ─── GET /api/admin/products ─ list all products ──────────────────────────────
 
-export async function GET(request: Request) {
-  if (!requireAdminAuth(request)) {
+export async function GET(request: NextRequest) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -85,8 +76,8 @@ export async function GET(request: Request) {
 
 // ─── POST /api/admin/products ─ create product ───────────────────────────────
 
-export async function POST(request: Request) {
-  if (!requireAdminAuth(request)) {
+export async function POST(request: NextRequest) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

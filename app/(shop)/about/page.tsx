@@ -4,14 +4,14 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About',
-  description: 'Handcrafted luxury Indian fashion from Lucknow. The Possah is a celebration of craft, culture, and considered dressing.',
+  description: 'Haute couture fashion house in Bengaluru, Karnataka. ThePossah is a celebration of craft, culture, and considered dressing.',
   alternates: { canonical: 'https://thepossah.com/about' },
 }
 
 const PILLARS = [
   {
     label: 'The Craft',
-    body: 'Every piece begins with a conversation between artisan and fabric. Our weavers and embroiderers in Lucknow have refined their craft across generations — we simply give their work the stage it deserves.',
+    body: 'Every piece begins with a conversation between artisan and fabric. Our artisans in Bengaluru have refined their craft across generations — we simply give their work the stage it deserves.',
   },
   {
     label: 'The Edit',
@@ -67,7 +67,7 @@ export default function AboutPage() {
               marginTop: 8,
             }}
           >
-            Lucknow · Est. 2024
+            Bengaluru · Est. 2024
           </p>
         </div>
       </div>
