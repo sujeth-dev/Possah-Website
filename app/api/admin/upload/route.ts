@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { createClient } from '@supabase/supabase-js'
 
 const MEDIA_BUCKET = 'possah-media'
@@ -11,17 +12,6 @@ function serviceClient() {
   return createClient(url, key, { auth: { persistSession: false } })
 }
 
-// ─── Auth guard (skipped in dev) ─────────────────────────────────────────────
-
-function requireAdminAuth(request: Request): boolean {
-  if (process.env.NODE_ENV === 'development') return true
-  const cookie = request.headers.get('cookie') ?? ''
-  return (
-    cookie.includes('next-auth.session-token') ||
-    cookie.includes('__Secure-next-auth.session-token')
-  )
-}
-
 // ─── POST /api/admin/upload ────────────────────────────────────────────────
 // Accepts: multipart/form-data with fields:
 //   file     — the image File
@@ -29,8 +19,8 @@ function requireAdminAuth(request: Request): boolean {
 //
 // Returns: { publicUrl: string }
 
-export async function POST(request: Request) {
-  if (!requireAdminAuth(request)) {
+export async function POST(request: NextRequest) {
+  if (!await requireAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

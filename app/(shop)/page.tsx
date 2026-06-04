@@ -165,18 +165,19 @@ export default async function HomePage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'ClothingStore',
-            name: 'The Possah',
-            description: 'Luxury Indian fashion — handcrafted sarees, lehengas, co-ord sets.',
+            name: 'ThePossah',
+            description: 'Haute couture fashion house in Bengaluru, Karnataka.',
             url: 'https://thepossah.com',
+            telephone: '+919151512323',
             address: {
               '@type': 'PostalAddress',
-              streetAddress: '14 Hanenganj Lane',
-              addressLocality: 'Lucknow',
-              addressRegion: 'Uttar Pradesh',
-              postalCode: '226001',
+              streetAddress: 'Shop No. 1, Ground Floor, No. 30, 1st Main Rd, behind Maharaja Furniture Store, Munireddy Layout',
+              addressLocality: 'Horamavu, Bengaluru',
+              addressRegion: 'Karnataka',
+              postalCode: '560113',
               addressCountry: 'IN',
             },
-            sameAs: ['https://instagram.com/thepossah'],
+            sameAs: ['https://www.instagram.com/thepossahhautecouture/'],
           }),
         }}
       />

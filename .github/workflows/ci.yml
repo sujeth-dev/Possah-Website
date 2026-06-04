@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install missing optional native dep
+        # npm bug: @rollup/rollup-linux-x64-gnu (required by vitest) is skipped
+        # when installing from a cached ~/.npm. Explicitly install it.
+        # https://github.com/npm/cli/issues/4828
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu@4.60.4
+
       - name: Lint
         run: npm run lint
 
@@ -50,3 +56,4 @@ jobs:
           RAZORPAY_KEY_SECRET: placeholder_razorpay_secret
           RAZORPAY_WEBHOOK_SECRET: placeholder_webhook_secret
           RESEND_API_KEY: re_placeholder_resend_key
+          ADMIN_EMAIL: admin@placeholder.com

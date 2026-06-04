@@ -13,8 +13,8 @@ const mockSupabaseEq = vi.fn()
 const mockSupabaseSingle = vi.fn()
 const mockRPC = vi.fn()
 
-vi.mock('@/lib/supabase/server', () => ({
-  createServerClient: () => ({
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({
     from: mockSupabaseFrom,
     rpc: mockRPC,
   }),
@@ -53,8 +53,6 @@ function makeSignature(body: string, secret: string) {
 }
 
 async function callWebhook(body: string, signature: string) {
-  vi.stubEnv('RAZORPAY_WEBHOOK_SECRET', 'test_webhook_secret')
-
   const { POST } = await import('@/app/api/payments/webhook/route')
   const req = new Request('http://localhost/api/payments/webhook', {
     method: 'POST',
@@ -125,20 +123,22 @@ describe('POST /api/payments/webhook', () => {
     const sig = makeSignature(body, secret)
 
     const mockFailedOrder = {
+      id: 'order_db_001',
       customer_email: 'customer@example.com',
       customer_name: 'Test User',
       order_number: 'PSH-2026-0001',
+      payment_status: 'pending',
+      total: 100000,
     }
 
     mockSupabaseFrom.mockReturnValue({
-      update: () => ({
+      select: () => ({
         eq: () => ({
-          eq: () => ({
-            select: () => ({
-              single: () => ({ data: mockFailedOrder, error: null }),
-            }),
-          }),
+          single: () => ({ data: mockFailedOrder, error: null }),
         }),
+      }),
+      update: () => ({
+        eq: () => ({ error: null }),
       }),
     })
 

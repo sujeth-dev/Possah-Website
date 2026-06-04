@@ -23,7 +23,14 @@ vi.mock('@/lib/email', () => ({
 
 // ─── Mock Supabase client ─────────────────────────────────────────────────────
 
-let mockVariants: Array<{ id: string; price: number; stock_qty: number; product_id: string }> = []
+const PRODUCT_UUID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+const VARIANT_UUID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+
+let mockVariants: Array<{
+  id: string
+  stock_qty: number
+  products: { id: string; price: number; is_active: boolean } | null
+}> = []
 let mockInsertError: { message: string } | null = null
 
 const mockSupabaseClient = {
@@ -31,11 +38,7 @@ const mockSupabaseClient = {
     if (table === 'product_variants') {
       return {
         select: () => ({
-          in: () => ({
-            select: () => ({ data: mockVariants, error: null }),
-          }),
-          data: mockVariants,
-          error: null,
+          in: () => ({ data: mockVariants, error: null }),
         }),
       }
     }
@@ -92,8 +95,8 @@ function makeOrderBody(overrides: Record<string, unknown> = {}) {
     },
     items: [
       {
-        product_id: 'prod_001',
-        variant_id: 'var_001',
+        product_id: PRODUCT_UUID,
+        variant_id: VARIANT_UUID,
         name: 'Noor Silk Saree',
         image: 'https://example.com/img.jpg',
         qty: 1,
@@ -136,10 +139,9 @@ describe('POST /api/orders/create', () => {
     // Default: variant exists, stock ok, real DB price = 9999
     mockVariants = [
       {
-        id: 'var_001',
-        price: 9999,
+        id: VARIANT_UUID,
         stock_qty: 10,
-        product_id: 'prod_001',
+        products: { id: PRODUCT_UUID, price: 9999, is_active: true },
       },
     ]
     mockInsertError = null
@@ -154,12 +156,12 @@ describe('POST /api/orders/create', () => {
     // Client sends price 1 (₹0.01), DB has 9999 (₹99.99).
     // The order should be created at DB price — client price is ignored.
     // We test that the order creation proceeds with server-validated price.
-    mockVariants = [{ id: 'var_001', price: 9999, stock_qty: 5, product_id: 'prod_001' }]
+    mockVariants = [{ id: VARIANT_UUID, stock_qty: 5, products: { id: PRODUCT_UUID, price: 9999, is_active: true } }]
 
     const body = makeOrderBody({
       items: [{
-        product_id: 'prod_001',
-        variant_id: 'var_001',
+        product_id: PRODUCT_UUID,
+        variant_id: VARIANT_UUID,
         name: 'Test',
         image: 'https://img.jpg',
         qty: 1,
@@ -177,7 +179,7 @@ describe('POST /api/orders/create', () => {
   })
 
   it('returns 409 when variant is out of stock', async () => {
-    mockVariants = [{ id: 'var_001', price: 9999, stock_qty: 0, product_id: 'prod_001' }]
+    mockVariants = [{ id: VARIANT_UUID, stock_qty: 0, products: { id: PRODUCT_UUID, price: 9999, is_active: true } }]
     const response = await postOrder(makeOrderBody())
     expect(response.status).toBe(409)
   })
