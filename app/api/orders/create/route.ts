@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     if (variantError || !variants || variants.length !== variantIds.length) {
       return NextResponse.json(
         { message: 'One or more items are no longer available. Please refresh your cart.' },
-        { status: 400 },
+        { status: 404 },
       )
     }
 
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       if (v.stock_qty < item.qty) {
         return NextResponse.json(
           { message: `"${item.name}" only has ${v.stock_qty} unit(s) left. Please update your cart.` },
-          { status: 400 },
+          { status: 409 },
         )
       }
     }
