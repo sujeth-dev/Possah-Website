@@ -261,6 +261,13 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <SortBar resultCount={total} showFilterButton />
 
             <CategoryListing
+              key={[
+                getString(searchParams.occasion),
+                getString(searchParams.fabric),
+                getString(searchParams.size),
+                getString(searchParams.sub_line),
+                getString(searchParams.sort) ?? 'newest',
+              ].join('|')}
               initialProducts={products}
               total={total}
               categorySlug={params.category}
