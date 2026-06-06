@@ -13,12 +13,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'pub-bd1604488a4e4de8a91122f401a32be2.r2.dev',
       },
-      // Supabase — kept during migration window; remove after DB URLs rewritten
-      {
-        protocol: 'https',
-        hostname: '**.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
