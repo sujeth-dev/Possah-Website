@@ -32,6 +32,10 @@ Open `.env.local` and replace placeholders with your own values:
 - `RESEND_API_KEY` — Resend email API key
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — optional GA4 ID
 - `ADMIN_EMAIL` — order notification email
+- `CF_ACCOUNT_ID` — Cloudflare account ID (R2 image storage; found in dashboard URL)
+- `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` — R2 API credentials (server-only)
+- `R2_BUCKET_NAME` — R2 bucket name (default: `possah-media`)
+- `NEXT_PUBLIC_R2_PUBLIC_URL` — public base URL for served images (either `cdn.thepossah.com` or the bucket's `pub-xxx.r2.dev` URL)
 
 ## 3. Why `.env.local`?
 
@@ -57,7 +61,7 @@ npm run dev
 ## 5. Production / deployment
 
 - Do not deploy `.env.local` to production.
-- Instead, configure environment variables in your hosting provider (Vercel, Netlify, etc.).
+- Instead, configure environment variables in your hosting provider (Vercel or Cloudflare Pages).
 - Use the same variable names as in `.env.local`.
 
 ## 6. Important security notes

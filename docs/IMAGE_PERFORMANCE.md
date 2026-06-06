@@ -1,10 +1,12 @@
 # Image Performance — Possah
 
-## Current Setup (Option A — Active)
+## Current Setup (Option A — Superseded June 2026)
 
-### What Is Running Now
+> **Note:** Image storage has been migrated to Cloudflare R2 (Option C below). The Supabase bucket remains as an archive. This section describes the original setup for reference only.
 
-All images are stored in **Supabase Storage** (`possah-media` bucket) and served
+### What Was Running
+
+All images were stored in **Supabase Storage** (`possah-media` bucket) and served
 through **Vercel's built-in image optimisation layer** (`next/image`).
 
 ```
@@ -56,7 +58,9 @@ If you exceed 1,000: Vercel charges $5 per additional 1,000. Still cheap.
 
 ---
 
-## Future Option — Cloudflare R2 (Option C)
+## Cloudflare R2 (Option C — Active as of June 2026)
+
+> **Status:** R2 migration is complete. `lib/r2.ts` is the active storage client. New uploads go to R2 automatically. To migrate existing images run `scripts/migrate-images-to-r2.mjs` then `scripts/update-image-urls-in-db.mjs`.
 
 Switch storage backend from Supabase to Cloudflare R2.  
 `next/image` continues to handle optimisation/CDN — only the storage origin changes.
