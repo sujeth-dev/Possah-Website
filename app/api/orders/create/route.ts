@@ -7,7 +7,7 @@ import { generateOrderNumber } from '@/lib/utils'
 
 const orderItemSchema = z.object({
   product_id: z.string().uuid(),
-  variant_id: z.string().uuid(),
+  variant_id: z.string().min(1).max(200),
   name: z.string().min(1).max(200),
   image: z.string().min(1),
   qty: z.number().int().positive().max(10),
@@ -60,10 +60,25 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const data = parsed.data
-
   try {
     const supabase = createServerClient()
+
+    // Resolve quick-add sentinel variant_ids (format: "{product_id}-default")
+    const resolvedItems = await Promise.all(
+      parsed.data.items.map(async (item) => {
+        if (!item.variant_id.endsWith('-default')) return item
+        const { data: v } = await supabase
+          .from('product_variants')
+          .select('id, colour_name, size')
+          .eq('product_id', item.product_id)
+          .order('created_at')
+          .limit(1)
+          .single()
+        if (!v) return item
+        return { ...item, variant_id: v.id, colour: v.colour_name, size: v.size }
+      })
+    )
+    const data = { ...parsed.data, items: resolvedItems }
 
     // 1. Fetch real variant prices from DB
     const variantIds = [...new Set(data.items.map((i) => i.variant_id))]

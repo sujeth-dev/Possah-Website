@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
+import { ResumePaymentButton } from './ResumePaymentButton'
 
 export const metadata: Metadata = {
   title: 'My Orders',
@@ -21,6 +22,8 @@ type OrderRow = {
   payment_status: string | null
   total: number
   line_items: unknown
+  customer_name: string | null
+  customer_phone: string | null
 }
 
 async function getOrders(email: string): Promise<OrderRow[]> {
@@ -28,7 +31,7 @@ async function getOrders(email: string): Promise<OrderRow[]> {
     const supabase = createServerClient()
     const { data } = await supabase
       .from('orders')
-      .select('id, order_number, created_at, fulfillment_status, payment_status, total, line_items')
+      .select('id, order_number, created_at, fulfillment_status, payment_status, total, line_items, customer_name, customer_phone')
       .eq('customer_email', email)
       .order('created_at', { ascending: false })
       .limit(20)
@@ -62,7 +65,8 @@ export default async function OrdersPage() {
     )
   }
 
-  const orders = await getOrders(session.user.email)
+  const userEmail = session.user.email
+  const orders = await getOrders(userEmail)
 
   return (
     <div className="container-site py-12 pb-24">
@@ -122,12 +126,15 @@ export default async function OrdersPage() {
               day: 'numeric', month: 'short', year: 'numeric',
             })
 
+            const isPendingPayment = order.payment_status === 'pending'
+            const isFailedPayment = order.payment_status === 'failed'
+
             return (
               <div
                 key={order.id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5"
                 style={{
-                  border: '1px solid var(--color-border)',
+                  border: `1px solid ${isPendingPayment ? 'var(--color-orange, #d97706)' : 'var(--color-border)'}`,
                   borderRadius: 'var(--radius-card)',
                 }}
               >
@@ -144,6 +151,38 @@ export default async function OrdersPage() {
                       {order.order_number}
                     </span>
                     <Badge variant={badgeVariant} />
+                    {isPendingPayment && (
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '9px',
+                          letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                          color: '#d97706',
+                          backgroundColor: '#fef3c7',
+                          padding: '2px 7px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        Awaiting Payment
+                      </span>
+                    )}
+                    {isFailedPayment && (
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '9px',
+                          letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                          color: '#dc2626',
+                          backgroundColor: '#fee2e2',
+                          padding: '2px 7px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        Payment Failed
+                      </span>
+                    )}
                   </div>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
                     {itemPreview}{overflow}
@@ -152,7 +191,7 @@ export default async function OrdersPage() {
                     {createdAt}
                   </p>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                   <span
                     style={{
                       fontFamily: 'var(--font-body)',
@@ -163,20 +202,27 @@ export default async function OrdersPage() {
                   >
                     {formatPrice(order.total)}
                   </span>
-                  <Link
-                    href={`/order/confirmation?order=${order.order_number}`}
-                    className="transition-opacity duration-200 hover:opacity-60"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '10px',
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      color: 'var(--color-green)',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Details
-                  </Link>
+                  {isPendingPayment ? (
+                    <ResumePaymentButton
+                      orderNumber={order.order_number}
+                      customerEmail={userEmail}
+                    />
+                  ) : (
+                    <Link
+                      href={`/order/confirmation?order=${order.order_number}`}
+                      className="transition-opacity duration-200 hover:opacity-60"
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '10px',
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        color: 'var(--color-green)',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      Details
+                    </Link>
+                  )}
                 </div>
               </div>
             )
