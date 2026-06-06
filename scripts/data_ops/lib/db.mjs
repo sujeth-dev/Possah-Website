@@ -3,6 +3,7 @@
  * Import this in every script.
  */
 import { createClient } from '@supabase/supabase-js'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { loadEnv } from './env.mjs'
 
 loadEnv()
@@ -19,14 +20,36 @@ export const supabase = createClient(url, key, {
 
 export const STORAGE_BUCKET = 'possah-media'
 
-/** Upload buffer to Supabase Storage. Overwrites if exists (upsert). Returns public URL. */
+const r2Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+  },
+})
+
+/** Upload buffer to Cloudflare R2. Overwrites if exists. Returns public CDN URL. */
 export async function uploadToStorage(storagePath, buffer, contentType = 'image/webp') {
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .upload(storagePath, buffer, { contentType, upsert: true })
-  if (error) throw new Error(`Storage upload failed [${storagePath}]: ${error.message}`)
-  const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath)
-  return data.publicUrl
+  const bucket = process.env.R2_BUCKET_NAME ?? 'possah-media'
+  const publicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+
+  if (!process.env.CF_ACCOUNT_ID || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
+    throw new Error('R2 credentials missing (CF_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY)')
+  }
+  if (!publicUrl) {
+    throw new Error('Missing NEXT_PUBLIC_R2_PUBLIC_URL in .env.local')
+  }
+
+  await r2Client.send(new PutObjectCommand({
+    Bucket: bucket,
+    Key: storagePath,
+    Body: buffer,
+    ContentType: contentType,
+    CacheControl: 'public, max-age=31536000, immutable',
+  }))
+
+  return `${publicUrl}/${storagePath}`
 }
 
 /** Tiny helper — throws on Supabase error. */
