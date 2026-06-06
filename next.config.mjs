@@ -8,10 +8,10 @@ const nextConfig = {
     // Cache optimised images at Vercel edge for 1 year.
     minimumCacheTTL: 31536000,
     remotePatterns: [
-      // R2 CDN — primary image host
+      // R2 public URL — swap to cdn.thepossah.com once domain is live
       {
         protocol: 'https',
-        hostname: 'cdn.thepossah.com',
+        hostname: 'pub-bd1604488a4e4de8a91122f401a32be2.r2.dev',
       },
       // Supabase — kept during migration window; remove after DB URLs rewritten
       {
