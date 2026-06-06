@@ -34,6 +34,8 @@ try {
 }
 
 const isDry = process.argv.includes('--dry')
+const limitArg = process.argv.find(a => a.startsWith('--limit='))
+const LIMIT = limitArg ? parseInt(limitArg.split('=')[1], 10) : Infinity
 
 // ─── Validate env ─────────────────────────────────────────────────────────────
 const required = [
@@ -100,7 +102,10 @@ async function main() {
 
     if (rows.length === 0 || isDry) continue
 
-    for (const row of rows) {
+    const batch = LIMIT < Infinity ? rows.slice(0, LIMIT) : rows
+    if (LIMIT < Infinity) console.log(`    (applying first ${batch.length} row(s) only — --limit=${LIMIT})`)
+
+    for (const row of batch) {
       const oldUrl = row[column]
       if (!oldUrl || !oldUrl.startsWith(OLD_PREFIX)) continue
       const newUrl = NEW_PREFIX + oldUrl.slice(OLD_PREFIX.length)

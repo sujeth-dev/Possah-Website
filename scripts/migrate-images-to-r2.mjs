@@ -69,7 +69,6 @@ const r2 = new S3Client({
 
 const SB_BUCKET  = 'possah-media'
 const R2_BUCKET  = process.env.R2_BUCKET_NAME ?? 'possah-media'
-const SUBFOLDERS = ['products']
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 async function r2Exists(key) {
@@ -91,11 +90,24 @@ async function migrateFolder(folder) {
     return { ok: 0, skipped: 0, failed: 0 }
   }
 
-  const files = (data ?? []).filter(
-    (f) => f.name !== '.emptyFolderPlaceholder' && !f.name.endsWith('/'),
+  const entries = data ?? []
+  // Supabase returns folders with id === null; files have a UUID id
+  const subfolders = entries.filter(
+    (f) => f.id === null && f.name !== '.emptyFolderPlaceholder',
+  )
+  const files = entries.filter(
+    (f) => f.id !== null && f.name !== '.emptyFolderPlaceholder',
   )
 
   let ok = 0, skipped = 0, failed = 0
+
+  // Recurse into subfolders first
+  for (const sub of subfolders) {
+    const subPath = folder ? `${folder}/${sub.name}` : sub.name
+    console.log(`\n[ ${subPath} ]`)
+    const res = await migrateFolder(subPath)
+    ok += res.ok; skipped += res.skipped; failed += res.failed
+  }
 
   for (const file of files) {
     const path = folder ? `${folder}/${file.name}` : file.name
@@ -144,16 +156,11 @@ async function main() {
   console.log(`  Target : ${R2_BUCKET} (R2)`)
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
 
-  const folders = ['', ...SUBFOLDERS]
   let totalOk = 0, totalSkipped = 0, totalFailed = 0
 
-  for (const folder of folders) {
-    console.log(`\n[ ${folder || 'root'} ]`)
-    const { ok, skipped, failed } = await migrateFolder(folder)
-    totalOk += ok
-    totalSkipped += skipped
-    totalFailed += failed
-  }
+  console.log('\n[ root ]')
+  const { ok, skipped, failed } = await migrateFolder('')
+  totalOk += ok; totalSkipped += skipped; totalFailed += failed
 
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   console.log(`  Migrated : ${totalOk}`)
