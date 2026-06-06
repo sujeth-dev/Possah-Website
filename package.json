@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:cf": "opennextjs-cloudflare",
-    "preview:cf": "wrangler pages dev",
-    "deploy:cf": "wrangler pages deploy .open-next/assets",
+    "build:cf": "npx @opennextjs/cloudflare@latest",
+    "preview:cf": "npx wrangler pages dev",
+    "deploy:cf": "npx wrangler pages deploy .open-next/assets",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
@@ -48,7 +48,6 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^14.2.5",
-    "@opennextjs/cloudflare": "^0.5.0",
     "@playwright/test": "^1.44.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",
@@ -68,7 +67,6 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.6",
     "typescript": "^5",
-    "vitest": "^1.6.0",
-    "wrangler": "^3.0.0"
+    "vitest": "^1.6.0"
   }
 }
