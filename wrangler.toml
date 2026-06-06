@@ -1,0 +1,8 @@
+name = "possah-website"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".open-next/assets"
+
+[[r2_buckets]]
+binding = "POSSAH_MEDIA"
+bucket_name = "possah-media"

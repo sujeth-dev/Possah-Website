@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cf": "opennextjs-cloudflare",
+    "preview:cf": "wrangler pages dev",
+    "deploy:cf": "wrangler pages deploy .open-next/assets",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
@@ -23,6 +26,7 @@
     "test:payment:keep": "cross-env NODE_ENV=development SKIP_CLEANUP=1 node scripts/payment_test/run.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1062.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-dialog": "^1.1.0",
@@ -43,6 +47,8 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^14.2.5",
+    "@opennextjs/cloudflare": "^0.5.0",
     "@playwright/test": "^1.44.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",
@@ -62,6 +68,7 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.6",
     "typescript": "^5",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "wrangler": "^3.0.0"
   }
 }

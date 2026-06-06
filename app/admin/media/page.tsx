@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { r2List, r2PublicUrl } from '@/lib/r2'
 import { MediaLibrary } from './MediaLibrary'
 
 export const metadata: Metadata = { title: 'Media' }
 export const dynamic = 'force-dynamic'
 
-const BUCKET    = 'possah-media'
+const BUCKET = 'possah-media'
 const SUBFOLDERS = ['products']
 
 interface MediaFile {
@@ -17,38 +17,27 @@ interface MediaFile {
   folder?:    string
 }
 
-async function listFolder(supabase: ReturnType<typeof createAdminClient>, folder: string): Promise<MediaFile[]> {
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .list(folder || '', { limit: 500, offset: 0, sortBy: { column: 'created_at', order: 'desc' } })
-
-  if (error) {
-    console.warn(`[Admin Media] folder="${folder}" error:`, error.message)
-    return []
-  }
-
-  return (data ?? [])
-    .filter(f => f.name !== '.emptyFolderPlaceholder' && !f.name.endsWith('/'))
-    .map(f => {
-      const storagePath = folder ? `${folder}/${f.name}` : f.name
-      const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
-      return {
-        name:       f.metadata?.originalName ?? f.name,
-        url:        publicUrl,
-        size:       f.metadata?.size ?? 0,
-        created_at: f.created_at ?? new Date().toISOString(),
-        fullPath:   storagePath,
-        folder:     folder || undefined,
-      }
-    })
+async function listFolder(folder: string): Promise<MediaFile[]> {
+  const prefix = folder ? `${folder}/` : ''
+  const objects = await r2List(prefix)
+  return objects.map((obj) => {
+    const key = obj.Key!
+    return {
+      name:       key.split('/').pop()!,
+      url:        r2PublicUrl(key),
+      size:       obj.Size ?? 0,
+      created_at: obj.LastModified?.toISOString() ?? new Date().toISOString(),
+      fullPath:   key,
+      folder:     folder || undefined,
+    }
+  })
 }
 
 async function getMediaFiles(): Promise<MediaFile[]> {
   try {
-    const supabase = createAdminClient()
     const [rootFiles, ...subFiles] = await Promise.all([
-      listFolder(supabase, ''),
-      ...SUBFOLDERS.map(f => listFolder(supabase, f)),
+      listFolder(''),
+      ...SUBFOLDERS.map((f) => listFolder(f)),
     ])
     const all = [...rootFiles, ...subFiles.flat()]
     all.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())

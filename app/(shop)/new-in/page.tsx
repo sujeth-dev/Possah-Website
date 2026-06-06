@@ -212,6 +212,13 @@ export default async function NewInPage({ searchParams }: PageProps) {
           <div className="flex-1 min-w-0">
             <SortBar resultCount={total} showFilterButton />
             <CategoryListing
+              key={[
+                getString(searchParams.occasion),
+                getString(searchParams.fabric),
+                getString(searchParams.size),
+                getString(searchParams.sub_line),
+                getString(searchParams.sort) ?? 'newest',
+              ].join('|')}
               initialProducts={products}
               total={total}
               categorySlug=""

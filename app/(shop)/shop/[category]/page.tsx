@@ -12,8 +12,7 @@ import { YouMightAlsoLike } from '@/components/shop/YouMightAlsoLike'
 import { MobileFilterDrawer } from '@/components/shop/MobileFilterDrawer'
 import type { ProductCardData } from '@/app/(shop)/page'
 
-// FIX-FE-04: ISR -- refresh every 60 seconds
-export const revalidate = 60
+export const revalidate = 300
 
 const PAGE_SIZE = 24
 
@@ -261,6 +260,13 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <SortBar resultCount={total} showFilterButton />
 
             <CategoryListing
+              key={[
+                getString(searchParams.occasion),
+                getString(searchParams.fabric),
+                getString(searchParams.size),
+                getString(searchParams.sub_line),
+                getString(searchParams.sort) ?? 'newest',
+              ].join('|')}
               initialProducts={products}
               total={total}
               categorySlug={params.category}

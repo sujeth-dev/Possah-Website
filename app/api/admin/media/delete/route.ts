@@ -1,8 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { requireAdminAuth } from '@/lib/admin-auth'
-import { createAdminClient } from '@/lib/supabase/admin'
-
-const MEDIA_BUCKET = 'possah-media'
+import { r2Delete } from '@/lib/r2'
 
 // ─── DELETE /api/admin/media/delete ──────────────────────────────────────────
 // Body: { paths: string[] }  — storage paths relative to bucket root
@@ -31,17 +29,8 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const supabase = createAdminClient()
-    const { data, error } = await supabase.storage
-      .from(MEDIA_BUCKET)
-      .remove(validPaths)
-
-    if (error) {
-      console.error('[media/delete]', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ deleted: data?.map((f) => f.name) ?? [], ok: true })
+    await r2Delete(validPaths)
+    return NextResponse.json({ deleted: validPaths, ok: true })
   } catch (err) {
     console.error('[media/delete] unexpected:', err)
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 })

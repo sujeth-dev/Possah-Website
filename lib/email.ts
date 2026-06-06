@@ -1,7 +1,9 @@
 import { Resend } from 'resend'
 import { formatPrice } from '@/lib/utils'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend(): Resend {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 // --- Shared HTML wrapper ---
 
@@ -143,7 +145,7 @@ export async function sendOrderConfirmationEmail({
       </div>
     </td></tr>`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'The Possah <noreply@thepossah.com>',
     to,
     subject: `Order Confirmed: #${orderNumber} - The Possah`,
@@ -185,7 +187,7 @@ export async function sendPaymentFailureEmail({
       </a>
     </td></tr>`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'The Possah <noreply@thepossah.com>',
     to,
     subject: `Payment failed for order #${orderNumber} - The Possah`,
@@ -240,7 +242,7 @@ export async function sendAdminOrderNotification({
       </a>
     </td></tr>`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'Possah Orders <noreply@thepossah.com>',
     to,
     subject: `[POSSAH] New order #${orderNumber} - ${formatPrice(total)}`,

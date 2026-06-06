@@ -7,15 +7,19 @@ import { createPublicClient } from '@/lib/supabase/public'
 export const revalidate = 3600
 
 export async function generateStaticParams() {
-  const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('products')
-    .select('slug, categories(slug)')
-    .eq('is_active', true)
-  return (data ?? []).map((p) => ({
-    category: ((p.categories as unknown) as { slug: string } | null)?.slug ?? 'uncategorised',
-    slug: p.slug,
-  }))
+  try {
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from('products')
+      .select('slug, categories(slug)')
+      .eq('is_active', true)
+    return (data ?? []).map((p) => ({
+      category: ((p.categories as unknown) as { slug: string } | null)?.slug ?? 'uncategorised',
+      slug: p.slug,
+    }))
+  } catch {
+    return []
+  }
 }
 import { formatPrice, isImageUrl } from '@/lib/utils'
 import { ProductGallery } from '@/components/pdp/ProductGallery'

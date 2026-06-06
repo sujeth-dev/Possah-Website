@@ -8,7 +8,7 @@ import { MobileFilterDrawer } from '@/components/shop/MobileFilterDrawer'
 import { CategoryListing } from '@/components/shop/CategoryListing'
 import type { ProductCardData } from '@/app/(shop)/page'
 
-export const revalidate = 60
+export const revalidate = 300
 
 const PAGE_SIZE = 24
 
@@ -188,6 +188,13 @@ export default async function BestSellersPage({ searchParams }: PageProps) {
             <SortBar resultCount={total} showFilterButton />
 
             <CategoryListing
+              key={[
+                getString(searchParams.occasion),
+                getString(searchParams.fabric),
+                getString(searchParams.size),
+                getString(searchParams.sub_line),
+                getString(searchParams.sort) ?? 'newest',
+              ].join('|')}
               initialProducts={products}
               total={total}
               categorySlug=""

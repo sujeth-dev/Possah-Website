@@ -4,120 +4,25 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store/cartStore'
 import { useCouponStore } from '@/lib/store/couponStore'
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics'
 import { formatPrice } from '@/lib/utils'
 
-// ─── Zod Schema ──────────────────────────────────────────────────────────────
-
-// FIX-FE-06: Indian states/UTs dropdown — validated against this list
-const INDIAN_STATES = [
-  'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam',
-  'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu',
-  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
-  'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh',
-  'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha',
-  'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
-  'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-] as const
-
-const checkoutSchema = z.object({
-  first_name: z.string().min(1, 'First name required').max(60),
-  last_name: z.string().min(1, 'Last name required').max(60),
-  email: z.string().email('Invalid email'),
-  phone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, 'Enter valid 10-digit Indian mobile number'),
-  address_line1: z.string().min(5, 'Address required').max(200),
-  address_line2: z.string().max(200).optional(),
-  city: z.string().min(2, 'City required').max(80),
-  state: z.enum(INDIAN_STATES, { errorMap: () => ({ message: 'Select your state' }) }),
-  pincode: z.string().regex(/^\d{6}$/, 'Enter valid 6-digit pincode'),
-  delivery_option: z.enum(['standard', 'express']),
-  notes: z.string().max(500).optional(),
-})
-
-type CheckoutFields = z.infer<typeof checkoutSchema>
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const SHIPPING_THRESHOLD = 2500
-const STANDARD_COST = 199
-const EXPRESS_COST = 399
-const GIFT_WRAP_COST = 150
-
-const DELIVERY_OPTIONS = [
-  {
-    value: 'standard' as const,
-    label: 'Standard Delivery',
-    sub: '5–7 business days',
-    price: STANDARD_COST,
-  },
-  {
-    value: 'express' as const,
-    label: 'Express Delivery',
-    sub: '2–3 business days',
-    price: EXPRESS_COST,
-  },
-]
-
-// ─── Field component ─────────────────────────────────────────────────────────
-
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string
-  error?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '10px',
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: error ? 'var(--color-rose)' : 'var(--color-text-muted)',
-        }}
-      >
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p
-          role="alert"
-          style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-rose)' }}
-        >
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
-
-const inputStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: '16px', // prevents iOS zoom
-  color: 'var(--color-text)',
-  backgroundColor: 'var(--color-bg)',
-  border: '1px solid var(--color-border)',
-  borderRadius: 'var(--radius-btn)',
-  padding: '12px 14px',
-  width: '100%',
-  outline: 'none',
-}
-
-const inputErrorStyle: React.CSSProperties = {
-  ...inputStyle,
-  border: '1px solid var(--color-rose)',
-}
+import {
+  checkoutSchema,
+  type CheckoutFields,
+  SHIPPING_THRESHOLD,
+  STANDARD_COST,
+  EXPRESS_COST,
+  GIFT_WRAP_COST,
+} from './checkoutTypes'
+import { Field, inputStyle } from './CheckoutField'
+import { CheckoutContactFields } from './CheckoutContactFields'
+import { CheckoutAddressFields } from './CheckoutAddressFields'
+import { CheckoutDeliveryOptions } from './CheckoutDeliveryOptions'
+import { CheckoutOrderSummary } from './CheckoutOrderSummary'
 
 // ─── Razorpay helper ─────────────────────────────────────────────────────────
 
@@ -186,14 +91,13 @@ export function CheckoutForm() {
 
   const hasGiftWrap = searchParams.get('gift') === '1'
   const coupon = useCouponStore()
-  const [couponInput, setCouponInput]     = useState(coupon.code)
+  const [couponInput, setCouponInput]       = useState(coupon.code)
   const [couponApplying, setCouponApplying] = useState(false)
-  const [couponError, setCouponError]     = useState<string | null>(null)
+  const [couponError, setCouponError]       = useState<string | null>(null)
 
   const sub   = subtotal()
   const count = items.reduce((s, i) => s + i.qty, 0)
 
-  // Derive discount from persisted coupon store
   let couponDiscount = 0
   if (coupon.code && coupon.discountType) {
     if (coupon.discountType === 'percent') {
@@ -230,10 +134,10 @@ export function CheckoutForm() {
   })
 
   const deliveryOption = watch('delivery_option')
-  const freeShipping = sub >= SHIPPING_THRESHOLD || coupon.isFreeShipping
-  const shippingCost = freeShipping ? 0 : deliveryOption === 'express' ? EXPRESS_COST : STANDARD_COST
-  const giftCost = hasGiftWrap ? GIFT_WRAP_COST : 0
-  const total = sub + shippingCost + giftCost - couponDiscount
+  const freeShipping   = sub >= SHIPPING_THRESHOLD || coupon.isFreeShipping
+  const shippingCost   = freeShipping ? 0 : deliveryOption === 'express' ? EXPRESS_COST : STANDARD_COST
+  const giftCost       = hasGiftWrap ? GIFT_WRAP_COST : 0
+  const total          = sub + shippingCost + giftCost - couponDiscount
 
   const applyCoupon = async () => {
     if (!couponInput.trim()) return
@@ -323,11 +227,9 @@ export function CheckoutForm() {
         return
       }
 
-      // Razorpay payment flow
       const { razorpay_order_id, order_number, amount } = result
 
       if (typeof window !== 'undefined' && (window as Window & typeof globalThis & { Razorpay?: unknown }).Razorpay) {
-        // Razorpay script loaded
         initRazorpay({
           orderId: razorpay_order_id,
           amount,
@@ -345,7 +247,6 @@ export function CheckoutForm() {
             setSubmitting(false)
           },
           onSuccess: async (paymentId: string, signature: string) => {
-            // Server-side HMAC verification before clearing cart
             try {
               const verifyRes = await fetch('/api/payments/verify', {
                 method: 'POST',
@@ -357,17 +258,15 @@ export function CheckoutForm() {
                   order_number,
                 }),
               })
-              // Even if verify call fails, redirect — webhook is the safety net
               if (!verifyRes.ok) {
                 console.error('[checkout] Verify endpoint error — webhook will reconcile')
               }
             } catch {
               // Network error: webhook reconciles
             }
-            // GA4: purchase — fires after HMAC verify, before redirect
             trackPurchase({
               transactionId: order_number,
-              value: amount / 100, // convert paise → rupees
+              value: amount / 100,
               items: items.map((i) => ({
                 item_id: i.productId,
                 item_name: i.name,
@@ -386,7 +285,7 @@ export function CheckoutForm() {
           },
         })
       } else {
-        // Fallback: COD / Razorpay script not loaded — still go to confirmation
+        // Fallback: Razorpay script not loaded
         clearCart()
         coupon.clearCoupon()
         router.push(`/order/confirmation?order=${order_number}`)
@@ -433,140 +332,10 @@ export function CheckoutForm() {
           <div className="grid lg:grid-cols-[1fr_380px] gap-10 xl:gap-16 items-start">
             {/* ─── Left: Form fields ─────────────────────────────── */}
             <div className="flex flex-col gap-8">
+              <CheckoutContactFields register={register} errors={errors} />
+              <CheckoutAddressFields register={register} errors={errors} />
 
-              {/* Contact */}
-              <section aria-labelledby="contact-heading">
-                <h2
-                  id="contact-heading"
-                  className="mb-4"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    letterSpacing: '0.2em',
-                    textTransform: 'uppercase',
-                    color: 'var(--color-text)',
-                  }}
-                >
-                  Contact
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="First Name" error={errors.first_name?.message}>
-                    <input
-                      {...register('first_name')}
-                      type="text"
-                      autoComplete="given-name"
-                      style={errors.first_name ? inputErrorStyle : inputStyle}
-                      aria-invalid={!!errors.first_name}
-                    />
-                  </Field>
-                  <Field label="Last Name" error={errors.last_name?.message}>
-                    <input
-                      {...register('last_name')}
-                      type="text"
-                      autoComplete="family-name"
-                      style={errors.last_name ? inputErrorStyle : inputStyle}
-                      aria-invalid={!!errors.last_name}
-                    />
-                  </Field>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <Field label="Email" error={errors.email?.message}>
-                    <input
-                      {...register('email')}
-                      type="email"
-                      autoComplete="email"
-                      style={errors.email ? inputErrorStyle : inputStyle}
-                      aria-invalid={!!errors.email}
-                    />
-                  </Field>
-                  <Field label="Mobile Number" error={errors.phone?.message}>
-                    <input
-                      {...register('phone')}
-                      type="tel"
-                      autoComplete="tel"
-                      maxLength={10}
-                      style={errors.phone ? inputErrorStyle : inputStyle}
-                      aria-invalid={!!errors.phone}
-                    />
-                  </Field>
-                </div>
-              </section>
-
-              {/* Shipping address */}
-              <section aria-labelledby="address-heading">
-                <h2
-                  id="address-heading"
-                  className="mb-4"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    letterSpacing: '0.2em',
-                    textTransform: 'uppercase',
-                    color: 'var(--color-text)',
-                  }}
-                >
-                  Shipping Address
-                </h2>
-                <div className="flex flex-col gap-4">
-                  <Field label="Address Line 1" error={errors.address_line1?.message}>
-                    <input
-                      {...register('address_line1')}
-                      type="text"
-                      autoComplete="address-line1"
-                      placeholder="House / Flat no., Street"
-                      style={errors.address_line1 ? inputErrorStyle : inputStyle}
-                      aria-invalid={!!errors.address_line1}
-                    />
-                  </Field>
-                  <Field label="Address Line 2 (optional)" error={errors.address_line2?.message}>
-                    <input
-                      {...register('address_line2')}
-                      type="text"
-                      autoComplete="address-line2"
-                      placeholder="Landmark, Area"
-                      style={inputStyle}
-                    />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Field label="City" error={errors.city?.message}>
-                      <input
-                        {...register('city')}
-                        type="text"
-                        autoComplete="address-level2"
-                        style={errors.city ? inputErrorStyle : inputStyle}
-                        aria-invalid={!!errors.city}
-                      />
-                    </Field>
-                    <Field label="Pincode" error={errors.pincode?.message}>
-                      <input
-                        {...register('pincode')}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        autoComplete="postal-code"
-                        style={errors.pincode ? inputErrorStyle : inputStyle}
-                        aria-invalid={!!errors.pincode}
-                      />
-                    </Field>
-                  </div>
-                  {/* FIX-FE-06: Indian states dropdown */}
-                  <Field label="State" error={errors.state?.message}>
-                    <select
-                      {...register('state')}
-                      autoComplete="address-level1"
-                      style={errors.state ? inputErrorStyle : inputStyle}
-                      aria-invalid={!!errors.state}
-                    >
-                      <option value="">Select state / UT</option>
-                      {INDIAN_STATES.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </Field>
-                </div>
-              </section>
-
-              {/* FIX-SEC-07: Coupon code — state-managed, not URL */}
+              {/* Coupon code */}
               <section aria-labelledby="coupon-heading">
                 <h2
                   id="coupon-heading"
@@ -638,102 +407,11 @@ export function CheckoutForm() {
                 )}
               </section>
 
-              {/* Delivery options */}
-              <section aria-labelledby="delivery-heading">
-                <h2
-                  id="delivery-heading"
-                  className="mb-4"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    letterSpacing: '0.2em',
-                    textTransform: 'uppercase',
-                    color: 'var(--color-text)',
-                  }}
-                >
-                  Delivery
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {DELIVERY_OPTIONS.map((opt) => {
-                    const selected = deliveryOption === opt.value
-                    const cost = freeShipping ? 0 : opt.price
-                    return (
-                      <label
-                        key={opt.value}
-                        className="flex items-center justify-between gap-4 cursor-pointer px-4 py-3.5 transition-all duration-150"
-                        style={{
-                          border: `1.5px solid ${selected ? 'var(--color-green)' : 'var(--color-border)'}`,
-                          borderRadius: 'var(--radius-card)',
-                          backgroundColor: selected ? 'rgba(31,58,45,0.04)' : 'transparent',
-                        }}
-                      >
-                        <div className="flex items-center gap-3">
-                          {/* Radio dot */}
-                          <span
-                            className="flex items-center justify-center flex-shrink-0"
-                            style={{
-                              width: 18,
-                              height: 18,
-                              borderRadius: '50%',
-                              border: `1.5px solid ${selected ? 'var(--color-green)' : 'var(--color-border)'}`,
-                              backgroundColor: selected ? 'var(--color-green)' : 'transparent',
-                            }}
-                          >
-                            {selected && (
-                              <span
-                                style={{
-                                  width: 6,
-                                  height: 6,
-                                  borderRadius: '50%',
-                                  backgroundColor: 'var(--color-white)',
-                                  display: 'block',
-                                }}
-                              />
-                            )}
-                          </span>
-                          <input
-                            {...register('delivery_option')}
-                            type="radio"
-                            value={opt.value}
-                            className="sr-only"
-                          />
-                          <div>
-                            <p
-                              style={{
-                                fontFamily: 'var(--font-body)',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                color: 'var(--color-text)',
-                              }}
-                            >
-                              {opt.label}
-                            </p>
-                            <p
-                              style={{
-                                fontFamily: 'var(--font-body)',
-                                fontSize: '12px',
-                                color: 'var(--color-text-muted)',
-                              }}
-                            >
-                              {opt.sub}
-                            </p>
-                          </div>
-                        </div>
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '12px',
-                            letterSpacing: '0.08em',
-                            color: freeShipping ? 'var(--color-green)' : 'var(--color-text)',
-                          }}
-                        >
-                          {freeShipping ? 'FREE' : formatPrice(cost)}
-                        </span>
-                      </label>
-                    )
-                  })}
-                </div>
-              </section>
+              <CheckoutDeliveryOptions
+                register={register}
+                deliveryOption={deliveryOption}
+                freeShipping={freeShipping}
+              />
 
               {/* Order notes */}
               <Field label="Order Notes (optional)" error={errors.notes?.message}>
@@ -760,13 +438,7 @@ export function CheckoutForm() {
                     backgroundColor: 'rgba(201, 154, 153, 0.08)',
                   }}
                 >
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '13px',
-                      color: 'var(--color-rose)',
-                    }}
-                  >
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-rose)' }}>
                     {serverError}
                   </p>
                 </div>
@@ -774,167 +446,17 @@ export function CheckoutForm() {
             </div>
 
             {/* ─── Right: Order summary ──────────────────────────── */}
-            <div
-              className="flex flex-col gap-5 lg:sticky lg:top-[120px]"
-              style={{
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-card)',
-                padding: '24px',
-                backgroundColor: 'var(--color-bg)',
-              }}
-            >
-              <h2
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  color: 'var(--color-text)',
-                }}
-              >
-                Order Summary
-              </h2>
-
-              {/* Items */}
-              <div className="flex flex-col gap-3 pb-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                {items.map((item) => (
-                  <div key={`${item.productId}-${item.variantId}`} className="flex gap-3 items-start">
-                    <div
-                      className="relative flex-shrink-0 overflow-hidden"
-                      style={{
-                        width: 56,
-                        height: 72,
-                        borderRadius: 'var(--radius-card)',
-                        backgroundColor: 'var(--color-border)',
-                      }}
-                    >
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover object-center"
-                        sizes="56px"
-                      />
-                      {/* Qty badge */}
-                      <span
-                        className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 rounded-full text-[10px]"
-                        style={{
-                          backgroundColor: 'var(--color-text)',
-                          color: 'var(--color-bg)',
-                          fontFamily: 'var(--font-mono)',
-                        }}
-                      >
-                        {item.qty}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="truncate"
-                        style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text)' }}
-                      >
-                        {item.name}
-                      </p>
-                      <p
-                        style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)' }}
-                      >
-                        {item.colour} · {item.size}
-                      </p>
-
-                      <p
-                        style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--color-text)' }}
-                      >
-                        {formatPrice(item.price)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Totals */}
-              <div className="flex flex-col gap-2 py-4 border-t border-b" style={{ borderColor: 'var(--color-border)' }}>
-                <div className="flex justify-between">
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)' }}>Subtotal</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-text)' }}>{formatPrice(sub)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)' }}>Shipping</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: freeShipping ? 'var(--color-green)' : 'var(--color-text)' }}>
-                    {freeShipping ? 'FREE' : formatPrice(shippingCost)}
-                  </span>
-                </div>
-                {couponDiscount > 0 && (
-                  <div className="flex justify-between">
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-green)' }}>Discount ({coupon.code})</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-green)' }}>-{formatPrice(couponDiscount)}</span>
-                  </div>
-                )}
-                {giftCost > 0 && (
-                  <div className="flex justify-between">
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-text-muted)' }}>Gift wrapping</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-text)' }}>{formatPrice(giftCost)}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Grand total */}
-              <div className="flex justify-between items-center">
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '13px',
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                    color: 'var(--color-text)',
-                  }}
-                >
-                  Total
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '22px',
-                    fontWeight: '500',
-                    color: 'var(--color-text)',
-                  }}
-                >
-                  {formatPrice(total)}
-                </span>
-              </div>
-
-              {/* Pay CTA */}
-              <button
-                type="submit"
-                disabled={submitting}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  backgroundColor: submitting ? 'var(--color-text-muted)' : 'var(--color-green)',
-                  color: 'var(--color-bg)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-btn)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  transition: 'background-color 0.2s ease',
-                }}
-              >
-                {submitting ? 'Processing...' : `Pay ${formatPrice(total)}`}
-              </button>
-
-              <p
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '11px',
-                  color: 'var(--color-text-muted)',
-                  textAlign: 'center',
-                  lineHeight: 1.6,
-                }}
-              >
-                Secured by Razorpay. Your payment info is never stored.
-              </p>
-            </div>
+            <CheckoutOrderSummary
+              items={items}
+              sub={sub}
+              shippingCost={shippingCost}
+              giftCost={giftCost}
+              total={total}
+              freeShipping={freeShipping}
+              couponDiscount={couponDiscount}
+              coupon={coupon}
+              submitting={submitting}
+            />
           </div>
         </form>
       </div>
