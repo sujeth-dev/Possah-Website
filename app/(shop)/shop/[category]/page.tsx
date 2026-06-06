@@ -12,8 +12,7 @@ import { YouMightAlsoLike } from '@/components/shop/YouMightAlsoLike'
 import { MobileFilterDrawer } from '@/components/shop/MobileFilterDrawer'
 import type { ProductCardData } from '@/app/(shop)/page'
 
-// FIX-FE-04: ISR -- refresh every 60 seconds
-export const revalidate = 60
+export const revalidate = 300
 
 const PAGE_SIZE = 24
 

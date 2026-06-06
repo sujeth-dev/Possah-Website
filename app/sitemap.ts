@@ -17,7 +17,12 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createPublicClient()
+  let supabase: ReturnType<typeof createPublicClient>
+  try {
+    supabase = createPublicClient()
+  } catch {
+    return STATIC_ROUTES
+  }
 
   // Categories
   const { data: categories } = await supabase

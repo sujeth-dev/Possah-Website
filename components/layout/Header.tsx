@@ -50,9 +50,16 @@ export function Header() {
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
+    let rafId: number
+    const onScroll = () => {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => setScrolled(window.scrollY > 8))
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      cancelAnimationFrame(rafId)
+    }
   }, [])
 
   // Close dropdown on Escape

@@ -15,7 +15,7 @@ Auth guard runs on every route: in production, a valid `next-auth.session-token`
 6. [Journal](#6-journal)
 7. [Settings](#7-settings)
 8. [Homepage Config](#8-homepage-config)
-9. [Media (Supabase Storage)](#9-media-supabase-storage)
+9. [Media (Cloudflare R2)](#9-media-cloudflare-r2)
 10. [Public / Shop APIs](#10-public--shop-apis)
 
 ---
@@ -705,44 +705,44 @@ All top-level keys are optional. Sends only what needs changing.
 
 ---
 
-## 9. Media (Supabase Storage)
+## 9. Media (Cloudflare R2)
 
-**Bucket:** `possah-media`
-**No API route.** `MediaLibrary.tsx` calls Supabase Storage SDK directly from the browser client.
+**Bucket:** `possah-media` on Cloudflare R2
+**Public URL base:** `NEXT_PUBLIC_R2_PUBLIC_URL` env var (e.g. `https://pub-xxx.r2.dev` or `https://cdn.thepossah.com`)
+
+All media operations go through API routes backed by `lib/r2.ts` (S3-compatible client).
 
 ### Upload
 
-```ts
-supabase.storage.from('possah-media').upload(path, file, { cacheControl: '3600', upsert: false })
+```
+POST /api/admin/upload
+Content-Type: multipart/form-data
+Body: file (File)
 ```
 
 Path format: `{timestamp}-{sanitized-filename}.{ext}`
 Max file size: **10 MB**
-Allowed types: images (`image/*`) + `video/mp4`
+Allowed types: images (`image/*`)
 
----
-
-### Get public URL
-
-```ts
-supabase.storage.from('possah-media').getPublicUrl(path)
-// returns { data: { publicUrl: "https://..." } }
-```
+Returns: `{ publicUrl: "https://pub-xxx.r2.dev/..." }`
 
 ---
 
 ### List files
 
-```ts
-supabase.storage.from('possah-media').list()
 ```
+GET /api/admin/media/list
+```
+
+Returns array of `{ name, url, size, created_at, fullPath, folder? }`.
 
 ---
 
 ### Delete file
 
-```ts
-supabase.storage.from('possah-media').remove([fullPath])
+```
+DELETE /api/admin/media/delete
+Body: { paths: string[] }   // R2 object keys (e.g. "1234567890-photo.webp")
 ```
 
 ---

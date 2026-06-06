@@ -2,7 +2,7 @@
 
 Luxury Indian fashion e-commerce — handcrafted pieces, bespoke tailoring, editorial brand.
 
-**Stack:** Next.js 14 App Router · Supabase (PostgreSQL) · NextAuth · Razorpay · Resend · TypeScript
+**Stack:** Next.js 14 App Router · Supabase (PostgreSQL) · Cloudflare R2 · NextAuth · Razorpay · Resend · TypeScript
 
 ---
 
@@ -22,7 +22,9 @@ Admin panel: `localhost:3000/admin`
 
 ```bash
 npm run dev          # start dev server
-npm run build        # production build
+npm run build        # production build (Vercel)
+npm run build:cf     # build for Cloudflare Pages (via OpenNext)
+npm run deploy:cf    # deploy to Cloudflare Pages
 npm run lint         # ESLint
 npm run typecheck    # tsc --noEmit
 npm test             # Vitest unit tests
@@ -77,4 +79,6 @@ See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
 - Product gallery: click-to-zoom fullscreen lightbox with swipe + keyboard nav
 - Coupons: applied in cart persist into checkout via Zustand store (no re-entry needed)
 - Logo: header reads `public/images/logo.png` + `public/images/name.png` side-by-side — drop files to activate
+- Image storage: migrated to Cloudflare R2 (`lib/r2.ts`); run `scripts/migrate-images-to-r2.mjs` then `scripts/update-image-urls-in-db.mjs` to complete migration of existing images
+- Cloudflare Pages: deployment-ready (`wrangler.toml`, `open-next.config.ts`); CI auto-deploys on push to `main` once `CF_API_TOKEN` secret is set
 
