@@ -23,6 +23,7 @@
     "test:payment:keep": "cross-env NODE_ENV=development SKIP_CLEANUP=1 node scripts/payment_test/run.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1062.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-dialog": "^1.1.0",
