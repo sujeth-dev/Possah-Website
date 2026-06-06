@@ -67,13 +67,12 @@ export async function POST(req: NextRequest) {
     const resolvedItems = await Promise.all(
       parsed.data.items.map(async (item) => {
         if (!item.variant_id.endsWith('-default')) return item
-        const { data: v } = await supabase
+        const { data: variantRows } = await supabase
           .from('product_variants')
           .select('id, colour_name, size')
           .eq('product_id', item.product_id)
-          .order('created_at')
           .limit(1)
-          .single()
+        const v = variantRows?.[0]
         if (!v) return item
         return { ...item, variant_id: v.id, colour: v.colour_name, size: v.size }
       })
