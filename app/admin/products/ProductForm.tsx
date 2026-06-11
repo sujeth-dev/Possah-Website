@@ -619,7 +619,7 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
                 type="text"
                 value={form.craft_description}
                 onChange={(e) => set('craft_description', e.target.value)}
-                placeholder="e.g. Hand-embroidered in Lucknow"
+                placeholder="e.g. Hand-embroidered in Bengaluru"
                 style={inputStyle}
               />
             </FormField>
@@ -662,7 +662,7 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
               value={form.craft_story_body}
               onChange={(e) => set('craft_story_body', e.target.value)}
               rows={5}
-              placeholder="Over 72 hours of hand-embroidery by skilled artisans in Lucknow…"
+              placeholder="Over 72 hours of hand-embroidery by skilled artisans in Bengaluru…"
               style={{ ...inputStyle, height: 'auto', resize: 'vertical' }}
             />
           </FormField>
@@ -1140,5 +1140,6 @@ function CharCount({ current, max }: { current: number; max: number }) {
     >
       {current}/{max}
     </p>
-  )
+  
+)
 }

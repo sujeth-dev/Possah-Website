@@ -179,7 +179,11 @@ export default async function FestivePage({
       </section>
 
       {/* Products */}
-      <section id="products" className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
+      <section
+        id="products"
+        className="section-gap border-t"
+        style={{ borderColor: 'var(--color-border)', scrollMarginTop: '112px' }}
+      >
         <div className="container-site">
           <div className="flex items-baseline justify-between mb-8">
             <h2

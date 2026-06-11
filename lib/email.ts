@@ -21,7 +21,7 @@ function emailWrapper(body: string): string {
         ${body}
         <tr><td style="height:48px;"></td></tr>
         <tr><td style="border-top:1px solid #E2D9CC;padding-top:24px;text-align:center;">
-          <p style="color:#6B6B6B;font-size:12px;margin:0 0 8px;">The Possah Atelier &middot; 14 Hanenganj Lane, Lucknow 226001, Uttar Pradesh, India</p>
+          <p style="color:#6B6B6B;font-size:12px;margin:0 0 8px;">The Possah Atelier &middot; Shop No. 1, Ground Floor, No. 30, 1st Main Road, Behind Maharaja Furniture Store, Munireddy Layout, Horamavu, Bengaluru, Karnataka 560113, India</p>
           <p style="color:#6B6B6B;font-size:12px;margin:0;">
             <a href="https://thepossah.com" style="color:#1F3A2D;text-decoration:none;">thepossah.com</a>
             &nbsp;&middot;&nbsp;
@@ -243,7 +243,7 @@ export async function sendAdminOrderNotification({
   await resend.emails.send({
     from: 'Possah Orders <noreply@thepossah.com>',
     to,
-    subject: `[POSSAH] New order #${orderNumber} - ${formatPrice(total)}`,
+    subject: `[POSSAH] Neworder #${orderNumber} - ${formatPrice(total)}`,
     html: emailWrapper(body),
   })
 }

@@ -87,11 +87,11 @@ function makeOrderBody(overrides: Record<string, unknown> = {}) {
       phone: '9876543210',
     },
     address: {
-      line1: '14 Hanenganj Lane',
-      line2: 'Near Civil Lines',
-      city: 'Lucknow',
-      state: 'Uttar Pradesh',
-      pincode: '226001',
+      line1: 'No. 30, 1st Main Road',
+      line2: 'Munireddy Layout, Horamavu',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560113',
     },
     items: [
       {

@@ -78,3 +78,12 @@ See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
 - Coupons: applied in cart persist into checkout via Zustand store (no re-entry needed)
 - Logo: header reads `public/images/logo.png` + `public/images/name.png` side-by-side — drop files to activate
 
+### Phase 1 shipped (2026-06-11)
+
+- **Bengaluru sweep** — all Lucknow references replaced in every user-facing file; email template + footer now show Horamavu atelier address
+- **Favicon** — `app/favicon.ico` (16/32/48 multi-res), `app/icon.png` (512px), `app/apple-icon.png` (180px); Next.js auto-injects, no layout edit needed
+- **Footer redesign** — desktop 5-col grid: SHOP | CATEGORIES (Ethnic + Western sub-cols) | HELP | ABOUT; mobile 2-col with CATEGORIES spanning full row; tagline changed to `HAUTE COUTURE · BENGALURU`
+- **Festive smooth scroll** — global `scroll-behavior: smooth`; `#products` section has `scroll-margin-top: 112px` for sticky-header offset; reduced-motion override in place
+- **Size guide mobile** — SIZE column sticky-left on horizontal scroll; swipe hint on mobile; tighter padding + smaller font under 640px
+- **Orders link** — desktop header account icon has hover/focus dropdown (My Account / My Orders / Wishlist); mobile drawer footer gets My Orders link with icon
+

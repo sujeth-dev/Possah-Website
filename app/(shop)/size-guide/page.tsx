@@ -68,21 +68,18 @@ export default function SizeGuidePage() {
           >
             All measurements in inches
           </p>
-          <div className="overflow-x-auto" style={{ borderRadius: 'var(--radius-card)' }}>
-            <table
-              className="w-full"
-              style={{
-                borderCollapse: 'collapse',
-                fontFamily: 'var(--font-body)',
-                fontSize: '14px',
-              }}
-            >
+          <div
+            className="size-guide-scroll relative overflow-x-auto"
+            style={{ borderRadius: 'var(--radius-card)' }}
+          >
+            <table className="size-guide-table w-full">
               <thead>
                 <tr style={{ borderBottom: '1.5px solid var(--color-green)' }}>
-                  {['SIZE', 'BUST', 'WAIST', 'HIPS', 'LENGTH'].map((h) => (
+                  {['SIZE', 'BUST', 'WAIST', 'HIPS', 'LENGTH'].map((h, idx) => (
                     <th
                       key={h}
-                      className="py-3 px-4 text-left"
+                      data-sticky={idx === 0 ? 'true' : undefined}
+                      className="text-left"
                       style={{
                         fontFamily: 'var(--font-mono)',
                         fontSize: '10px',
@@ -96,29 +93,52 @@ export default function SizeGuidePage() {
                 </tr>
               </thead>
               <tbody>
-                {WOMEN_SIZES.map((row, i) => (
-                  <tr
-                    key={row.size}
-                    style={{
-                      borderBottom: '1px solid var(--color-border)',
-                      backgroundColor: i % 2 === 0 ? 'transparent' : 'rgba(31,58,45,0.02)',
-                    }}
-                  >
-                    <td
-                      className="py-3 px-4"
-                      style={{ fontWeight: '600', color: 'var(--color-text)' }}
+                {WOMEN_SIZES.map((row, i) => {
+                  const stripeBg = i % 2 === 0 ? 'var(--color-bg)' : 'rgba(31,58,45,0.04)'
+                  return (
+                    <tr
+                      key={row.size}
+                      style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: stripeBg }}
                     >
-                      {row.size}
-                    </td>
-                    <td className="py-3 px-4" style={{ color: 'var(--color-text-muted)' }}>{row.bust}</td>
-                    <td className="py-3 px-4" style={{ color: 'var(--color-text-muted)' }}>{row.waist}</td>
-                    <td className="py-3 px-4" style={{ color: 'var(--color-text-muted)' }}>{row.hip}</td>
-                    <td className="py-3 px-4" style={{ color: 'var(--color-text-muted)' }}>{row.length}</td>
-                  </tr>
-                ))}
+                      <td
+                        data-sticky="true"
+                        style={{
+                          fontWeight: 600,
+                          color: 'var(--color-text)',
+                          backgroundColor: stripeBg,
+                        }}
+                      >
+                        {row.size}
+                      </td>
+                      <td style={{ color: 'var(--color-text-muted)' }}>{row.bust}</td>
+                      <td style={{ color: 'var(--color-text-muted)' }}>{row.waist}</td>
+                      <td style={{ color: 'var(--color-text-muted)' }}>{row.hip}</td>
+                      <td style={{ color: 'var(--color-text-muted)' }}>{row.length}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
+
+          {/* Mobile scroll hint */}
+          <p
+            className="md:hidden mt-2 flex items-center gap-1.5"
+            aria-hidden="true"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'var(--color-text-muted)',
+              opacity: 0.7,
+            }}
+          >
+            Swipe to view all measurements
+            <svg width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+              <path d="M1 5h10M7 1l4 4-4 4" />
+            </svg>
+          </p>
 
           <p
             className="mt-4"
@@ -131,6 +151,31 @@ export default function SizeGuidePage() {
           >
             Not sure? When between sizes, size up for blouses and size down for skirts. If your measurements fall outside our standard range, our Made-to-Measure service is the right choice.
           </p>
+
+          {/*
+            Local styles for the size table:
+              • Sticky SIZE column on mobile so the row label stays visible while
+                horizontally scrolling the measurement columns.
+              • Tighter padding + slightly smaller font under 640px.
+          */}
+          <style>{`
+            .size-guide-table { border-collapse: separate; border-spacing: 0; font-family: var(--font-body); font-size: 14px; min-width: 100%; }
+            .size-guide-table th,
+            .size-guide-table td { padding: 12px 16px; white-space: nowrap; }
+            .size-guide-table th[data-sticky],
+            .size-guide-table td[data-sticky] {
+              position: sticky;
+              left: 0;
+              z-index: 1;
+              box-shadow: 1px 0 0 var(--color-border);
+            }
+            .size-guide-table thead th[data-sticky] { background-color: var(--color-bg); }
+            @media (max-width: 640px) {
+              .size-guide-table { font-size: 13px; }
+              .size-guide-table th,
+              .size-guide-table td { padding: 10px 12px; }
+            }
+          `}</style>
         </div>
 
         {/* How to measure */}

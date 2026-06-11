@@ -18,7 +18,7 @@ const STEPS = [
   {
     num: '02',
     title: 'Share Your Measurements',
-    body: 'We send you a simple measurement guide. You can also visit our Lucknow atelier for an in-person fitting.',
+    body: 'We send you a simple measurement guide. You can also visit our Bengaluru atelier for an in-person fitting.',
   },
   {
     num: '03',

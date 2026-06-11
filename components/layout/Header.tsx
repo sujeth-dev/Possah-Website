@@ -37,12 +37,20 @@ const NAV_ITEMS = [
 
 type NavItem = (typeof NAV_ITEMS)[number]
 
+const ACCOUNT_MENU_ITEMS = [
+  { label: 'My Account', href: '/account'         },
+  { label: 'My Orders',  href: '/account/orders'  },
+  { label: 'Wishlist',   href: '/wishlist'        },
+] as const
+
 export function Header() {
   const [mobileNavOpen, setMobileNavOpen]   = useState(false)
   const [openMenu, setOpenMenu]             = useState<string | null>(null)
+  const [accountOpen, setAccountOpen]       = useState(false)
   const [scrolled, setScrolled]             = useState(false)
   const [mounted, setMounted]               = useState(false)
   const closeTimer                          = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const accountCloseTimer                   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const cartCount     = useCartStore((s) => s.itemCount())
   const wishlistCount = useWishlistStore((s) => s.count())
@@ -55,9 +63,14 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Close dropdown on Escape
+  // Close dropdowns on Escape
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenMenu(null) }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpenMenu(null)
+        setAccountOpen(false)
+      }
+    }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
@@ -69,6 +82,15 @@ export function Header() {
 
   function handleMouseLeave() {
     closeTimer.current = setTimeout(() => setOpenMenu(null), 120)
+  }
+
+  function handleAccountEnter() {
+    if (accountCloseTimer.current) clearTimeout(accountCloseTimer.current)
+    setAccountOpen(true)
+  }
+
+  function handleAccountLeave() {
+    accountCloseTimer.current = setTimeout(() => setAccountOpen(false), 120)
   }
 
   const activeItem = NAV_ITEMS.find((i) => i.label === openMenu && 'submenu' in i) as
@@ -152,12 +174,65 @@ export function Header() {
                 </span>
               )}
             </Link>
-            <Link href="/account" className="hidden md:flex items-center justify-center w-8 h-8" aria-label="My Account">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="10" cy="7" r="3.5" />
-                <path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7" />
-              </svg>
-            </Link>
+            {/* Account: click → /account, hover/focus → dropdown with Orders, Wishlist */}
+            <div
+              className="hidden md:block relative"
+              onMouseEnter={handleAccountEnter}
+              onMouseLeave={handleAccountLeave}
+            >
+              <Link
+                href="/account"
+                className="flex items-center justify-center w-8 h-8"
+                aria-label="My Account"
+                aria-haspopup="true"
+                aria-expanded={accountOpen}
+                onFocus={handleAccountEnter}
+                onBlur={handleAccountLeave}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="10" cy="7" r="3.5" />
+                  <path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7" />
+                </svg>
+              </Link>
+
+              {accountOpen && (
+                <div
+                  role="menu"
+                  aria-label="Account menu"
+                  className="absolute right-0 top-full mt-1 min-w-[180px] z-50"
+                  style={{
+                    backgroundColor: 'var(--color-bg)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-card)',
+                    boxShadow: '0 12px 32px rgba(0,0,0,0.07)',
+                    padding: '8px 0',
+                    animation: 'dropdownIn 0.18s ease',
+                  }}
+                >
+                  <ul className="flex flex-col">
+                    {ACCOUNT_MENU_ITEMS.map((item) => (
+                      <li key={item.label} role="none">
+                        <Link
+                          href={item.href}
+                          role="menuitem"
+                          onClick={() => setAccountOpen(false)}
+                          className="block hover:bg-black/[0.04] transition-colors duration-150"
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '13px',
+                            color: 'var(--color-text)',
+                            padding: '10px 16px',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
             <Link
               href="/cart"
               className="flex items-center justify-center w-8 h-8 relative"

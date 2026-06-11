@@ -292,7 +292,7 @@ export function CartView() {
             }}
           >
             {[
-              { icon: '✦', label: 'Ethically Made', sub: 'By artisans in Lucknow' },
+              { icon: '✦', label: 'Ethically Made', sub: 'By artisans in Bengaluru' },
               { icon: '✦', label: 'Easy Returns', sub: '7-day return window' },
               { icon: '✦', label: 'Secure Checkout', sub: 'Razorpay encrypted' },
             ].map(({ icon, label, sub }) => (

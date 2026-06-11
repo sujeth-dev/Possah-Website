@@ -303,3 +303,11 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Sticky-header anchor offset — used by in-page `#section` jumps
+   (e.g. /festive#products, /about#atelier, /faq#shipping) so the
+   target section isn't hidden behind the sticky header on land. */
+.anchor-offset,
+:target {
+  scroll-margin-top: 112px;
+}

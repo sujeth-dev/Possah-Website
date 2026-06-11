@@ -185,6 +185,18 @@ export function MobileNav({ isOpen, onClose, navItems }: MobileNavProps) {
             My Account
           </Link>
           <Link
+            href="/account/orders"
+            onClick={onClose}
+            className="flex items-center gap-3 hover:opacity-70 transition-opacity"
+            style={{ fontSize: '13px', color: 'var(--color-text)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h14l-1.5 10a2 2 0 0 1-2 1.7H6.5a2 2 0 0 1-2-1.7L3 6z" />
+              <path d="M7 6V4a3 3 0 0 1 6 0v2" />
+            </svg>
+            My Orders
+          </Link>
+          <Link
             href="/wishlist"
             onClick={onClose}
             className="flex items-center gap-3 hover:opacity-70 transition-opacity"

@@ -72,10 +72,10 @@ test.describe('Checkout flow', () => {
     await page.fill('input[name="last_name"]', 'Sharma')
     await page.fill('input[name="email"]', 'priya@example.com')
     await page.fill('input[name="phone"]', '9876543210')
-    await page.fill('input[name="address_line1"]', '14 Hanenganj Lane')
-    await page.fill('input[name="city"]', 'Lucknow')
-    await page.selectOption('select[name="state"]', 'Uttar Pradesh')
-    await page.fill('input[name="pincode"]', '226001')
+    await page.fill('input[name="address_line1"]', 'No. 30, 1st Main Road')
+    await page.fill('input[name="city"]', 'Bengaluru')
+    await page.selectOption('select[name="state"]', 'Karnataka')
+    await page.fill('input[name="pincode"]', '560113')
 
     // Submit
     const payButton = page.getByRole('button', { name: /pay/i })
