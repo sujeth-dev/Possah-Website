@@ -73,7 +73,7 @@ export function CategoryListing({
     } finally {
       setLoading(false)
     }
-  }, [loading, hasMore, page, categorySlug, searchParams, topSellingOnly])
+  }, [loading, hasMore, page, categorySlug, searchParams, topSellingOnly, newInOnly])
 
   return (
     <>

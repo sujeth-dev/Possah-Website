@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createPublicClient } from '@/lib/supabase/public'
 import type { ProductCardData } from '@/app/(shop)/page'
 
+export const dynamic = 'force-dynamic'
+
 const PAGE_SIZE = 24
 
 function getString(val: string | null): string | undefined {

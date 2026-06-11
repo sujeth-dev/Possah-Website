@@ -8,10 +8,14 @@ const nextConfig = {
     // Cache optimised images at Vercel edge for 1 year.
     minimumCacheTTL: 31536000,
     remotePatterns: [
-      // R2 CDN — primary image host
+      // R2 CDN — primary image host (custom domain + direct R2 public bucket URL)
       {
         protocol: 'https',
         hostname: 'cdn.thepossah.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
       },
       {
         protocol: 'https',
@@ -20,6 +24,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
+      },
+      // Legacy: some product images still point to Supabase storage pending full R2 migration
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
       },
     ],
     formats: ['image/avif', 'image/webp'],
