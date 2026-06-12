@@ -9,9 +9,9 @@ interface MagnifierLensProps {
   children: React.ReactNode
 }
 
-const PANEL_W = 300
-const PANEL_H = 400
-const ZOOM    = 2.5
+const PANEL_W = 320
+const PANEL_H = 420
+const ZOOM    = 4
 
 export function MagnifierLens({ src, onClick, children }: MagnifierLensProps) {
   const containerRef = useRef<HTMLDivElement>(null)

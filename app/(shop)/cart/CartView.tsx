@@ -202,8 +202,9 @@ export function CartView() {
                     className="flex items-center gap-1.5"
                     style={{
                       fontFamily: 'var(--font-body)',
-                      fontSize: '12px',
-                      color: 'var(--color-text-muted)',
+                      fontSize:   '13px',
+                      fontWeight: '500',
+                      color:      'var(--color-text)',
                     }}
                   >
                     <span
@@ -222,11 +223,12 @@ export function CartView() {
                       }}
                       style={{
                         fontFamily:      'var(--font-body)',
-                        fontSize:        '12px',
-                        color:           'var(--color-text-muted)',
+                        fontSize:        '13px',
+                        fontWeight:      '500',
+                        color:           'var(--color-text)',
                         border:          '1px solid var(--color-border)',
                         borderRadius:    '4px',
-                        padding:         '2px 6px',
+                        padding:         '4px 8px',
                         backgroundColor: 'var(--color-bg)',
                         cursor:          'pointer',
                       }}
@@ -242,8 +244,9 @@ export function CartView() {
                     <span
                       style={{
                         fontFamily: 'var(--font-body)',
-                        fontSize:   '12px',
-                        color:      'var(--color-text-muted)',
+                        fontSize:   '13px',
+                        fontWeight: '500',
+                        color:      'var(--color-text)',
                       }}
                     >
                       {item.size}

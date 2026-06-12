@@ -1050,7 +1050,7 @@ export function CheckoutForm() {
                         {item.name}
                       </p>
                       <p
-                        style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)' }}
+                        style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: '500', color: 'var(--color-text)' }}
                       >
                         {item.colour} · {item.size}
                       </p>
