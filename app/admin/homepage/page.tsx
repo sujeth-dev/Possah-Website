@@ -33,6 +33,9 @@ interface HomepageConfig {
   occasion_tiles:    OccasionTile[]
 }
 
+// Must stay in sync with the constant in app/api/admin/homepage/route.ts
+const SINGLETON_ID = '00000000-0000-0000-0000-000000000001'
+
 async function getHomepageConfig(): Promise<HomepageConfig> {
   const defaults: HomepageConfig = {
     hero_slides:       [],
@@ -47,7 +50,8 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
 
   try {
     const supabase = createAdminClient()
-    const { data }  = await supabase.from('homepage_config').select('*').limit(1).maybeSingle()
+    // Query the singleton row — same ID the PATCH route saves to
+    const { data }  = await supabase.from('homepage_config').select('*').eq('id', SINGLETON_ID).maybeSingle()
     if (!data) return defaults
 
     return {

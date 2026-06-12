@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
+import { BucketPicker } from '@/app/admin/products/BucketPicker'
 
 interface Props {
   label: string
@@ -13,6 +14,7 @@ interface Props {
 export function ImageUploadField({ label, value, onChange, pathPrefix = 'uploads/homepage' }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = async (file: File) => {
@@ -64,21 +66,36 @@ export function ImageUploadField({ label, value, onChange, pathPrefix = 'uploads
         </div>
       )}
 
-      {/* Upload button */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
+        {/* Primary: open media library */}
+        <button
+          type="button"
+          onClick={() => { setError(null); setPickerOpen(true) }}
+          style={{
+            padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--color-border)',
+            backgroundColor: 'var(--color-surface)', fontFamily: 'var(--font-body)', fontSize: '12px',
+            color: 'var(--color-text)', cursor: 'pointer', whiteSpace: 'nowrap',
+          }}
+        >
+          Select from Media
+        </button>
+
+        {/* Secondary: upload new file directly */}
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           style={{
-            padding: '6px 14px', borderRadius: '6px', border: '1px dashed var(--color-border)',
+            padding: '6px 12px', borderRadius: '6px', border: '1px dashed var(--color-border)',
             backgroundColor: 'transparent', fontFamily: 'var(--font-body)', fontSize: '12px',
             color: uploading ? 'var(--color-text-muted)' : 'var(--color-text)',
             cursor: uploading ? 'wait' : 'pointer', whiteSpace: 'nowrap',
           }}
         >
-          {uploading ? 'Uploading…' : '↑ Upload image'}
+          {uploading ? 'Uploading…' : '↑ Upload new'}
         </button>
+
         <input
           ref={inputRef}
           type="file"
@@ -86,20 +103,27 @@ export function ImageUploadField({ label, value, onChange, pathPrefix = 'uploads
           style={{ display: 'none' }}
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = '' }}
         />
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', alignSelf: 'center' }}>or paste URL below</span>
       </div>
 
       {/* URL fallback input */}
       <input
         type="text"
         value={value}
-        placeholder="https://…"
+        placeholder="https://… or paste URL directly"
         onChange={(e) => { setError(null); onChange(e.target.value) }}
         style={inp}
       />
 
       {error && (
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#DC2626', marginTop: 4 }}>{error}</p>
+      )}
+
+      {/* Media library modal */}
+      {pickerOpen && (
+        <BucketPicker
+          onSelect={(url) => { onChange(url); setPickerOpen(false) }}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
     </div>
   )

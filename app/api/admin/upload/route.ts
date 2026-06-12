@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unsupported file type' }, { status: 415 })
   }
 
+  if (!process.env.NEXT_PUBLIC_R2_PUBLIC_URL) {
+    return NextResponse.json(
+      { error: 'NEXT_PUBLIC_R2_PUBLIC_URL is not set — add it to .env.local or Vercel environment variables' },
+      { status: 500 },
+    )
+  }
+
   try {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
