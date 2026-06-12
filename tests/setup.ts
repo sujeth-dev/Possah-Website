@@ -17,3 +17,18 @@ vi.stubEnv('RAZORPAY_KEY_SECRET', 'placeholder_razorpay_secret')
 vi.stubEnv('RAZORPAY_WEBHOOK_SECRET', 'placeholder_webhook_secret')
 vi.stubEnv('RESEND_API_KEY', 're_placeholder_resend_key')
 vi.stubEnv('ADMIN_EMAIL', 'admin@placeholder.com')
+
+// jsdom doesn't implement window.matchMedia — stub it globally.
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
