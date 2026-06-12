@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServerClient } from '@/lib/supabase/server'
 import { verifyRazorpayPaymentSignature } from '@/lib/razorpay'
+import { sendOrderConfirmationIfNotSent } from '@/lib/send-order-emails'
 
 const schema = z.object({
   razorpay_order_id: z.string().min(1),
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = createServerClient()
 
-    // Update order: mark paid, store gateway refs
+    // Update order: mark paid, store gateway refs. Idempotent — only flips
+    // pending → paid (paid stays paid; webhook is the safety net for that case).
     const { error } = await supabase
       .from('orders')
       .update({
@@ -59,17 +61,27 @@ export async function POST(req: NextRequest) {
         gateway_order_id: razorpay_order_id,
       })
       .eq('order_number', order_number)
-      .eq('payment_status', 'pending') // idempotent: don't overwrite already-paid
+      .eq('payment_status', 'pending')
 
     if (error) {
       console.error('[payments/verify] DB update error:', error)
-      // Still return success to client — payment IS valid, DB update is best-effort
-      // Webhook will catch this if it failed
+      // Still return success to client — payment IS valid, DB update is
+      // best-effort and the webhook will reconcile if it failed.
     }
+
+    // Fire confirmation + admin emails exactly once (idempotent across
+    // verify-callback + webhook). Best-effort — never fail verify on email
+    // errors; the helper handles its own try/catch internally.
+    void sendOrderConfirmationIfNotSent(supabase, order_number).catch((err) => {
+      console.error('[payments/verify] email dispatch failed:', err)
+    })
 
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[payments/verify] Unexpected error:', err)
-    return NextResponse.json({ success: false, message: 'Database error. Payment is recorded with Razorpay.' }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message: 'Database error. Payment is recorded with Razorpay.' },
+      { status: 500 },
+    )
   }
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyRazorpayWebhookSignature } from '@/lib/razorpay'
-import { sendOrderConfirmationEmail, sendPaymentFailureEmail, sendAdminOrderNotification } from '@/lib/email'
+import { sendPaymentFailureEmail } from '@/lib/email'
+import { sendOrderConfirmationIfNotSent } from '@/lib/send-order-emails'
 
 /**
  * Razorpay webhook — backup payment confirmation.
@@ -10,8 +11,11 @@ import { sendOrderConfirmationEmail, sendPaymentFailureEmail, sendAdminOrderNoti
  *   1. payment.captured — user paid successfully (primary path)
  *   2. payment.failed   — payment explicitly failed
  *
- * This runs even if the client never redirected back (network drops, tab closed, etc.)
- * Razorpay retries webhooks for up to 3 days with exponential backoff.
+ * This runs even if the client never redirected back (network drops, tab
+ * closed, etc.). Razorpay retries webhooks for up to 3 days with exponential
+ * backoff, so the order-confirmation email is dispatched via
+ * `sendOrderConfirmationIfNotSent` which is idempotent — the same call from
+ * /api/payments/verify and from here cannot send two emails for one order.
  *
  * Register in Razorpay Dashboard → Settings → Webhooks:
  *   URL: https://thepossah.com/api/payments/webhook
@@ -69,110 +73,84 @@ export async function POST(req: NextRequest) {
     // Find order by gateway_order_id
     const { data: order, error: fetchError } = await supabase
       .from('orders')
-      .select('id, order_number, payment_status, customer_name, customer_email, line_items, subtotal, shipping_fee, discount_amount, total')
+      .select('id, order_number, payment_status, line_items')
       .eq('gateway_order_id', razorpayOrderId)
       .single()
 
     if (fetchError || !order) {
       console.error('[webhook] Order not found for razorpay_order_id:', razorpayOrderId)
-      // Return 200 — so Razorpay doesn't retry. Data mismatch is logged separately.
+      // Return 200 — so Razorpay doesn't retry. Data mismatch is logged
+      // separately.
       return NextResponse.json({ received: true })
     }
 
     // Idempotent — skip if already marked paid
-    if (order.payment_status === 'paid') {
-      return NextResponse.json({ received: true })
+    if (order.payment_status !== 'paid') {
+      // Mark paid
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          payment_status: 'paid',
+          gateway_payment_id: razorpayPaymentId,
+        })
+        .eq('id', order.id)
+        .eq('payment_status', 'pending')
+
+      if (updateError) {
+        console.error('[webhook] Failed to update payment_status:', updateError)
+        // Return 500 so Razorpay retries
+        return NextResponse.json({ received: false }, { status: 500 })
+      }
+
+      // ─── Decrement stock for every line item (atomic, parallel) ─────────
+      // decrement_variant_stock returns FALSE if stock_qty would go negative
+      // (oversell). We log oversells for manual reconciliation but do NOT
+      // fail the webhook — Razorpay would retry and attempt double-decrement.
+      const lineItemsRaw = (order.line_items as {
+        variant_id: string
+        name: string
+        colour: string
+        size: string
+        qty: number
+        price: number
+      }[]) ?? []
+
+      await Promise.all(
+        lineItemsRaw.map(async (item) => {
+          const { data: decremented, error: stockErr } = await supabase
+            .rpc('decrement_variant_stock', {
+              p_variant_id: item.variant_id,
+              p_qty: item.qty,
+            })
+
+          if (stockErr) {
+            console.error(
+              `[webhook] Stock RPC error for variant ${item.variant_id} (order ${order.order_number}):`,
+              stockErr,
+            )
+          } else if (!decremented) {
+            // Oversell — stock hit 0 before this decrement could run
+            console.error(
+              `[webhook] OVERSELL: variant ${item.variant_id} ("${item.name}") ` +
+                `qty=${item.qty} order=${order.order_number} — manual reconciliation required`,
+            )
+          }
+        }),
+      )
     }
 
-    // Mark paid
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({
-        payment_status: 'paid',
-        gateway_payment_id: razorpayPaymentId,
-      })
-      .eq('id', order.id)
-
-    if (updateError) {
-      console.error('[webhook] Failed to update payment_status:', updateError)
-      // Return 500 so Razorpay retries
-      return NextResponse.json({ received: false }, { status: 500 })
-    }
-
-    // ─── Decrement stock for every line item (atomic, parallel) ───────────────
-    // decrement_variant_stock returns FALSE if stock_qty would go negative (oversell).
-    // We log oversells for manual reconciliation but do NOT fail the webhook —
-    // Razorpay would retry and attempt double-decrement.
-    const lineItemsRaw = (order.line_items as {
-      variant_id: string
-      name: string
-      colour: string
-      size: string
-      qty: number
-      price: number
-    }[]) ?? []
-
-    await Promise.all(
-      lineItemsRaw.map(async (item) => {
-        const { data: decremented, error: stockErr } = await supabase
-          .rpc('decrement_variant_stock', {
-            p_variant_id: item.variant_id,
-            p_qty: item.qty,
-          })
-
-        if (stockErr) {
-          console.error(
-            `[webhook] Stock RPC error for variant ${item.variant_id} (order ${order.order_number}):`,
-            stockErr
-          )
-        } else if (!decremented) {
-          // Oversell — stock hit 0 before this decrement could run
-          console.error(
-            `[webhook] OVERSELL: variant ${item.variant_id} ("${item.name}") ` +
-              `qty=${item.qty} order=${order.order_number} — manual reconciliation required`
-          )
-        }
-      })
-    )
-
-    // FIX-PAY-03: Admin notification (non-blocking)
-    try {
-      await sendAdminOrderNotification({
-        to: process.env.ADMIN_EMAIL!,
-        orderNumber: order.order_number,
-        customerName: order.customer_name,
-        customerEmail: order.customer_email,
-        items: lineItemsRaw,
-        total: order.total,
-        shippingAddress: (order as unknown as Record<string, unknown>).shipping_address as Record<string, string> ?? '',
-      })
-    } catch {
-      // non-fatal
-    }
-
-    // Send confirmation email (best-effort -- never fail webhook for email errors)
-    try {
-      await sendOrderConfirmationEmail({
-        to: order.customer_email,
-        customerName: order.customer_name,
-        orderNumber: order.order_number,
-        items: lineItemsRaw,
-        subtotal: order.subtotal,
-        shippingFee: order.shipping_fee ?? 0,
-        discountAmount: order.discount_amount ?? 0,
-        tax: 0,
-        total: order.total,
-        estimatedDelivery: '5-7 business days',
-      })
-    } catch {
-      // non-fatal
-    }
+    // Fire confirmation + admin emails. Idempotent across verify-callback +
+    // webhook — `sendOrderConfirmationIfNotSent` atomically claims the send
+    // via orders.confirmation_email_sent_at, so the second caller no-ops.
+    void sendOrderConfirmationIfNotSent(supabase, order.order_number).catch((err) => {
+      console.error('[webhook] email dispatch failed:', err)
+    })
 
     return NextResponse.json({ received: true })
   }
 
   if (event.event === 'payment.failed') {
-    // FIX-PAY-02: Find order and send payment failure email to customer
+    // FIX-PAY-02: find order and send payment-failure email to customer
     const { data: order } = await supabase
       .from('orders')
       .select('id, order_number, payment_status, customer_name, customer_email, total')
@@ -180,14 +158,15 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (!order) {
-      // No matching order -- log and ack (don't retry)
+      // No matching order — log and ack (don't retry)
       console.warn('[webhook] payment.failed: no order for razorpay_order_id', razorpayOrderId)
       return NextResponse.json({ received: true })
     }
 
     // Only mark failed if still pending — never downgrade a paid order.
-    // A late payment.failed can arrive after payment.captured (race condition on Razorpay's side).
-    // Guard: only transition pending → failed. paid stays paid. failed stays failed (idempotent).
+    // A late payment.failed can arrive after payment.captured (race condition
+    // on Razorpay's side). Guard: only transition pending → failed.
+    // paid stays paid. failed stays failed (idempotent).
     if (order.payment_status === 'pending') {
       await supabase
         .from('orders')
@@ -209,6 +188,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true })
   }
 
-  // Unknown event type -- ack and ignore
+  // Unknown event type — ack and ignore
   return NextResponse.json({ received: true })
 }

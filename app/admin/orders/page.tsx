@@ -22,6 +22,7 @@ interface OrderRow {
   coupon_code:        string | null
   is_gift:            boolean
   created_at:         string
+  payment_attempts:   number | null
 }
 
 interface PageProps {
@@ -36,12 +37,16 @@ interface PageProps {
 }
 
 const TABS: { label: string; value: string }[] = [
-  { label: 'All',        value: '' },
+  { label: 'All',         value: '' },
+  // 'Attempted' = customer started checkout but never paid in the last 14 days.
+  // Shows pending/failed payment, not yet cancelled. Lives separate from the
+  // real fulfilment statuses so it never gets confused with shippable work.
+  { label: 'Attempted',   value: 'attempted' },
   { label: 'Unfulfilled', value: 'unfulfilled' },
-  { label: 'Processing', value: 'processing' },
-  { label: 'Shipped',    value: 'shipped' },
-  { label: 'Delivered',  value: 'delivered' },
-  { label: 'Cancelled',  value: 'cancelled' },
+  { label: 'Processing',  value: 'processing' },
+  { label: 'Shipped',     value: 'shipped' },
+  { label: 'Delivered',   value: 'delivered' },
+  { label: 'Cancelled',   value: 'cancelled' },
 ]
 
 async function getOrders(params: PageProps['searchParams']): Promise<{
@@ -59,14 +64,25 @@ async function getOrders(params: PageProps['searchParams']): Promise<{
     let query = supabase
       .from('orders')
       .select(
-        'id, order_number, customer_name, customer_email, customer_phone, total, payment_status, fulfillment_status, coupon_code, is_gift, created_at',
+        'id, order_number, customer_name, customer_email, customer_phone, total, payment_status, fulfillment_status, coupon_code, is_gift, created_at, payment_attempts',
         { count: 'exact' }
       )
       .order('created_at', { ascending: false })
 
-    const validStatuses = ['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled']
-    if (params.status && validStatuses.includes(params.status)) {
-      query = query.eq('fulfillment_status', params.status)
+    // 'Attempted' is a derived status: pending/failed payment within the last
+    // 14 days that hasn't been explicitly cancelled. Handled before the regular
+    // fulfilment-status filter so the two paths can't collide.
+    if (params.status === 'attempted') {
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+      query = query
+        .in('payment_status', ['pending', 'failed'])
+        .neq('fulfillment_status', 'cancelled')
+        .gte('created_at', fourteenDaysAgo)
+    } else {
+      const validStatuses = ['unfulfilled', 'processing', 'shipped', 'delivered', 'cancelled']
+      if (params.status && validStatuses.includes(params.status)) {
+        query = query.eq('fulfillment_status', params.status)
+      }
     }
 
     const validPayment = ['pending', 'paid', 'failed', 'refunded']
@@ -300,6 +316,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
           gap:          '2px',
           marginBottom: '16px',
           borderBottom: '1px solid var(--color-border)',
+          flexWrap:     'wrap',
         }}
       >
         {TABS.map((tab) => {
@@ -421,6 +438,23 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                             }}
                           >
                             🎁
+                          </span>
+                        )}
+                        {(order.payment_attempts ?? 0) > 1 && (
+                          <span
+                            title={`${order.payment_attempts} payment attempts`}
+                            style={{
+                              fontFamily:      'var(--font-mono)',
+                              fontSize:        '10px',
+                              letterSpacing:   '0.05em',
+                              padding:         '2px 6px',
+                              borderRadius:    '999px',
+                              backgroundColor: '#FEF3C7',
+                              color:           '#92400E',
+                              border:          '1px solid #FDE68A',
+                            }}
+                          >
+                            ×{order.payment_attempts}
                           </span>
                         )}
                       </div>

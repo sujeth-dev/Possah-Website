@@ -350,6 +350,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          cart_fingerprint: string | null
+          confirmation_email_sent_at: string | null
           coupon_code: string | null
           courier: string | null
           created_at: string
@@ -361,11 +363,14 @@ export type Database = {
           gateway_order_id: string | null
           gateway_payment_id: string | null
           gift_message: string | null
+          customer_hidden_at: string | null
+          expires_at: string | null
           id: string
           internal_notes: string | null
           is_gift: boolean
           line_items: Json
           order_number: string
+          payment_attempts: number
           payment_gateway: string | null
           payment_status: string
           shipping_address: Json
@@ -377,6 +382,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cart_fingerprint?: string | null
+          confirmation_email_sent_at?: string | null
           coupon_code?: string | null
           courier?: string | null
           created_at?: string
@@ -388,11 +395,14 @@ export type Database = {
           gateway_order_id?: string | null
           gateway_payment_id?: string | null
           gift_message?: string | null
+          customer_hidden_at?: string | null
+          expires_at?: string | null
           id?: string
           internal_notes?: string | null
           is_gift?: boolean
           line_items?: Json
           order_number: string
+          payment_attempts?: number
           payment_gateway?: string | null
           payment_status?: string
           shipping_address?: Json
@@ -404,6 +414,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cart_fingerprint?: string | null
+          confirmation_email_sent_at?: string | null
           coupon_code?: string | null
           courier?: string | null
           created_at?: string
@@ -415,11 +427,14 @@ export type Database = {
           gateway_order_id?: string | null
           gateway_payment_id?: string | null
           gift_message?: string | null
+          customer_hidden_at?: string | null
+          expires_at?: string | null
           id?: string
           internal_notes?: string | null
           is_gift?: boolean
           line_items?: Json
           order_number?: string
+          payment_attempts?: number
           payment_gateway?: string | null
           payment_status?: string
           shipping_address?: Json

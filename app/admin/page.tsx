@@ -13,11 +13,13 @@ export const revalidate = 60
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface DashboardStats {
-  ordersToday: number
-  revenueToday: number
-  pendingOrders: number
+  ordersToday: number          // PAID orders today only — excludes abandoned attempts
+  revenueToday: number         // PAID revenue today only
+  pendingOrders: number        // Unfulfilled or processing orders (admin action queue)
   totalProducts: number
   lowStockItems: number
+  abandonedLast7d: number      // Pending/failed orders in last 7 days — checkout intent that did not pay
+  abandonedValueLast7d: number // Stored total of those attempts
 }
 
 interface RecentOrder {
@@ -45,6 +47,8 @@ async function getDashboardData(): Promise<{
       pendingOrders: 0,
       totalProducts: 0,
       lowStockItems: 0,
+      abandonedLast7d: 0,
+      abandonedValueLast7d: 0,
     },
     recentOrders: [],
   }
@@ -57,6 +61,9 @@ async function getDashboardData(): Promise<{
     todayStart.setHours(0, 0, 0, 0)
     const todayISO = todayStart.toISOString()
 
+    // 7-day window for the abandoned-checkout metric
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
     // Parallel queries
     const [
       todayOrdersRes,
@@ -64,17 +71,22 @@ async function getDashboardData(): Promise<{
       productsRes,
       lowStockRes,
       recentOrdersRes,
+      abandonedRes,
     ] = await Promise.all([
-      // Orders + revenue today
+      // Orders + revenue today — PAID ONLY. Unpaid attempts (pending/failed)
+      // never roll into revenue; that's tracked in `abandonedLast7d` instead.
       supabase
         .from('orders')
         .select('total')
+        .eq('payment_status', 'paid')
         .gte('created_at', todayISO),
 
-      // Unfulfilled + processing orders (pending admin action)
+      // Unfulfilled + processing orders (pending admin action — paid only,
+      // because pending-payment orders are abandoned checkouts, not admin work).
       supabase
         .from('orders')
         .select('id', { count: 'exact', head: true })
+        .eq('payment_status', 'paid')
         .in('fulfillment_status', ['unfulfilled', 'processing']),
 
       // Total active products
@@ -91,12 +103,22 @@ async function getDashboardData(): Promise<{
         .lte('stock_qty', 3)
         .eq('is_active', true),
 
-      // Last 10 orders
+      // Last 10 orders (all statuses — admin sees everything in the recent list)
       supabase
         .from('orders')
         .select('id, order_number, customer_name, customer_email, total, payment_status, fulfillment_status, created_at, line_items')
         .order('created_at', { ascending: false })
         .limit(10),
+
+      // Abandoned checkouts in the last 7 days — pending/failed payment, not
+      // explicitly cancelled. Surfaces the "people tried to pay but didn't"
+      // signal that used to be drowned in the revenue number.
+      supabase
+        .from('orders')
+        .select('total')
+        .in('payment_status', ['pending', 'failed'])
+        .neq('fulfillment_status', 'cancelled')
+        .gte('created_at', sevenDaysAgo),
     ])
 
     const todayOrders = todayOrdersRes.data ?? []
@@ -105,6 +127,9 @@ async function getDashboardData(): Promise<{
     const pendingOrders = pendingRes.count ?? 0
     const totalProducts = productsRes.count ?? 0
     const lowStockItems = lowStockRes.count ?? 0
+    const abandonedOrders = abandonedRes.data ?? []
+    const abandonedLast7d = abandonedOrders.length
+    const abandonedValueLast7d = abandonedOrders.reduce((sum, o) => sum + (o.total ?? 0), 0)
 
     const recentOrders: RecentOrder[] = (recentOrdersRes.data ?? []).map((o) => {
       // line_items is a JSON array — count items
@@ -129,7 +154,15 @@ async function getDashboardData(): Promise<{
     })
 
     return {
-      stats: { ordersToday, revenueToday, pendingOrders, totalProducts, lowStockItems },
+      stats: {
+        ordersToday,
+        revenueToday,
+        pendingOrders,
+        totalProducts,
+        lowStockItems,
+        abandonedLast7d,
+        abandonedValueLast7d,
+      },
       recentOrders,
     }
   } catch (err) {
@@ -180,16 +213,18 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
         <AdminStatCard
           label="Orders Today"
           value={stats.ordersToday}
+          subLabel="Paid only"
           accent="default"
           icon={<IconPackage />}
         />
         <AdminStatCard
           label="Revenue Today"
           value={formatPrice(stats.revenueToday)}
+          subLabel="Paid only"
           accent="success"
           icon={<IconRupee />}
         />
@@ -199,6 +234,13 @@ export default async function AdminDashboardPage() {
           subLabel="Unfulfilled + Processing"
           accent={stats.pendingOrders > 10 ? 'warning' : 'default'}
           icon={<IconClock />}
+        />
+        <AdminStatCard
+          label="Abandoned (7d)"
+          value={stats.abandonedLast7d}
+          subLabel={`${formatPrice(stats.abandonedValueLast7d)} not converted`}
+          accent={stats.abandonedLast7d > 0 ? 'warning' : 'default'}
+          icon={<IconCart />}
         />
         <AdminStatCard
           label="Total Products"
@@ -473,6 +515,16 @@ function IconAlert() {
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
       <path d="M9 3L17 15H1L9 3z" />
       <path d="M9 8v4M9 13.5v.5" />
+    </svg>
+  )
+}
+
+function IconCart() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 3h2l1.5 9.5a1.5 1.5 0 0 0 1.5 1.3h6a1.5 1.5 0 0 0 1.5-1.2L16 6H5" />
+      <circle cx="7" cy="16" r="0.9" />
+      <circle cx="13" cy="16" r="0.9" />
     </svg>
   )
 }

@@ -243,7 +243,7 @@ export async function sendAdminOrderNotification({
   await resend.emails.send({
     from: 'Possah Orders <noreply@thepossah.com>',
     to,
-    subject: `[POSSAH] Neworder #${orderNumber} - ${formatPrice(total)}`,
+    subject: `[POSSAH] New order #${orderNumber} - ${formatPrice(total)}`,
     html: emailWrapper(body),
   })
 }
