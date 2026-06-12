@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyRazorpayPaymentSignature } from '@/lib/razorpay'
 import { sendOrderConfirmationIfNotSent } from '@/lib/send-order-emails'
 
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient()
 
     // Update order: mark paid, store gateway refs. Idempotent — only flips
     // pending → paid (paid stays paid; webhook is the safety net for that case).
