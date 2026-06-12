@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
-import { useCartStore } from '@/lib/store/cartStore'
 import { useWishlistStore } from '@/lib/store/wishlistStore'
 import { formatPrice } from '@/lib/utils'
 import type { ProductCardData } from '@/app/(shop)/page'
@@ -16,10 +16,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
   const [hovered, setHovered] = useState(false)
-  const [adding, setAdding] = useState(false)
-  const [added, setAdded] = useState(false)
-
-  const addToCart = useCartStore((s) => s.addItem)
+  const router = useRouter()
   const { toggleItem, isInWishlist } = useWishlistStore()
 
   const primaryImage = product.images[0]
@@ -27,27 +24,10 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const inWishlist = isInWishlist(product.id)
   const productHref = `/shop/${product.category_slug ?? 'shop'}/${product.slug}`
 
-  const handleQuickAdd = async (e: React.MouseEvent) => {
+  const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (adding || added) return
-
-    setAdding(true)
-    // Add first available variant (size S or Free Size as default)
-    addToCart({
-      productId: product.id,
-      variantId: `${product.id}-default`,
-      name: product.name,
-      image: primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah',
-      price: product.price,
-      colour: 'Default',
-      colourHex: '#C99A99',
-      size: 'S',
-      slug: productHref,
-    })
-    setAdding(false)
-    setAdded(true)
-    setTimeout(() => setAdded(false), 1800)
+    router.push(productHref)
   }
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -138,7 +118,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             onClick={handleQuickAdd}
             className="w-full py-3 flex items-center justify-center gap-2 transition-opacity duration-150 hover:opacity-90"
             style={{
-              backgroundColor: added ? 'var(--color-success)' : 'var(--color-green)',
+              backgroundColor: 'var(--color-green)',
               color: 'var(--color-bg)',
               fontFamily: 'var(--font-body)',
               fontSize: '11px',
@@ -146,20 +126,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
             }}
-            aria-label={`Quick add ${product.name} to bag`}
+            aria-label={`View ${product.name}`}
           >
-            {added ? (
-              <>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M2 6l3 3 5-5" />
-                </svg>
-                Added
-              </>
-            ) : adding ? (
-              'Adding…'
-            ) : (
-              'Quick Add'
-            )}
+            Select Size
           </button>
         </div>
       </Link>

@@ -33,8 +33,8 @@ import { computeCartFingerprint } from '@/lib/cart-fingerprint'
 const PENDING_TTL_HOURS = 24 * 7 // 7 days
 
 const orderItemSchema = z.object({
-  product_id: z.string().uuid(),
-  variant_id: z.string().uuid(),
+  product_id: z.string().min(1),
+  variant_id: z.string().min(1),
   name: z.string().min(1).max(200),
   image: z.string().min(1),
   qty: z.number().int().positive().max(10),
