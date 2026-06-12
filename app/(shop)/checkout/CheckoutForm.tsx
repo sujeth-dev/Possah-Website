@@ -217,10 +217,10 @@ export function CheckoutForm() {
     }
   }
 
-  // Fetch saved addresses on mount
+  // Fetch saved addresses on mount — also tracks login state
   useEffect(() => {
     fetch('/api/account/addresses')
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => { if (r.ok) setIsLoggedIn(true); return r.ok ? r.json() : null })
       .then((d) => {
         if (!d?.addresses?.length) return
         setSavedAddresses(d.addresses)
@@ -269,6 +269,7 @@ export function CheckoutForm() {
   }>>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
   const [draftBanner, setDraftBanner] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const {
     register,
@@ -276,6 +277,7 @@ export function CheckoutForm() {
     watch,
     reset,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<CheckoutFields>({
     resolver: zodResolver(checkoutSchema),
@@ -391,6 +393,31 @@ export function CheckoutForm() {
 
       // Razorpay payment flow
       const { razorpay_order_id, order_number, amount } = result
+
+      // Auto-save address on Pay button press — logged-in users only, fire-and-forget
+      if (isLoggedIn) {
+        const isDuplicate = savedAddresses.some(
+          (a) => a.address_line1 === data.address_line1 && a.pincode === data.pincode
+        )
+        if (!isDuplicate) {
+          fetch('/api/account/addresses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              label: '',
+              full_name: `${data.first_name} ${data.last_name}`,
+              phone: data.phone,
+              address_line1: data.address_line1,
+              address_line2: data.address_line2 ?? '',
+              city: data.city,
+              state: data.state,
+              pincode: data.pincode,
+              delivery_notes: '',
+              is_default: savedAddresses.length === 0,
+            }),
+          }).catch(() => {})
+        }
+      }
 
       if (typeof window !== 'undefined' && (window as Window & typeof globalThis & { Razorpay?: unknown }).Razorpay) {
         // Razorpay script loaded
