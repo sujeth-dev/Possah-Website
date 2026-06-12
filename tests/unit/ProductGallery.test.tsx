@@ -19,7 +19,11 @@ describe('ProductGallery lightbox', () => {
 
   async function openLightbox() {
     render(<ProductGallery images={images} productName="Test Product" />)
-    fireEvent.click(screen.getByLabelText('Zoom image'))
+    // MagnifierLens replaced the old "Zoom image" button. The main gallery image
+    // (second occurrence of alt="Image A" — first is the thumbnail) has click
+    // forwarded through MagnifierLens to open the lightbox.
+    const mainImage = screen.getAllByAltText('Image A')[1]
+    fireEvent.click(mainImage)
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: 'Image lightbox' })).not.toBeNull()
     })
