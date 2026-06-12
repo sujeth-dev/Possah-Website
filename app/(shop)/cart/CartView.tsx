@@ -228,7 +228,7 @@ export function CartView() {
                         color:           'var(--color-text)',
                         border:          '1px solid var(--color-border)',
                         borderRadius:    '4px',
-                        padding:         '4px 8px',
+                        padding:         '4px 28px 4px 8px',
                         backgroundColor: 'var(--color-bg)',
                         cursor:          'pointer',
                       }}

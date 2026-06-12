@@ -69,10 +69,9 @@ export async function POST(req: NextRequest) {
       // best-effort and the webhook will reconcile if it failed.
     }
 
-    // Fire confirmation + admin emails exactly once (idempotent across
-    // verify-callback + webhook). Best-effort — never fail verify on email
-    // errors; the helper handles its own try/catch internally.
-    void sendOrderConfirmationIfNotSent(supabase, order_number).catch((err) => {
+    // Await the email dispatch so Vercel doesn't terminate the function before
+    // it completes. .catch() swallows errors — verify always returns 200.
+    await sendOrderConfirmationIfNotSent(supabase, order_number).catch((err) => {
       console.error('[payments/verify] email dispatch failed:', err)
     })
 

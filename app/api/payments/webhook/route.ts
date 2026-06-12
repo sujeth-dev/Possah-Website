@@ -139,10 +139,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Fire confirmation + admin emails. Idempotent across verify-callback +
-    // webhook — `sendOrderConfirmationIfNotSent` atomically claims the send
-    // via orders.confirmation_email_sent_at, so the second caller no-ops.
-    void sendOrderConfirmationIfNotSent(supabase, order.order_number).catch((err) => {
+    // Await so the function doesn't terminate before the email completes.
+    // Idempotent — second caller (verify vs webhook race) no-ops via
+    // the confirmation_email_sent_at atomic claim.
+    await sendOrderConfirmationIfNotSent(supabase, order.order_number).catch((err) => {
       console.error('[webhook] email dispatch failed:', err)
     })
 
