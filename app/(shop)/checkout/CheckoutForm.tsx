@@ -26,19 +26,20 @@ const INDIAN_STATES = [
 ] as const
 
 const checkoutSchema = z.object({
-  first_name: z.string().min(1, 'First name required').max(60),
-  last_name: z.string().min(1, 'Last name required').max(60),
-  email: z.string().email('Invalid email'),
-  phone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, 'Enter valid 10-digit Indian mobile number'),
-  address_line1: z.string().min(5, 'Address required').max(200),
-  address_line2: z.string().max(200).optional(),
-  city: z.string().min(2, 'City required').max(80),
+  first_name: z.string().trim().min(2, 'First name too short').max(60)
+    .regex(/[a-zA-Z]/, 'Enter a valid first name'),
+  last_name: z.string().trim().min(1, 'Last name required').max(60)
+    .regex(/[a-zA-Z]/, 'Enter a valid last name'),
+  email: z.string().trim().email('Invalid email'),
+  phone: z.string().trim().regex(/^[6-9]\d{9}$/, 'Enter valid 10-digit Indian mobile number'),
+  address_line1: z.string().trim().min(5, 'Address required').max(200),
+  address_line2: z.string().trim().max(200).optional(),
+  city: z.string().trim().min(2, 'City required').max(80)
+    .regex(/^[a-zA-Z\s\-.]+$/, 'Enter a valid city name'),
   state: z.enum(INDIAN_STATES, { errorMap: () => ({ message: 'Select your state' }) }),
-  pincode: z.string().regex(/^\d{6}$/, 'Enter valid 6-digit pincode'),
+  pincode: z.string().trim().regex(/^[1-9]\d{5}$/, 'Enter valid 6-digit pincode'),
   delivery_option: z.enum(['standard', 'express']),
-  notes: z.string().max(500).optional(),
+  notes: z.string().trim().max(500).optional(),
 })
 
 type CheckoutFields = z.infer<typeof checkoutSchema>

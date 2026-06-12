@@ -56,7 +56,7 @@ npm run test:payment # payment flow test suite
 Run all migrations in order, then seeds:
 
 ```
-supabase/migrations/001 → 024   run once each, in order
+supabase/migrations/001 → 025   run once each, in order
 seeds/seed_categories.sql       run after migrations
 seeds/seed_homepage_config.sql  run after seed_categories
 ```
@@ -86,4 +86,24 @@ See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
 - **Festive smooth scroll** — global `scroll-behavior: smooth`; `#products` section has `scroll-margin-top: 112px` for sticky-header offset; reduced-motion override in place
 - **Size guide mobile** — SIZE column sticky-left on horizontal scroll; swipe hint on mobile; tighter padding + smaller font under 640px
 - **Orders link** — desktop header account icon has hover/focus dropdown (My Account / My Orders / Wishlist); mobile drawer footer gets My Orders link with icon
+
+### Phase 2 shipped (2026-06-12)
+
+- **Order progress bar** — 5-step mini bar on `/account/orders` list; full labelled bar on `/account/orders/[orderNumber]` detail page
+- **Order detail page** — `/account/orders/[orderNumber]` with line items, shipping address, payment breakdown, tracking
+- **Retry payment** — `/api/orders/[orderNumber]/retry-payment` re-creates Razorpay order; CTA shown on failed/pending orders
+- **Paid vs incomplete split** — customer `/account/orders` shows paid orders and a "Payment incomplete" section separately
+- **Order deduplication** — pending order idempotency key; abandoned checkout TTL (lazy expiry in create route)
+- **Spacing tightened** — `/account/orders`, confirmation page, order detail page all audited and tightened
+
+### QA fixes shipped (2026-06-12)
+
+- **Confirmation page** — async server component; fetches order from Supabase; shows line items, totals, address
+- **Checkout form validation** — Zod schema hardened: first_name min 2 + letter required, last_name letter required, city letters-only, pincode first digit 1–9 (rejects 000000), all fields `.trim()`
+- **Required field asterisks** — `*` shown on all 8 required checkout fields
+- **Size error visibility** — "Please select a size" error is a separate `<p>` below size buttons, not inline with label
+- **Payment status labels** — "pending" → "Awaiting payment", "failed" → "Payment failed" in order detail
+- **Image fallbacks** — `ImageWithFallback` client component for about/bridal/festive hero images
+- **Privacy + Terms pages** — `/privacy` and `/terms` created; footer anchors fixed
+- **Razorpay modal** — `handleback: true`, `confirm_close: true` to prevent viewport takeover on browser back
 
