@@ -151,6 +151,99 @@ export async function sendOrderConfirmationEmail({
   })
 }
 
+// --- P4-1: Order shipped email ---
+
+interface ShippedEmailProps {
+  to: string
+  customerName: string
+  orderNumber: string
+  trackingNumber: string | null
+  courier: string | null
+}
+
+export async function sendShippedEmail({
+  to,
+  customerName,
+  orderNumber,
+  trackingNumber,
+  courier,
+}: ShippedEmailProps): Promise<void> {
+  const trackingBlock =
+    trackingNumber || courier
+      ? `<div style="background-color:#1F3A2D;padding:16px 24px;margin-bottom:24px;">
+          ${courier ? `<p style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#C99A99;margin:0 0 4px;">COURIER</p>
+          <p style="font-size:15px;color:#F4ECDF;margin:0 0 12px;">${courier}</p>` : ''}
+          ${trackingNumber ? `<p style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#C99A99;margin:0 0 4px;">TRACKING NUMBER</p>
+          <p style="font-size:18px;font-weight:500;color:#F4ECDF;letter-spacing:0.05em;margin:0;">${trackingNumber}</p>` : ''}
+        </div>`
+      : ''
+
+  const body = `
+    <tr><td>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:#1A1A1A;margin:0 0 8px;">
+        Your order is on its way.
+      </h2>
+      <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Hi ${customerName}, your Possah order <strong>#${orderNumber}</strong> has been dispatched. It will reach you in 2–5 business days.
+      </p>
+      ${trackingBlock}
+      <a href="https://thepossah.com/account/orders"
+         style="display:inline-block;background-color:#1F3A2D;color:#F4ECDF;padding:14px 28px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;margin-bottom:24px;">
+        TRACK YOUR ORDER
+      </a>
+      <div style="border-left:2px solid #C8973A;padding-left:16px;">
+        <p style="color:#1A1A1A;font-size:14px;font-style:italic;line-height:1.6;margin:0;">
+          &ldquo;Packed with care. Every fold tells the story of the hands that made it.&rdquo;
+        </p>
+      </div>
+    </td></tr>`
+
+  await resend.emails.send({
+    from: 'The Possah <noreply@thepossah.com>',
+    to,
+    subject: `Your Possah order #${orderNumber} has shipped`,
+    html: emailWrapper(body),
+  })
+}
+
+// --- P4-1: Order delivered email ---
+
+interface DeliveredEmailProps {
+  to: string
+  customerName: string
+  orderNumber: string
+}
+
+export async function sendDeliveredEmail({
+  to,
+  customerName,
+  orderNumber,
+}: DeliveredEmailProps): Promise<void> {
+  const body = `
+    <tr><td>
+      <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:#1A1A1A;margin:0 0 8px;">
+        Your order has arrived.
+      </h2>
+      <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Hi ${customerName}, your Possah order <strong>#${orderNumber}</strong> has been delivered. We hope it brings you as much joy to wear as it did to make.
+      </p>
+      <a href="https://thepossah.com/account/orders"
+         style="display:inline-block;background-color:#1F3A2D;color:#F4ECDF;padding:14px 28px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;margin-bottom:24px;">
+        VIEW YOUR ORDER
+      </a>
+      <p style="color:#6B6B6B;font-size:14px;line-height:1.6;margin:0;">
+        Questions or concerns? Write to us at <a href="mailto:hello@thepossah.com" style="color:#1F3A2D;">hello@thepossah.com</a> &mdash; we&rsquo;re here.
+      </p>
+    </td></tr>`
+
+  await resend.emails.send({
+    from: 'The Possah <noreply@thepossah.com>',
+    to,
+    subject: `Your Possah order #${orderNumber} has been delivered`,
+    html: emailWrapper(body),
+  })
+}
+
 // --- FIX-PAY-02: Payment failure email ---
 
 interface PaymentFailureEmailProps {

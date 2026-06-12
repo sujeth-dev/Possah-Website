@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PaymentBadge, FulfillmentBadge } from '@/components/admin/FulfillmentBadge'
 import { formatPrice } from '@/lib/utils'
-import { OrderDetailClient } from './OrderDetailClient'
+import { OrderDetailClient, type HistoryRow } from './OrderDetailClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -88,6 +88,20 @@ async function getOrder(id: string): Promise<OrderDetail | null> {
   }
 }
 
+async function getHistory(orderId: string): Promise<HistoryRow[]> {
+  try {
+    const supabase = createAdminClient()
+    const { data } = await supabase
+      .from('order_status_history')
+      .select('id, from_status, to_status, changed_by, note, changed_at')
+      .eq('order_id', orderId)
+      .order('changed_at', { ascending: false })
+    return (data as HistoryRow[]) ?? []
+  } catch {
+    return []
+  }
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-IN', {
     day:    '2-digit',
@@ -141,7 +155,10 @@ function MetaField({ label, value }: { label: string; value: React.ReactNode }) 
 }
 
 export default async function AdminOrderDetailPage({ params }: PageProps) {
-  const order = await getOrder(params.id)
+  const [order, history] = await Promise.all([
+    getOrder(params.id),
+    getHistory(params.id),
+  ])
 
   if (!order) notFound()
 
@@ -241,13 +258,15 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Mutable fields: fulfilment, tracking, notes */}
+          {/* Mutable fields: fulfilment, tracking, notes, resend, history */}
           <OrderDetailClient
             orderId={order.id}
+            customerEmail={order.customer_email}
             fulfillmentStatus={order.fulfillment_status}
             trackingNumber={order.tracking_number}
             courier={order.courier}
             internalNotes={order.internal_notes}
+            history={history}
           />
 
         </div>

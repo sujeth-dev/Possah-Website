@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
+import { MagnifierLens } from '@/components/pdp/MagnifierLens'
 
 interface GalleryImage {
   url: string
@@ -254,25 +255,20 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="relative w-full" style={{ aspectRatio: '3 / 4' }}>
-            <Image
-              key={active.url}
-              src={active.url}
-              alt={active.alt ?? productName}
-              fill
-              priority
-              quality={90}
-              className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
-            />
-          </div>
-
-          <button
-            onClick={() => setLightboxOpen(true)}
-            aria-label="Zoom image"
-            className="absolute inset-0 w-full h-full"
-            style={{ cursor: 'zoom-in', background: 'transparent', border: 'none' }}
-          />
+          <MagnifierLens src={active.url} onClick={() => setLightboxOpen(true)}>
+            <div className="relative w-full" style={{ aspectRatio: '3 / 4' }}>
+              <Image
+                key={active.url}
+                src={active.url}
+                alt={active.alt ?? productName}
+                fill
+                priority
+                quality={90}
+                className="object-cover object-center"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+              />
+            </div>
+          </MagnifierLens>
 
           <div
             className="absolute bottom-3 right-3 flex items-center justify-center w-8 h-8 pointer-events-none

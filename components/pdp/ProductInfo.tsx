@@ -105,6 +105,11 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
       size: selectedSize,
       qty: 1,
       slug: `${product.category_slug}/${product.slug}`,
+      availableVariants: colourVariants.map((v) => ({
+        variantId:  v.id,
+        size:       v.size,
+        stock_qty:  v.stock_qty,
+      })),
     })
     setAddedState('added')
     setTimeout(() => setAddedState('idle'), 2000)

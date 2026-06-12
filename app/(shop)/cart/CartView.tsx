@@ -11,7 +11,7 @@ const SHIPPING_THRESHOLD = 2500
 const SHIPPING_COST = 199
 
 export function CartView() {
-  const { items, removeItem, updateQty, clearCart, subtotal, itemCount } = useCartStore()
+  const { items, removeItem, updateQty, updateVariant, clearCart, subtotal, itemCount } = useCartStore()
   const coupon = useCouponStore()
   const [couponInput, setCouponInput] = useState(coupon.code)
   const [couponError, setCouponError]   = useState<string | null>(null)
@@ -213,15 +213,42 @@ export function CartView() {
                     />
                     {item.colour}
                   </span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '12px',
-                      color: 'var(--color-text-muted)',
-                    }}
-                  >
-                    {item.size}
-                  </span>
+                  {item.availableVariants && item.availableVariants.length > 1 ? (
+                    <select
+                      value={item.variantId}
+                      onChange={(e) => {
+                        const next = item.availableVariants!.find((v) => v.variantId === e.target.value)
+                        if (next) updateVariant(item.productId, item.variantId, next.variantId, next.size)
+                      }}
+                      style={{
+                        fontFamily:      'var(--font-body)',
+                        fontSize:        '12px',
+                        color:           'var(--color-text-muted)',
+                        border:          '1px solid var(--color-border)',
+                        borderRadius:    '4px',
+                        padding:         '2px 6px',
+                        backgroundColor: 'var(--color-bg)',
+                        cursor:          'pointer',
+                      }}
+                      aria-label="Change size"
+                    >
+                      {item.availableVariants.map((v) => (
+                        <option key={v.variantId} value={v.variantId} disabled={v.stock_qty === 0}>
+                          {v.size}{v.stock_qty === 0 ? ' (Out of stock)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize:   '12px',
+                        color:      'var(--color-text-muted)',
+                      }}
+                    >
+                      {item.size}
+                    </span>
+                  )}
                 </div>
 
                 {/* Qty + price row */}
