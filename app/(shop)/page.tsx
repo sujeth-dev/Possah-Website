@@ -84,32 +84,49 @@ export interface ProductCardData {
   tags: string[]
 }
 
+const PRODUCT_SELECT = `
+  id, slug, name, fabric, price, compare_price,
+  is_new_arrival, is_top_selling,
+  categories (slug),
+  product_images (url, alt, position),
+  product_tags (tag)
+`
+
 async function getHomepageData() {
   try {
     const supabase = createPublicClient()
 
-    const [{ data: config }, { data: products }] = await Promise.all([
-      supabase
-        .from('homepage_config')
-        .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single(),
+    const { data: config } = await supabase
+      .from('homepage_config')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single()
 
-      supabase
+    // Use curated list if admin has selected specific products; otherwise fall back to is_new_arrival flag
+    const curatedIds = parseJson<string[]>(config?.new_arrival_ids, [])
+
+    let products = null
+    if (curatedIds.length > 0) {
+      const { data } = await supabase
         .from('products')
-        .select(`
-          id, slug, name, fabric, price, compare_price,
-          is_new_arrival, is_top_selling,
-          categories (slug),
-          product_images (url, alt, position),
-          product_tags (tag)
-        `)
+        .select(PRODUCT_SELECT)
+        .eq('is_active', true)
+        .in('id', curatedIds)
+        .limit(12)
+      // Re-order to match admin-selected order (DB .in() doesn't guarantee order)
+      const map = new Map((data ?? []).map((p) => [p.id, p]))
+      products = curatedIds.map((id) => map.get(id)).filter((p): p is NonNullable<typeof p> => p != null)
+    } else {
+      const { data } = await supabase
+        .from('products')
+        .select(PRODUCT_SELECT)
         .eq('is_active', true)
         .eq('is_new_arrival', true)
         .order('created_at', { ascending: false })
-        .limit(12),
-    ])
+        .limit(12)
+      products = data
+    }
 
     return { config, products }
   } catch {
