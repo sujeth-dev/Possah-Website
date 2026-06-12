@@ -197,6 +197,7 @@ export function CheckoutForm() {
   const { items, subtotal, clearCart } = useCartStore()
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
+  const paymentDone = useRef(false)
 
   const hasGiftWrap = searchParams.get('gift') === '1'
   const coupon = useCouponStore()
@@ -333,8 +334,9 @@ export function CheckoutForm() {
     coupon.clearCoupon()
   }
 
-  // Redirect to cart if empty
+  // Redirect to cart if empty — skip after successful payment (paymentDone prevents race with clearCart)
   useEffect(() => {
+    if (paymentDone.current) return
     if (count === 0) router.replace('/cart')
   }, [count, router])
 
@@ -469,6 +471,7 @@ export function CheckoutForm() {
                 quantity: i.qty,
               })),
             })
+            paymentDone.current = true
             clearCart()
             coupon.clearCoupon()
             try { localStorage.removeItem('possah-checkout-draft') } catch {}
@@ -481,6 +484,7 @@ export function CheckoutForm() {
         })
       } else {
         // Fallback: COD / Razorpay script not loaded — still go to confirmation
+        paymentDone.current = true
         clearCart()
         coupon.clearCoupon()
         try { localStorage.removeItem('possah-checkout-draft') } catch {}
