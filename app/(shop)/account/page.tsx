@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function AccountPage() {
   const isDev = process.env.NODE_ENV === 'development'
   const session = isDev
-    ? { user: { name: 'Dev User', email: 'dev@thepossah.com', image: null } }
+    ? { user: { name: 'Dev User', email: process.env.ADMIN_EMAIL ?? 'dev@thepossah.com', image: null } }
     : await getServerSession(authOptions)
 
   if (!session) {

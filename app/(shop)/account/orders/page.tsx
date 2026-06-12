@@ -82,7 +82,7 @@ function formatDate(iso: string): string {
 export default async function OrdersPage() {
   const isDev = process.env.NODE_ENV === 'development'
   const session = isDev
-    ? { user: { email: 'dev@thepossah.com' } }
+    ? { user: { email: process.env.ADMIN_EMAIL ?? 'dev@thepossah.com' } }
     : await getServerSession(authOptions)
 
   if (!session?.user?.email) {

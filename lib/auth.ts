@@ -27,7 +27,7 @@ export const DEV_SESSION = {
   user: {
     id: 'dev-user-001',
     name: 'Dev User',
-    email: 'dev@thepossah.com',
+    email: process.env.ADMIN_EMAIL ?? 'dev@thepossah.com',
     image: null,
     isAdmin: true,
   },
