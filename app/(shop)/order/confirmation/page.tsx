@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { OrderConfirmationView } from './OrderConfirmationView'
 
 export const metadata: Metadata = {
@@ -74,7 +74,7 @@ function coerceAddress(raw: unknown): ConfirmationAddress {
 
 async function fetchConfirmationOrder(orderNumber: string): Promise<ConfirmationOrder | null> {
   try {
-    const supabase = createServerClient()
+    const supabase = createAdminClient() // service role — guest users can't read via RLS
     const { data } = await supabase
       .from('orders')
       .select(

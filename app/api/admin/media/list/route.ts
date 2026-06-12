@@ -3,7 +3,7 @@ import { requireAdminAuth } from '@/lib/admin-auth'
 import { r2List, r2PublicUrl } from '@/lib/r2'
 
 // Subfolders to scan in addition to root
-const SUBFOLDERS = ['products']
+const SUBFOLDERS = ['products', 'uploads']
 
 // ─── GET /api/admin/media/list ────────────────────────────────────────────────
 // Returns all files from bucket root + known subfolders, merged and sorted newest first.

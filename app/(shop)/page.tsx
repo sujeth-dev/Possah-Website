@@ -138,24 +138,50 @@ async function getHomepageData() {
 export default async function HomePage() {
   const { config, products } = await getHomepageData()
 
+  // Admin saves snake_case fields (image_url, cta_link, sub_headline, cta_label).
+  // Homepage components expect camelCase (image, ctaLink, subheadline, ctaLabel).
+  // Map here so both shapes work regardless of when config was saved.
   const heroSlides = (() => {
-    const slides = config
-      ? parseJson<HeroSlide[]>(config.hero_slides, FALLBACK_HERO_SLIDES)
-      : FALLBACK_HERO_SLIDES
-    return slides.length > 0 ? slides : FALLBACK_HERO_SLIDES
+    if (!config) return FALLBACK_HERO_SLIDES
+    const raw = parseJson<Record<string, unknown>[]>(config.hero_slides, [])
+    if (!raw.length) return FALLBACK_HERO_SLIDES
+    return raw.map((s, i): HeroSlide => ({
+      id:          String(s.id ?? s.image_url ?? i),
+      image:       String(s.image ?? s.image_url ?? ''),
+      headline:    String(s.headline ?? ''),
+      subheadline: String(s.subheadline ?? s.sub_headline ?? ''),
+      ctaLabel:    String(s.ctaLabel ?? s.cta_label ?? ''),
+      ctaLink:     String(s.ctaLink ?? s.cta_link ?? ''),
+    }))
   })()
 
-  const rawBanner = config
-    ? parseJson<Partial<CollectionBannerData>>(config.collection_banner, FALLBACK_COLLECTION_BANNER)
-    : FALLBACK_COLLECTION_BANNER
-  const collectionBanner: CollectionBannerData =
-    rawBanner?.ctaLink && rawBanner?.image && rawBanner?.headline
-      ? (rawBanner as CollectionBannerData)
-      : FALLBACK_COLLECTION_BANNER
+  const collectionBanner = (() => {
+    if (!config) return FALLBACK_COLLECTION_BANNER
+    const raw = parseJson<Record<string, unknown>>(config.collection_banner, {})
+    const image   = String(raw.image   ?? raw.image_url  ?? '')
+    const ctaLink = String(raw.ctaLink ?? raw.cta_link   ?? '')
+    const headline = String(raw.headline ?? '')
+    if (!image || !ctaLink || !headline) return FALLBACK_COLLECTION_BANNER
+    return {
+      image,
+      headline,
+      subtitle: String(raw.subtitle ?? raw.sub_headline ?? ''),
+      ctaLabel: String(raw.ctaLabel  ?? raw.cta_label   ?? 'Shop Now'),
+      ctaLink,
+    } satisfies CollectionBannerData
+  })()
 
-  const occasionTiles = config
-    ? parseJson<OccasionTile[]>(config.occasion_tiles, FALLBACK_OCCASION_TILES)
-    : FALLBACK_OCCASION_TILES
+  const occasionTiles = (() => {
+    if (!config) return FALLBACK_OCCASION_TILES
+    const raw = parseJson<Record<string, unknown>[]>(config.occasion_tiles, [])
+    if (!raw.length) return FALLBACK_OCCASION_TILES
+    return raw.map((t, i): OccasionTile => ({
+      id:    String(t.id    ?? t.label ?? i),
+      label: String(t.label ?? ''),
+      image: String(t.image ?? t.image_url ?? ''),
+      link:  String(t.link  ?? '/shop/sarees'),
+    }))
+  })()
 
   const newArrivalProducts: ProductCardData[] = (products ?? []).map((p) => ({
     id: p.id,

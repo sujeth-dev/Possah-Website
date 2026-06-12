@@ -103,8 +103,17 @@ export default async function OrdersPage() {
   }
 
   const allOrders = await getOrders(session.user.email)
-  const incomplete = allOrders.filter(isIncomplete)
-  const visible = allOrders.filter((o) => !isIncomplete(o))
+  // Paid/refunded orders — these are the real ones that need action or tracking
+  const visible = allOrders.filter(
+    (o) => o.payment_status === 'paid' || o.payment_status === 'refunded',
+  )
+  // Payment incomplete: only show within 14-day retry window; older ones silently hidden
+  const cutoff14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+  const incomplete = allOrders.filter(
+    (o) =>
+      isIncomplete(o) &&
+      o.created_at >= cutoff14d,
+  )
 
   return (
     <div className="container-site py-10 pb-20">
@@ -173,8 +182,16 @@ export default async function OrdersPage() {
                   key={order.id}
                   className="flex flex-col gap-3 p-5"
                   style={{
-                    border: '1px solid var(--color-border)',
+                    border: order.payment_status === 'paid'
+                      ? '1px solid #C7DEC9'
+                      : '1px solid var(--color-border)',
+                    borderLeft: order.payment_status === 'paid'
+                      ? '3px solid var(--color-green)'
+                      : undefined,
                     borderRadius: 'var(--radius-card)',
+                    backgroundColor: order.payment_status === 'paid'
+                      ? 'rgba(31,58,45,0.02)'
+                      : undefined,
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">

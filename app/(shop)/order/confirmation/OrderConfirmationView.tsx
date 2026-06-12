@@ -400,8 +400,8 @@ export function OrderConfirmationView({
           Continue Shopping
         </Link>
         <Link
-          href="/account/orders"
-          className="flex-1 flex items-center justify-center py-3.5 transition-opacity duration-200 hover:opacity-70"
+          href={`/account/orders/${encodeURIComponent(orderNumber)}`}
+          className="flex-1 flex items-center justify-center py-3.5 gap-1.5 transition-opacity duration-200 hover:opacity-70"
           style={{
             border: '1.5px solid var(--color-green)',
             color: 'var(--color-green)',
@@ -412,7 +412,7 @@ export function OrderConfirmationView({
             borderRadius: 'var(--radius-btn)',
           }}
         >
-          View My Orders
+          View Your Order →
         </Link>
       </div>
     </div>

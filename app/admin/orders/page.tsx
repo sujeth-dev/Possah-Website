@@ -83,6 +83,11 @@ async function getOrders(params: PageProps['searchParams']): Promise<{
       if (params.status && validStatuses.includes(params.status)) {
         query = query.eq('fulfillment_status', params.status)
       }
+      // Default: hide pending/failed payment orders — they live in "Attempted" tab.
+      // Admin can still drill in by explicitly picking ?payment=pending or ?payment=failed.
+      if (!params.payment) {
+        query = query.in('payment_status', ['paid', 'refunded'])
+      }
     }
 
     const validPayment = ['pending', 'paid', 'failed', 'refunded']
