@@ -58,6 +58,13 @@ type OrderRow = {
   customer_hidden_at: string | null
 }
 
+const PAYMENT_LABEL: Record<string, string> = {
+  pending: 'Awaiting payment',
+  paid: 'Paid',
+  failed: 'Payment failed',
+  refunded: 'Refunded',
+}
+
 function coerceLineItems(raw: unknown): LineItem[] {
   if (!Array.isArray(raw)) return []
   return raw
@@ -499,7 +506,7 @@ export default async function OrderDetailPage({
                   : 'var(--color-text-muted)',
             }}
           >
-            Payment: {order.payment_status}
+            {PAYMENT_LABEL[order.payment_status] ?? order.payment_status}
           </p>
         </aside>
       </div>

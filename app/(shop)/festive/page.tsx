@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
 import { createPublicClient } from '@/lib/supabase/public'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import type { ProductCardData } from '@/app/(shop)/page'
@@ -96,7 +97,7 @@ export default async function FestivePage({
         className="relative w-full overflow-hidden flex items-end"
         style={{ minHeight: 'clamp(280px, 40vw, 520px)' }}
       >
-        <Image
+        <ImageWithFallback
           src="/images/festive-hero.jpg"
           alt="The Possah Festive"
           fill

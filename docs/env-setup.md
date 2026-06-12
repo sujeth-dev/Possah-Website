@@ -31,7 +31,7 @@ Open `.env.local` and replace placeholders with your own values:
 - `RAZORPAY_WEBHOOK_SECRET` — secret used to verify Razorpay webhooks
 - `RESEND_API_KEY` — Resend email API key
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — optional GA4 ID
-- `ADMIN_EMAIL` — order notification email
+- `ADMIN_EMAIL` — order notification email (also used as dev session mock email)
 
 ## 3. Why `.env.local`?
 

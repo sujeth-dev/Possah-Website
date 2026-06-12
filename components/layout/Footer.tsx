@@ -37,7 +37,7 @@ const WESTERN_LINKS = [
 const HELP_LINKS = [
   { label: 'Contact',             href: '/contact'         },
   { label: 'FAQ',                 href: '/faq'             },
-  { label: 'Shipping & Returns',  href: '/faq#shipping'    },
+  { label: 'Shipping & Returns',  href: '/faq#faq-shipping-&-delivery' },
   { label: 'Size Guide',          href: '/size-guide'      },
   { label: 'Track Order',         href: '/account/orders'  },
 ] as const

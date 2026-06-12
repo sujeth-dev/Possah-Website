@@ -1,39 +1,31 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
+import { formatPrice } from '@/lib/utils'
+import type { ConfirmationOrder } from './page'
 
-export function OrderConfirmationView() {
-  const searchParams = useSearchParams()
-  const orderNumber = searchParams.get('order')
-  const paymentId = searchParams.get('payment')
+function Row({ label, value, colour }: { label: string; value: string; colour?: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: colour ?? 'var(--color-text-muted)' }}>
+        {label}
+      </span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: colour ?? 'var(--color-text)' }}>
+        {value}
+      </span>
+    </div>
+  )
+}
 
-  const [verified, setVerified] = useState<'loading' | 'ok' | 'error'>('loading')
-
-  useEffect(() => {
-    if (!orderNumber) {
-      setVerified('error')
-      return
-    }
-    // If we have a payment ID we can show success — full sig verification happens via webhook
-    // For confirmation page UX we trust the presence of the order number
-    setVerified('ok')
-  }, [orderNumber])
-
-  if (verified === 'loading') {
-    return (
-      <div className="container-site py-24 flex items-center justify-center">
-        <span
-          className="inline-block w-8 h-8 border-2 rounded-full animate-spin"
-          style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-green)' }}
-          aria-label="Loading"
-        />
-      </div>
-    )
-  }
-
-  if (!orderNumber || verified === 'error') {
+export function OrderConfirmationView({
+  order,
+  orderNumber,
+  paymentId,
+}: {
+  order: ConfirmationOrder | null
+  orderNumber: string | null
+  paymentId: string | null
+}) {
+  if (!orderNumber) {
     return (
       <div className="container-site py-24 flex flex-col items-center gap-6 text-center">
         <p
@@ -67,87 +59,281 @@ export function OrderConfirmationView() {
   }
 
   return (
-    <div className="container-site py-16 pb-24 flex flex-col items-center gap-8 text-center max-w-[600px] mx-auto">
-      {/* Check mark */}
-      <div
-        className="flex items-center justify-center w-16 h-16 rounded-full"
-        style={{ backgroundColor: 'rgba(31, 58, 45, 0.08)', border: '1.5px solid var(--color-green)' }}
-      >
-        <svg width="24" height="18" viewBox="0 0 24 18" fill="none" stroke="var(--color-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 9l7 7L22 2" />
-        </svg>
-      </div>
+    <div className="container-site py-16 pb-24 max-w-[680px] mx-auto flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div
+          className="flex items-center justify-center w-16 h-16 rounded-full"
+          style={{ backgroundColor: 'rgba(31, 58, 45, 0.08)', border: '1.5px solid var(--color-green)' }}
+        >
+          <svg width="24" height="18" viewBox="0 0 24 18" fill="none" stroke="var(--color-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 9l7 7L22 2" />
+          </svg>
+        </div>
 
-      {/* Heading */}
-      <div className="flex flex-col gap-3">
-        <h1
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(28px, 5vw, 48px)',
-            fontWeight: '400',
-            color: 'var(--color-text)',
-            letterSpacing: '-0.01em',
-            lineHeight: 1.1,
-          }}
-        >
-          Your order is confirmed.
-        </h1>
-        <p
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '15px',
-            lineHeight: 1.7,
-            color: 'var(--color-text-muted)',
-          }}
-        >
-          Thank you for choosing The Possah. A confirmation email is on its way to you.
-          We&rsquo;ll notify you once your piece is dispatched.
-        </p>
-      </div>
+        <div className="flex flex-col gap-3">
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(28px, 5vw, 48px)',
+              fontWeight: '400',
+              color: 'var(--color-text)',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.1,
+            }}
+          >
+            Your order is confirmed.
+          </h1>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '15px',
+              lineHeight: 1.7,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            Thank you for choosing The Possah. A confirmation email is on its way to you.
+            We&rsquo;ll notify you once your piece is dispatched.
+          </p>
+        </div>
 
-      {/* Order number */}
-      <div
-        className="w-full flex flex-col items-center gap-2 py-5 px-6"
-        style={{
-          backgroundColor: 'rgba(31, 58, 45, 0.04)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-card)',
-        }}
-      >
-        <span
+        {/* Order number */}
+        <div
+          className="w-full flex flex-col items-center gap-2 py-5 px-6"
           style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '10px',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: 'var(--color-text-muted)',
+            backgroundColor: 'rgba(31, 58, 45, 0.04)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-card)',
           }}
         >
-          Order Number
-        </span>
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '20px',
-            letterSpacing: '0.08em',
-            color: 'var(--color-green)',
-          }}
-        >
-          {orderNumber}
-        </span>
-        {paymentId && (
           <span
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: '10px',
-              letterSpacing: '0.1em',
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
               color: 'var(--color-text-muted)',
             }}
           >
-            Payment: {paymentId}
+            Order Number
           </span>
-        )}
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '20px',
+              letterSpacing: '0.08em',
+              color: 'var(--color-green)',
+            }}
+          >
+            {orderNumber}
+          </span>
+          {paymentId && (
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '10px',
+                letterSpacing: '0.1em',
+                color: 'var(--color-text-muted)',
+              }}
+            >
+              Payment: {paymentId}
+            </span>
+          )}
+        </div>
       </div>
+
+      {/* Order summary — only when we successfully fetched order data */}
+      {order && (
+        <div
+          className="flex flex-col gap-0"
+          style={{
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-card)',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Items */}
+          {order.items.length > 0 && (
+            <div>
+              <div
+                className="px-5 py-3"
+                style={{ borderBottom: '1px solid var(--color-border)', backgroundColor: 'rgba(31,58,45,0.03)' }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: 'var(--color-text-muted)',
+                  }}
+                >
+                  Items ordered
+                </span>
+              </div>
+              <ul className="flex flex-col">
+                {order.items.map((item, idx) => (
+                  <li
+                    key={`${item.variant_id}-${idx}`}
+                    className="flex gap-4 px-5 py-4"
+                    style={{
+                      borderBottom:
+                        idx < order.items.length - 1 ? '1px solid var(--color-border)' : undefined,
+                    }}
+                  >
+                    <div
+                      className="relative flex-shrink-0 overflow-hidden"
+                      style={{
+                        width: 64,
+                        height: 84,
+                        borderRadius: 'var(--radius-card)',
+                        backgroundColor: 'var(--color-border)',
+                      }}
+                    >
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className="object-cover object-center"
+                          sizes="64px"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                      <div>
+                        <p
+                          className="truncate"
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '14px',
+                            color: 'var(--color-text)',
+                          }}
+                        >
+                          {item.name}
+                        </p>
+                        <p
+                          className="mt-0.5"
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '12px',
+                            color: 'var(--color-text-muted)',
+                          }}
+                        >
+                          {item.colour}{item.colour && item.size ? ' · ' : ''}{item.size}
+                          {item.qty > 1 ? ` · Qty ${item.qty}` : ''}
+                        </p>
+                      </div>
+                      <p
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '13px',
+                          color: 'var(--color-text)',
+                        }}
+                      >
+                        {formatPrice(item.price * item.qty)}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Address */}
+          {(order.address.line1 || order.customer_name) && (
+            <div
+              className="px-5 py-4"
+              style={{ borderTop: '1px solid var(--color-border)' }}
+            >
+              <p
+                className="mb-2"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10px',
+                  letterSpacing: '0.2em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-text-muted)',
+                }}
+              >
+                Shipping to
+              </p>
+              <address
+                className="not-italic"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
+                  lineHeight: 1.7,
+                  color: 'var(--color-text)',
+                }}
+              >
+                {order.customer_name && <div>{order.customer_name}</div>}
+                {order.address.line1 && <div>{order.address.line1}</div>}
+                {order.address.line2 && <div>{order.address.line2}</div>}
+                {(order.address.city || order.address.state || order.address.pincode) && (
+                  <div>
+                    {[order.address.city, order.address.state, order.address.pincode]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </div>
+                )}
+                {order.customer_phone && (
+                  <div style={{ color: 'var(--color-text-muted)', marginTop: 4 }}>
+                    {order.customer_phone}
+                  </div>
+                )}
+              </address>
+            </div>
+          )}
+
+          {/* Totals */}
+          <div
+            className="px-5 py-4 flex flex-col gap-2"
+            style={{ borderTop: '1px solid var(--color-border)', backgroundColor: 'rgba(31,58,45,0.02)' }}
+          >
+            <Row label="Subtotal" value={formatPrice(order.subtotal)} />
+            <Row
+              label="Shipping"
+              value={order.shipping_fee === 0 ? 'Free' : formatPrice(order.shipping_fee)}
+            />
+            {order.discount_amount > 0 && (
+              <Row
+                label={`Discount${order.coupon_code ? ` (${order.coupon_code})` : ''}`}
+                value={`- ${formatPrice(order.discount_amount)}`}
+                colour="var(--color-success)"
+              />
+            )}
+            {order.tax > 0 && <Row label="Tax (GST)" value={formatPrice(order.tax)} />}
+            {order.is_gift && <Row label="Gift wrap" value="Included" />}
+            <div
+              className="flex items-center justify-between pt-2 mt-1"
+              style={{ borderTop: '1px solid var(--color-border)' }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-text)',
+                }}
+              >
+                Total paid
+              </span>
+              <span
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '20px',
+                  fontWeight: 500,
+                  color: 'var(--color-text)',
+                }}
+              >
+                {formatPrice(order.total)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Packaging note */}
       <blockquote
@@ -167,7 +353,8 @@ export function OrderConfirmationView() {
             fontStyle: 'italic',
           }}
         >
-          &ldquo;Each Possah piece is folded with intention, wrapped with care, and sent to you as it deserves — in quiet, considered packaging.&rdquo;
+          &ldquo;Each Possah piece is folded with intention, wrapped with care, and sent to you as it
+          deserves — in quiet, considered packaging.&rdquo;
         </p>
       </blockquote>
 

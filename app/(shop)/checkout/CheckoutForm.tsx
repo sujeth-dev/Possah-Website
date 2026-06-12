@@ -70,10 +70,12 @@ const DELIVERY_OPTIONS = [
 function Field({
   label,
   error,
+  required,
   children,
 }: {
   label: string
   error?: string
+  required?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -88,6 +90,11 @@ function Field({
         }}
       >
         {label}
+        {required && (
+          <span style={{ color: 'var(--color-rose)', marginLeft: 2 }} aria-hidden="true">
+            *
+          </span>
+        )}
       </label>
       {children}
       {error && (
@@ -163,7 +170,13 @@ function initRazorpay({
     handler: (response: Record<string, unknown>) => {
       onSuccess(response.razorpay_payment_id as string, response.razorpay_signature as string)
     },
-    modal: { ondismiss: onDismiss },
+    modal: {
+      backdropclose: false,
+      escape: false,
+      handleback: true,
+      confirm_close: true,
+      ondismiss: onDismiss,
+    },
   })
 
   // FIX-PAY-01: capture payment.failed event from the modal
@@ -450,7 +463,7 @@ export function CheckoutForm() {
                   Contact
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="First Name" error={errors.first_name?.message}>
+                  <Field label="First Name" error={errors.first_name?.message} required>
                     <input
                       {...register('first_name')}
                       type="text"
@@ -459,7 +472,7 @@ export function CheckoutForm() {
                       aria-invalid={!!errors.first_name}
                     />
                   </Field>
-                  <Field label="Last Name" error={errors.last_name?.message}>
+                  <Field label="Last Name" error={errors.last_name?.message} required>
                     <input
                       {...register('last_name')}
                       type="text"
@@ -470,7 +483,7 @@ export function CheckoutForm() {
                   </Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <Field label="Email" error={errors.email?.message}>
+                  <Field label="Email" error={errors.email?.message} required>
                     <input
                       {...register('email')}
                       type="email"
@@ -479,7 +492,7 @@ export function CheckoutForm() {
                       aria-invalid={!!errors.email}
                     />
                   </Field>
-                  <Field label="Mobile Number" error={errors.phone?.message}>
+                  <Field label="Mobile Number" error={errors.phone?.message} required>
                     <input
                       {...register('phone')}
                       type="tel"
@@ -508,7 +521,7 @@ export function CheckoutForm() {
                   Shipping Address
                 </h2>
                 <div className="flex flex-col gap-4">
-                  <Field label="Address Line 1" error={errors.address_line1?.message}>
+                  <Field label="Address Line 1" error={errors.address_line1?.message} required>
                     <input
                       {...register('address_line1')}
                       type="text"
@@ -528,7 +541,7 @@ export function CheckoutForm() {
                     />
                   </Field>
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="City" error={errors.city?.message}>
+                    <Field label="City" error={errors.city?.message} required>
                       <input
                         {...register('city')}
                         type="text"
@@ -537,7 +550,7 @@ export function CheckoutForm() {
                         aria-invalid={!!errors.city}
                       />
                     </Field>
-                    <Field label="Pincode" error={errors.pincode?.message}>
+                    <Field label="Pincode" error={errors.pincode?.message} required>
                       <input
                         {...register('pincode')}
                         type="text"
@@ -550,7 +563,7 @@ export function CheckoutForm() {
                     </Field>
                   </div>
                   {/* FIX-FE-06: Indian states dropdown */}
-                  <Field label="State" error={errors.state?.message}>
+                  <Field label="State" error={errors.state?.message} required>
                     <select
                       {...register('state')}
                       autoComplete="address-level1"

@@ -208,8 +208,8 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
       {/* Size selector */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: sizeError ? 'var(--color-rose)' : 'var(--color-text-muted)' }}>
-            SIZE {sizeError && '— Please select a size'}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
+            SIZE
           </span>
           <Link href="/size-guide" style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-text-muted)', textDecoration: 'underline', textDecorationColor: 'var(--color-border)' }}>
             Size Guide
@@ -250,6 +250,19 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
             })
           )}
         </div>
+        {sizeError && (
+          <p
+            role="alert"
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '12px',
+              color: 'var(--color-rose)',
+              marginTop: 4,
+            }}
+          >
+            Please select a size to continue.
+          </p>
+        )}
       </div>
 
       {/* Add to cart + wishlist */}

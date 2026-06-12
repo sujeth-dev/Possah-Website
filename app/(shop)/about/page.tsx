@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
 
 export const metadata: Metadata = {
   title: 'About',
@@ -31,7 +31,7 @@ export default function AboutPage() {
         className="relative w-full overflow-hidden flex items-end"
         style={{ minHeight: 'clamp(320px, 45vw, 560px)' }}
       >
-        <Image
+        <ImageWithFallback
           src="/images/about-hero.jpg"
           alt="The Possah — Artisan weaving"
           fill
@@ -131,7 +131,7 @@ export default function AboutPage() {
               className="relative aspect-[3/4] overflow-hidden"
               style={{ borderRadius: 'var(--radius-card)' }}
             >
-              <Image
+              <ImageWithFallback
                 src="/images/founder.jpg"
                 alt="Founder — The Possah"
                 fill
@@ -166,6 +166,67 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Atelier */}
+      <section
+        id="atelier"
+        className="section-gap border-t"
+        style={{ borderColor: 'var(--color-border)', scrollMarginTop: '80px' }}
+      >
+        <div className="container-site max-w-[680px]">
+          <p
+            className="mb-3"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--color-green)',
+            }}
+          >
+            The Atelier
+          </p>
+          <h2
+            className="mb-6"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(22px, 3.5vw, 36px)',
+              fontWeight: '400',
+              color: 'var(--color-text)',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.3,
+            }}
+          >
+            Where every piece begins.
+          </h2>
+          <p
+            className="mb-6"
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            Our studio in Horamavu, Bengaluru is where craft meets curation. Every silhouette is designed, draped, and refined here before it reaches you.
+          </p>
+          <address
+            className="not-italic"
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              lineHeight: 1.8,
+              color: 'var(--color-text)',
+              borderLeft: '2px solid var(--color-gold)',
+              paddingLeft: 16,
+            }}
+          >
+            Shop No. 1, Ground Floor, No. 30, 1st Main Road<br />
+            Behind Maharaja Furniture Store, Munireddy Layout<br />
+            Horamavu, Bengaluru, Karnataka 560113
+          </address>
         </div>
       </section>
 
