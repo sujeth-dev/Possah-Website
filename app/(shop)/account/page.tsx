@@ -51,10 +51,11 @@ export default async function AccountPage() {
   }
 
   const ACCOUNT_LINKS = [
-    { href: '/account/orders', label: 'My Orders', sub: 'Track, view, or return your orders' },
-    { href: '/wishlist',       label: 'Wishlist',   sub: 'Pieces you\'ve saved for later' },
-    { href: '/made-to-measure', label: 'Made-to-Measure Enquiries', sub: 'Track your bespoke orders' },
-    { href: '/size-guide',     label: 'Size Guide',  sub: 'Find your perfect fit' },
+    { href: '/account/orders',    label: 'My Orders',                  sub: 'Track, view, or return your orders' },
+    { href: '/account/addresses', label: 'Saved Addresses',            sub: 'Manage your delivery addresses' },
+    { href: '/wishlist',          label: 'Wishlist',                   sub: 'Pieces you\'ve saved for later' },
+    { href: '/made-to-measure',   label: 'Made-to-Measure Enquiries',  sub: 'Track your bespoke orders' },
+    { href: '/size-guide',        label: 'Size Guide',                 sub: 'Find your perfect fit' },
   ]
 
   return (

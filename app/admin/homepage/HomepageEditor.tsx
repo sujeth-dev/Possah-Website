@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { ImageUploadField } from '@/components/admin/ImageUploadField'
 
 interface HeroSlide {
   image_url:    string
@@ -286,7 +287,7 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <Field label="Image URL"      value={slide.image_url}    onChange={v => updateSlide(i, 'image_url', v)}    placeholder="https://…" />
+                <ImageUploadField label="Image" value={slide.image_url} onChange={v => updateSlide(i, 'image_url', v)} pathPrefix="uploads/homepage/hero" />
                 <Field label="Headline"       value={slide.headline}     onChange={v => updateSlide(i, 'headline', v)}     placeholder="New Collection" />
                 <Field label="Sub-headline"   value={slide.sub_headline} onChange={v => updateSlide(i, 'sub_headline', v)} placeholder="Optional sub-text" />
                 <Field label="CTA Label"      value={slide.cta_label}    onChange={v => updateSlide(i, 'cta_label', v)}    placeholder="Shop Now" />
@@ -308,7 +309,7 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
         <div style={card}>
           <p style={sectionTitle}>Collection Banner</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <Field label="Image URL" value={banner.image_url} onChange={v => setBanner(b => ({ ...b, image_url: v }))} placeholder="https://…" />
+            <ImageUploadField label="Image" value={banner.image_url} onChange={v => setBanner(b => ({ ...b, image_url: v }))} pathPrefix="uploads/homepage/banner" />
             <Field label="Headline"  value={banner.headline}  onChange={v => setBanner(b => ({ ...b, headline: v }))}  placeholder="The New Edit" />
             <Field label="Subtitle"  value={banner.subtitle}  onChange={v => setBanner(b => ({ ...b, subtitle: v }))}  placeholder="Optional" />
             <Field label="CTA Link"  value={banner.cta_link}  onChange={v => setBanner(b => ({ ...b, cta_link: v }))}  placeholder="/shop" />
@@ -399,7 +400,7 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                   TILE {i + 1}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <Field label="Image URL" value={tile.image_url ?? ''} onChange={v => updateTile(i, 'image_url', v)} placeholder="https://…" />
+                  <ImageUploadField label="Image" value={tile.image_url ?? ''} onChange={v => updateTile(i, 'image_url', v)} pathPrefix="uploads/homepage/occasions" />
                   <Field label="Label"     value={tile.label}           onChange={v => updateTile(i, 'label', v)}     placeholder="Wedding" />
                   <Field label="Link"      value={tile.link}            onChange={v => updateTile(i, 'link', v)}      placeholder="/shop?occasion=wedding" />
                 </div>

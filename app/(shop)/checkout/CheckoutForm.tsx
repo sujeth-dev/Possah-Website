@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -217,6 +217,34 @@ export function CheckoutForm() {
     }
   }
 
+  // Fetch saved addresses on mount
+  useEffect(() => {
+    fetch('/api/account/addresses')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (!d?.addresses?.length) return
+        setSavedAddresses(d.addresses)
+        const def = d.addresses.find((a: { is_default: boolean }) => a.is_default) ?? d.addresses[0]
+        setSelectedAddressId(def.id)
+      })
+      .catch(() => {})
+  }, [])
+
+  // localStorage draft — restore on mount
+  const draftRestored = useRef(false)
+  useEffect(() => {
+    if (draftRestored.current) return
+    draftRestored.current = true
+    try {
+      const raw = localStorage.getItem('possah-checkout-draft')
+      if (!raw) return
+      const saved = JSON.parse(raw) as Partial<CheckoutFields>
+      reset({ delivery_option: 'standard', ...saved })
+      setDraftBanner(true)
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // GA4: begin_checkout fires once on mount when cart is non-empty
   useEffect(() => {
     if (items.length === 0) return
@@ -233,10 +261,21 @@ export function CheckoutForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Saved addresses
+  const [savedAddresses, setSavedAddresses] = useState<Array<{
+    id: string; label: string | null; full_name: string; phone: string
+    address_line1: string; address_line2: string | null; city: string
+    state: string; pincode: string; delivery_notes: string | null; is_default: boolean
+  }>>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [draftBanner, setDraftBanner] = useState(false)
+
   const {
     register,
     handleSubmit,
     watch,
+    reset,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutFields>({
     resolver: zodResolver(checkoutSchema),
@@ -244,6 +283,19 @@ export function CheckoutForm() {
   })
 
   const deliveryOption = watch('delivery_option')
+
+  // localStorage draft — persist on change (must be after useForm)
+  const formValues = watch()
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (draftTimer.current) clearTimeout(draftTimer.current)
+    draftTimer.current = setTimeout(() => {
+      try { localStorage.setItem('possah-checkout-draft', JSON.stringify(formValues)) } catch {}
+    }, 500)
+    return () => { if (draftTimer.current) clearTimeout(draftTimer.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(formValues)])
+
   const freeShipping = sub >= SHIPPING_THRESHOLD || coupon.isFreeShipping
   const shippingCost = freeShipping ? 0 : deliveryOption === 'express' ? EXPRESS_COST : STANDARD_COST
   const giftCost = hasGiftWrap ? GIFT_WRAP_COST : 0
@@ -392,6 +444,7 @@ export function CheckoutForm() {
             })
             clearCart()
             coupon.clearCoupon()
+            try { localStorage.removeItem('possah-checkout-draft') } catch {}
             router.push(`/order/confirmation?order=${order_number}`)
           },
           onDismiss: () => {
@@ -403,6 +456,7 @@ export function CheckoutForm() {
         // Fallback: COD / Razorpay script not loaded — still go to confirmation
         clearCart()
         coupon.clearCoupon()
+        try { localStorage.removeItem('possah-checkout-draft') } catch {}
         router.push(`/order/confirmation?order=${order_number}`)
       }
     } catch {
@@ -447,6 +501,126 @@ export function CheckoutForm() {
           <div className="grid lg:grid-cols-[1fr_380px] gap-10 xl:gap-16 items-start">
             {/* ─── Left: Form fields ─────────────────────────────── */}
             <div className="flex flex-col gap-8">
+
+              {/* Draft restore banner */}
+              {draftBanner && (
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-card)', backgroundColor: 'rgba(31,58,45,0.04)' }}
+                >
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                    We saved your details — continue where you left off.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setDraftBanner(false)}
+                    aria-label="Dismiss"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 18, lineHeight: 1 }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
+              {/* Saved address picker */}
+              {savedAddresses.length > 0 && (
+                <section aria-labelledby="saved-address-heading">
+                  <h2
+                    id="saved-address-heading"
+                    className="mb-3"
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--color-text)' }}
+                  >
+                    Saved Addresses
+                  </h2>
+                  <div className="flex flex-col gap-2">
+                    {savedAddresses.map((addr) => {
+                      const selected = selectedAddressId === addr.id
+                      return (
+                        <label
+                          key={addr.id}
+                          className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-all duration-150"
+                          style={{
+                            border: `1.5px solid ${selected ? 'var(--color-green)' : 'var(--color-border)'}`,
+                            borderRadius: 'var(--radius-card)',
+                            backgroundColor: selected ? 'rgba(31,58,45,0.04)' : 'transparent',
+                          }}
+                        >
+                          <span
+                            className="flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{
+                              width: 18, height: 18, borderRadius: '50%',
+                              border: `1.5px solid ${selected ? 'var(--color-green)' : 'var(--color-border)'}`,
+                              backgroundColor: selected ? 'var(--color-green)' : 'transparent',
+                            }}
+                          >
+                            {selected && <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--color-white)', display: 'block' }} />}
+                          </span>
+                          <input
+                            type="radio"
+                            name="saved_address"
+                            value={addr.id}
+                            checked={selected}
+                            onChange={() => {
+                              setSelectedAddressId(addr.id)
+                              setValue('address_line1', addr.address_line1, { shouldValidate: false })
+                              setValue('address_line2', addr.address_line2 ?? '', { shouldValidate: false })
+                              setValue('city', addr.city, { shouldValidate: false })
+                              setValue('state', addr.state as CheckoutFields['state'], { shouldValidate: false })
+                              setValue('pincode', addr.pincode, { shouldValidate: false })
+                              setValue('phone', addr.phone, { shouldValidate: false })
+                              const parts = addr.full_name.trim().split(/\s+/)
+                              setValue('first_name', parts[0] ?? '', { shouldValidate: false })
+                              setValue('last_name', parts.slice(1).join(' ') || parts[0], { shouldValidate: false })
+                            }}
+                            className="sr-only"
+                          />
+                          <div>
+                            {addr.label && (
+                              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: 2 }}>
+                                {addr.label}
+                              </p>
+                            )}
+                            <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text)', fontWeight: 500 }}>{addr.full_name}</p>
+                            <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                              {addr.address_line1}{addr.address_line2 ? `, ${addr.address_line2}` : ''}, {addr.city}, {addr.state} {addr.pincode}
+                            </p>
+                          </div>
+                        </label>
+                      )
+                    })}
+                    <label
+                      className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-150"
+                      style={{
+                        border: `1.5px solid ${selectedAddressId === null ? 'var(--color-green)' : 'var(--color-border)'}`,
+                        borderRadius: 'var(--radius-card)',
+                        backgroundColor: selectedAddressId === null ? 'rgba(31,58,45,0.04)' : 'transparent',
+                      }}
+                    >
+                      <span
+                        className="flex items-center justify-center flex-shrink-0"
+                        style={{
+                          width: 18, height: 18, borderRadius: '50%',
+                          border: `1.5px solid ${selectedAddressId === null ? 'var(--color-green)' : 'var(--color-border)'}`,
+                          backgroundColor: selectedAddressId === null ? 'var(--color-green)' : 'transparent',
+                        }}
+                      >
+                        {selectedAddressId === null && <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--color-white)', display: 'block' }} />}
+                      </span>
+                      <input
+                        type="radio"
+                        name="saved_address"
+                        value=""
+                        checked={selectedAddressId === null}
+                        onChange={() => setSelectedAddressId(null)}
+                        className="sr-only"
+                      />
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                        Enter a new address
+                      </span>
+                    </label>
+                  </div>
+                </section>
+              )}
 
               {/* Contact */}
               <section aria-labelledby="contact-heading">
