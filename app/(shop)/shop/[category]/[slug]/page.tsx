@@ -46,6 +46,7 @@ async function getProductData(slug: string) {
         drape_guide, craft_story_body, craft_story_image,
         price, compare_price, is_new_arrival, is_top_selling,
         is_active, audio_url, sub_line, category_id,
+        meta_title, meta_description,
         categories (slug, name),
         product_images (url, alt, position),
         product_tags (tag)
@@ -149,6 +150,8 @@ async function getProductData(slug: string) {
         name: product.name,
         fabric: product.fabric,
         description: product.description,
+        meta_title: product.meta_title ?? null,
+        meta_description: product.meta_description ?? null,
         care_instructions: product.care_instructions,
         drape_guide: product.drape_guide,
         craft_story_body: product.craft_story_body,
@@ -183,17 +186,22 @@ async function getProductData(slug: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const data = await getProductData(params.slug)
-  if (!data) return { title: 'Product ' }
+  if (!data) return { title: 'Product Not Found' }
   const { product, categoryName } = data
   const firstImage = product.images[0]?.url
+  const title = product.meta_title ?? product.name
+  const description = product.meta_description
+    ?? product.description
+    ?? `${product.name} — ${product.fabric ?? categoryName} at The Possah. Handcrafted luxury Indian fashion.`
   return {
-    title: `${product.name} `,
-    description: product.description
-      ?? `${product.name} — ${product.fabric ?? categoryName} at The Possah. Handcrafted luxury Indian fashion.`,
+    title,
+    description: description.slice(0, 160),
     alternates: { canonical: `https://thepossah.com/shop/${product.category_slug}/${product.slug}` },
-    openGraph: firstImage
-      ? { images: [{ url: firstImage, width: 800, height: 1067, alt: product.name }] }
-      : undefined,
+    openGraph: {
+      title,
+      description: description.slice(0, 160),
+      ...(firstImage && { images: [{ url: firstImage, width: 800, height: 1067, alt: product.name }] }),
+    },
   }
 }
 
