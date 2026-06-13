@@ -74,10 +74,10 @@ const nextConfig = {
               // Next.js inlines critical CSS
               "style-src 'self' 'unsafe-inline'",
               // Images: self + R2 CDN + Supabase storage + Cloudinary (legacy)
-              "img-src 'self' data: blob: cdn.thepossah.com *.r2.dev *.supabase.co res.cloudinary.com placehold.co",
+              "img-src 'self' data: blob: cdn.thepossah.com *.r2.dev *.supabase.co res.cloudinary.com",
               "font-src 'self' data:",
-              // API calls: Supabase, Razorpay, Google Analytics
-              "connect-src 'self' *.supabase.co api.razorpay.com www.google-analytics.com www.googletagmanager.com",
+              // API calls: Supabase, Razorpay (all subdomains — lumberjack etc.), Google Analytics
+              "connect-src 'self' *.supabase.co *.razorpay.com www.google-analytics.com www.googletagmanager.com",
               // Razorpay checkout modal is iframed
               "frame-src checkout.razorpay.com api.razorpay.com",
               "frame-ancestors 'none'",
