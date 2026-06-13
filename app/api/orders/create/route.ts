@@ -4,6 +4,13 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createRazorpayOrder } from '@/lib/razorpay'
 import { generateOrderNumber } from '@/lib/utils'
 import { computeCartFingerprint } from '@/lib/cart-fingerprint'
+import { releaseCouponUsage } from '@/lib/coupons'
+import {
+  SHIPPING_THRESHOLD,
+  STANDARD_SHIPPING_COST as STANDARD_COST,
+  EXPRESS_SHIPPING_COST as EXPRESS_COST,
+  GIFT_WRAP_COST,
+} from '@/lib/constants'
 
 // =============================================================================
 // POST /api/orders/create
@@ -65,11 +72,6 @@ const createOrderSchema = z.object({
   notes: z.string().max(500).optional().default(''),
   shipping: z.number().min(0),
 })
-
-const GIFT_WRAP_COST = 150
-const SHIPPING_THRESHOLD = 2500
-const STANDARD_COST = 199
-const EXPRESS_COST = 399
 
 type CouponRow = {
   id: string
@@ -239,6 +241,22 @@ export async function POST(req: NextRequest) {
     // upsert lookup. Keeps the one_pending_per_email unique index slot free
     // without needing an external cron job.
     const nowIso = new Date().toISOString()
+
+    // Release coupon usage held by orders we are about to expire (audit: coupon
+    // usage leak). Fetch them first so we know which codes to give back, then
+    // cancel them. Best-effort — failures here must never block checkout.
+    const { data: expiringRows } = await supabase
+      .from('orders')
+      .select('coupon_code')
+      .eq('customer_email', data.contact.email)
+      .eq('payment_status', 'pending')
+      .eq('fulfillment_status', 'unfulfilled')
+      .lt('expires_at', nowIso)
+
+    for (const row of expiringRows ?? []) {
+      await releaseCouponUsage(supabase, row.coupon_code).catch(() => {})
+    }
+
     await supabase
       .from('orders')
       .update({

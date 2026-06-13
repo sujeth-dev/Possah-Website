@@ -20,7 +20,13 @@ export async function GET(request: NextRequest) {
     const size         = getString(searchParams.get('size'))
     const subLine      = getString(searchParams.get('sub_line'))
     const sort         = getString(searchParams.get('sort')) ?? 'newest'
-    const page         = parseInt(searchParams.get('page') ?? '1', 10)
+
+    // FIX (audit U-1): clamp page. parseInt can yield NaN ("abc") or a
+    // negative/zero value, which previously produced a negative .range() and a
+    // confusing response (total reported but zero products). Always >= 1.
+    const pageRaw = parseInt(searchParams.get('page') ?? '1', 10)
+    const page    = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1
+
     // Optional: filter by is_top_selling (used by best-sellers page)
     const topSellingOnly = searchParams.get('top_selling') === 'true'
     const newInOnly      = searchParams.get('new_in') === 'true'
@@ -38,6 +44,43 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ products: [], total: 0 }, { status: 200 })
       }
       categoryId = category.id
+    }
+
+    // FIX (audit P-2): occasion + size are properties of child tables
+    // (product_tags / product_variants). Resolve them to a set of product ids
+    // and apply via .in('id', ...) BEFORE pagination, so the `count` returned
+    // reflects the filtered result and pagination math is correct. Previously
+    // occasion (and fabric) were filtered in JS AFTER the page was fetched,
+    // which silently broke pagination (a page could come back partially empty
+    // while `total` reported the unfiltered count).
+    const idSets: string[][] = []
+
+    if (size) {
+      const { data: sizeRows } = await supabase
+        .from('product_variants')
+        .select('product_id')
+        .eq('size', size)
+        .gt('stock_qty', 0)
+      idSets.push([...new Set((sizeRows ?? []).map((r) => r.product_id))])
+    }
+
+    if (occasion) {
+      const { data: tagRows } = await supabase
+        .from('product_tags')
+        .select('product_id')
+        .eq('tag', occasion)
+      idSets.push([...new Set((tagRows ?? []).map((r) => r.product_id))])
+    }
+
+    // Intersect every child-table filter into one id set (null = no such filter).
+    const idFilter: string[] | null =
+      idSets.length === 0
+        ? null
+        : idSets.reduce((acc, set) => acc.filter((id) => set.includes(id)))
+
+    // If a child-table filter was requested but matched nothing, short-circuit.
+    if (idFilter !== null && idFilter.length === 0) {
+      return NextResponse.json({ products: [], total: 0 }, { status: 200 })
     }
 
     let query = supabase
@@ -66,17 +109,14 @@ export async function GET(request: NextRequest) {
       query = query.eq('sub_line', subLine)
     }
 
-    if (size) {
-      const { data: sizeRows } = await supabase
-        .from('product_variants')
-        .select('product_id')
-        .eq('size', size)
-        .gt('stock_qty', 0)
-      const sizeIds = [...new Set((sizeRows ?? []).map((r) => r.product_id))]
-      if (sizeIds.length === 0) {
-        return NextResponse.json({ products: [], total: 0 }, { status: 200 })
-      }
-      query = query.in('id', sizeIds)
+    // fabric is a column on products — filter in-DB via the parameterized
+    // .ilike() builder (NOT string-concatenated into .or(), so no injection).
+    if (fabric) {
+      query = query.ilike('fabric', `%${fabric}%`)
+    }
+
+    if (idFilter !== null) {
+      query = query.in('id', idFilter)
     }
 
     switch (sort) {
@@ -92,7 +132,7 @@ export async function GET(request: NextRequest) {
 
     const { data: products, count } = await query
 
-    let mapped: ProductCardData[] = (products ?? []).map((p) => ({
+    const mapped: ProductCardData[] = (products ?? []).map((p) => ({
       id: p.id,
       slug: p.slug,
       category_slug: ((p.categories as unknown) as { slug: string } | null)?.slug ?? categorySlug ?? 'sarees',
@@ -107,13 +147,6 @@ export async function GET(request: NextRequest) {
         .map((img) => ({ url: img.url, alt: img.alt })),
       tags: ((p.product_tags as { tag: string }[]) ?? []).map((t) => t.tag),
     }))
-
-    if (occasion) {
-      mapped = mapped.filter((p) => p.tags.includes(occasion))
-    }
-    if (fabric) {
-      mapped = mapped.filter((p) => p.fabric?.toLowerCase().includes(fabric.toLowerCase()))
-    }
 
     return NextResponse.json({ products: mapped, total: count ?? 0 }, { status: 200 })
   } catch (err) {

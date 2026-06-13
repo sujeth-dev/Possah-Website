@@ -9,6 +9,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ products: [] })
   }
 
+  // SECURITY (audit S-2): the value below is interpolated into a PostgREST
+  // .or() filter string. Characters that PostgREST treats as syntax — commas
+  // (condition separator), parentheses (grouping) — and LIKE wildcards
+  // (%, _, \\) and the * splat are stripped so a crafted query cannot inject
+  // additional filter conditions. Plain words/spaces remain for ilike matching.
+  const safeQ = q.replace(/[,()%_*\\]/g, ' ').replace(/\s+/g, ' ').trim()
+  if (safeQ.length < 2) {
+    return NextResponse.json({ products: [] })
+  }
+
   try {
     const supabase = createServerClient()
 
@@ -22,7 +32,7 @@ export async function GET(req: NextRequest) {
         product_tags (tag)
       `)
       .eq('is_active', true)
-      .or(`name.ilike.%${q}%,fabric.ilike.%${q}%,description.ilike.%${q}%`)
+      .or(`name.ilike.%${safeQ}%,fabric.ilike.%${safeQ}%,description.ilike.%${safeQ}%`)
       .order('created_at', { ascending: false })
       .limit(24)
 

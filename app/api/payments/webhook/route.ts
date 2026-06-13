@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { verifyRazorpayWebhookSignature } from '@/lib/razorpay'
+import { verifyRazorpayWebhookSignature, fetchRazorpayOrder } from '@/lib/razorpay'
 import { sendPaymentFailureEmail } from '@/lib/email'
 import { sendOrderConfirmationIfNotSent } from '@/lib/send-order-emails'
+import { decrementOrderStockOnce } from '@/lib/stock'
 
 /**
  * Razorpay webhook — backup payment confirmation.
@@ -71,16 +72,31 @@ export async function POST(req: NextRequest) {
 
   if (event.event === 'payment.captured') {
     // Find order by gateway_order_id
-    const { data: order, error: fetchError } = await supabase
+    let { data: order } = await supabase
       .from('orders')
       .select('id, order_number, payment_status, line_items')
       .eq('gateway_order_id', razorpayOrderId)
-      .single()
+      .maybeSingle()
 
-    if (fetchError || !order) {
+    // H-2: a retry/reuse rotates gateway_order_id, so a capture against an older
+    // (still-open) Razorpay order would not match. Reconcile via the Razorpay
+    // order's receipt (= our order_number) before giving up, so the payment is
+    // never orphaned.
+    if (!order) {
+      const rzOrder = await fetchRazorpayOrder(razorpayOrderId).catch(() => null)
+      if (rzOrder?.receipt) {
+        const { data: byReceipt } = await supabase
+          .from('orders')
+          .select('id, order_number, payment_status, line_items')
+          .eq('order_number', rzOrder.receipt)
+          .maybeSingle()
+        order = byReceipt ?? null
+      }
+    }
+
+    if (!order) {
       console.error('[webhook] Order not found for razorpay_order_id:', razorpayOrderId)
-      // Return 200 — so Razorpay doesn't retry. Data mismatch is logged
-      // separately.
+      // Return 200 — so Razorpay doesn't retry. Data mismatch is logged.
       return NextResponse.json({ received: true })
     }
 
@@ -101,43 +117,14 @@ export async function POST(req: NextRequest) {
         // Return 500 so Razorpay retries
         return NextResponse.json({ received: false }, { status: 500 })
       }
-
-      // ─── Decrement stock for every line item (atomic, parallel) ─────────
-      // decrement_variant_stock returns FALSE if stock_qty would go negative
-      // (oversell). We log oversells for manual reconciliation but do NOT
-      // fail the webhook — Razorpay would retry and attempt double-decrement.
-      const lineItemsRaw = (order.line_items as {
-        variant_id: string
-        name: string
-        colour: string
-        size: string
-        qty: number
-        price: number
-      }[]) ?? []
-
-      await Promise.all(
-        lineItemsRaw.map(async (item) => {
-          const { data: decremented, error: stockErr } = await supabase
-            .rpc('decrement_variant_stock', {
-              p_variant_id: item.variant_id,
-              p_qty: item.qty,
-            })
-
-          if (stockErr) {
-            console.error(
-              `[webhook] Stock RPC error for variant ${item.variant_id} (order ${order.order_number}):`,
-              stockErr,
-            )
-          } else if (!decremented) {
-            // Oversell — stock hit 0 before this decrement could run
-            console.error(
-              `[webhook] OVERSELL: variant ${item.variant_id} ("${item.name}") ` +
-                `qty=${item.qty} order=${order.order_number} — manual reconciliation required`,
-            )
-          }
-        }),
-      )
     }
+
+    // H-1: decrement stock exactly once, idempotently. Safe to call on every
+    // delivery — the atomic claim on stock_decremented_at no-ops after the
+    // first success (whether it happened here or on the verify path).
+    await decrementOrderStockOnce(supabase, order.order_number).catch((err) => {
+      console.error('[webhook] stock decrement failed:', err)
+    })
 
     // Await so the function doesn't terminate before the email completes.
     // Idempotent — second caller (verify vs webhook race) no-ops via

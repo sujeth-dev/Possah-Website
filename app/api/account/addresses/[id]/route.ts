@@ -1,18 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions, DEV_SESSION } from '@/lib/auth'
+import { authOptions, DEV_SESSION, DEV_AUTH_BYPASS } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
-
-const INDIAN_STATES = [
-  'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam',
-  'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu',
-  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
-  'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh',
-  'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha',
-  'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
-  'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-] as const
+import { INDIAN_STATES } from '@/lib/constants'
 
 const patchSchema = z.object({
   label: z.string().trim().max(40).optional(),
@@ -48,7 +39,7 @@ async function verifyOwnership(addressId: string, userId: string): Promise<boole
 
 // PATCH /api/account/addresses/[id]
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = DEV_AUTH_BYPASS
   const session = isDev ? DEV_SESSION : await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -87,7 +78,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
 // DELETE /api/account/addresses/[id]
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = DEV_AUTH_BYPASS
   const session = isDev ? DEV_SESSION : await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

@@ -184,11 +184,17 @@ Possah_1.0/
 | `/api/payments/verify` | POST | Verify HMAC signature post-payment, mark order paid |
 | `/api/payments/webhook` | POST | Razorpay webhook — `payment.captured` / `payment.failed` |
 | `/api/coupons/validate` | POST | Validate coupon, return discount amount |
-| `/api/reviews` | POST | Submit review (defaults to pending) |
-| `/api/wishlist` | GET/POST/DELETE | Wishlist CRUD (auth required) |
-| `/api/search` | GET | Full-text product search |
-| `/api/health` | GET | DB health check (to be created — FIX-INFRA-04) |
+| `/api/orders/[orderNumber]/cancel` | POST | Customer cancel of a pending/failed order (releases coupon usage) |
+| `/api/orders/[orderNumber]/retry-payment` | POST | Re-open Razorpay for an existing pending order |
+| `/api/orders/hide` | POST | Soft-hide an order from the customer's list |
+| `/api/account/addresses` (+ `/[id]`) | GET/POST/PATCH/DELETE | Saved address book CRUD |
+| `/api/search` | GET | Product search (input sanitised against PostgREST filter injection) |
+| `/api/products` | GET | Public paginated/filtered product list |
+| `/api/health` | GET | DB health check (live) |
+| `/api/contact` | POST | Contact form → Resend (input HTML-escaped) |
 | `/api/admin/*` | * | All admin CRUD endpoints |
+
+> **Note (doc correction):** there is **no** `/api/reviews` POST endpoint and **no** `/api/wishlist` API. Review *submission* is not implemented (the PDP `ReviewsSection` only displays approved reviews); the wishlist is client-only state in `lib/store/wishlistStore.ts` (localStorage). Earlier versions of this table listed these as existing — they never shipped.
 
 ---
 

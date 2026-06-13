@@ -11,19 +11,15 @@ import { useCartStore } from '@/lib/store/cartStore'
 import { useCouponStore } from '@/lib/store/couponStore'
 import { trackBeginCheckout, trackPurchase } from '@/lib/analytics'
 import { formatPrice } from '@/lib/utils'
+import {
+  INDIAN_STATES,
+  SHIPPING_THRESHOLD,
+  STANDARD_SHIPPING_COST as STANDARD_COST,
+  EXPRESS_SHIPPING_COST as EXPRESS_COST,
+  GIFT_WRAP_COST,
+} from '@/lib/constants'
 
 // ─── Zod Schema ──────────────────────────────────────────────────────────────
-
-// FIX-FE-06: Indian states/UTs dropdown — validated against this list
-const INDIAN_STATES = [
-  'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam',
-  'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu',
-  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
-  'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh',
-  'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha',
-  'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
-  'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-] as const
 
 const checkoutSchema = z.object({
   first_name: z.string().trim().min(2, 'First name too short').max(60)
@@ -45,11 +41,9 @@ const checkoutSchema = z.object({
 type CheckoutFields = z.infer<typeof checkoutSchema>
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-
-const SHIPPING_THRESHOLD = 2500
-const STANDARD_COST = 199
-const EXPRESS_COST = 399
-const GIFT_WRAP_COST = 150
+// Pricing constants now live in lib/constants.ts (shared with the server-side
+// order calculation in app/api/orders/create) so the displayed total and the
+// charged total can never drift.
 
 const DELIVERY_OPTIONS = [
   {
@@ -483,12 +477,13 @@ export function CheckoutForm() {
           },
         })
       } else {
-        // Fallback: COD / Razorpay script not loaded — still go to confirmation
-        paymentDone.current = true
-        clearCart()
-        coupon.clearCoupon()
-        try { localStorage.removeItem('possah-checkout-draft') } catch {}
-        router.push(`/order/confirmation?order=${order_number}`)
+        // FIX (audit U-2): the Razorpay script failed to load. Do NOT fake a
+        // successful order — the customer has not paid. Keep the cart and the
+        // saved pending order intact and surface a clear, retryable error.
+        setServerError(
+          'Payment could not be started — the secure payment window failed to load. Please check your connection and try again.',
+        )
+        setSubmitting(false)
       }
     } catch {
       setServerError('Network error. Check your connection and try again.')

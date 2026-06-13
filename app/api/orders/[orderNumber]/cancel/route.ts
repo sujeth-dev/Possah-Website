@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions, DEV_AUTH_BYPASS } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
+import { releaseCouponUsage } from '@/lib/coupons'
 
 // =============================================================================
 // POST /api/orders/:orderNumber/cancel
@@ -21,13 +22,14 @@ type CancelRow = {
   customer_email: string
   payment_status: string
   fulfillment_status: string
+  coupon_code: string | null
 }
 
 export async function POST(
   _req: NextRequest,
   { params }: { params: { orderNumber: string } },
 ) {
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = DEV_AUTH_BYPASS
   const session = isDev
     ? { user: { email: process.env.ADMIN_EMAIL ?? 'dev@thepossah.com' } }
     : await getServerSession(authOptions)
@@ -43,7 +45,7 @@ export async function POST(
 
     const { data: row } = await supabase
       .from('orders')
-      .select('id, customer_email, payment_status, fulfillment_status')
+      .select('id, customer_email, payment_status, fulfillment_status, coupon_code')
       .eq('order_number', orderNumber)
       .maybeSingle<CancelRow>()
 
@@ -84,6 +86,10 @@ export async function POST(
         { status: 500 },
       )
     }
+
+    // Release the coupon usage this pending/failed order was holding (audit:
+    // coupon usage leak). Best-effort — never fail the cancel for this.
+    await releaseCouponUsage(supabase, row.coupon_code).catch(() => {})
 
     return NextResponse.json({ success: true })
   } catch (err) {

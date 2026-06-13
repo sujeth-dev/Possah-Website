@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyRazorpayPaymentSignature } from '@/lib/razorpay'
 import { sendOrderConfirmationIfNotSent } from '@/lib/send-order-emails'
+import { decrementOrderStockOnce } from '@/lib/stock'
 
 const schema = z.object({
   razorpay_order_id: z.string().min(1),
@@ -68,6 +69,12 @@ export async function POST(req: NextRequest) {
       // Still return success to client — payment IS valid, DB update is
       // best-effort and the webhook will reconcile if it failed.
     }
+
+    // H-1: decrement stock exactly once. The atomic claim makes this safe even
+    // if the webhook also fires for the same order — only one caller wins.
+    await decrementOrderStockOnce(supabase, order_number).catch((err) => {
+      console.error('[payments/verify] stock decrement failed:', err)
+    })
 
     // Await the email dispatch so Vercel doesn't terminate the function before
     // it completes. .catch() swallows errors — verify always returns 200.

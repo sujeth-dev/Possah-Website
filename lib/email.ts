@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { formatPrice } from '@/lib/utils'
+import { escapeHtml } from '@/lib/html-escape'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -74,8 +75,8 @@ export async function sendOrderConfirmationEmail({
       (item) => `
       <tr>
         <td style="padding:12px 0;border-bottom:1px solid #E2D9CC;">
-          <strong style="color:#1A1A1A;">${item.name}</strong><br>
-          <span style="color:#6B6B6B;font-size:13px;">${item.colour} &middot; ${item.size} &middot; Qty ${item.qty}</span>
+          <strong style="color:#1A1A1A;">${escapeHtml(item.name)}</strong><br>
+          <span style="color:#6B6B6B;font-size:13px;">${escapeHtml(item.colour)} &middot; ${escapeHtml(item.size)} &middot; Qty ${Number(item.qty)}</span>
         </td>
         <td style="padding:12px 0;border-bottom:1px solid #E2D9CC;text-align:right;color:#1A1A1A;">
           ${formatPrice(item.price * item.qty)}
@@ -95,14 +96,14 @@ export async function sendOrderConfirmationEmail({
   const body = `
     <tr><td>
       <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:#1A1A1A;margin:0 0 8px;">
-        Thank you, ${customerName}.
+        Thank you, ${escapeHtml(customerName)}.
       </h2>
       <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
         Your order has been placed. We are already preparing something beautiful for you.
       </p>
       <div style="background-color:#1F3A2D;padding:16px 24px;margin-bottom:24px;">
         <span style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#C99A99;">ORDER NUMBER</span><br>
-        <span style="font-size:20px;font-weight:500;color:#F4ECDF;letter-spacing:0.05em;">#${orderNumber}</span>
+        <span style="font-size:20px;font-weight:500;color:#F4ECDF;letter-spacing:0.05em;">#${escapeHtml(orderNumber)}</span>
       </div>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
         <thead>
@@ -172,9 +173,9 @@ export async function sendShippedEmail({
     trackingNumber || courier
       ? `<div style="background-color:#1F3A2D;padding:16px 24px;margin-bottom:24px;">
           ${courier ? `<p style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#C99A99;margin:0 0 4px;">COURIER</p>
-          <p style="font-size:15px;color:#F4ECDF;margin:0 0 12px;">${courier}</p>` : ''}
+          <p style="font-size:15px;color:#F4ECDF;margin:0 0 12px;">${escapeHtml(courier)}</p>` : ''}
           ${trackingNumber ? `<p style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#C99A99;margin:0 0 4px;">TRACKING NUMBER</p>
-          <p style="font-size:18px;font-weight:500;color:#F4ECDF;letter-spacing:0.05em;margin:0;">${trackingNumber}</p>` : ''}
+          <p style="font-size:18px;font-weight:500;color:#F4ECDF;letter-spacing:0.05em;margin:0;">${escapeHtml(trackingNumber)}</p>` : ''}
         </div>`
       : ''
 
@@ -184,7 +185,7 @@ export async function sendShippedEmail({
         Your order is on its way.
       </h2>
       <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
-        Hi ${customerName}, your Possah order <strong>#${orderNumber}</strong> has been dispatched. It will reach you in 2–5 business days.
+        Hi ${escapeHtml(customerName)}, your Possah order <strong>#${escapeHtml(orderNumber)}</strong> has been dispatched. It will reach you in 2–5 business days.
       </p>
       ${trackingBlock}
       <a href="https://thepossah.com/account/orders"
@@ -225,7 +226,7 @@ export async function sendDeliveredEmail({
         Your order has arrived.
       </h2>
       <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
-        Hi ${customerName}, your Possah order <strong>#${orderNumber}</strong> has been delivered. We hope it brings you as much joy to wear as it did to make.
+        Hi ${escapeHtml(customerName)}, your Possah order <strong>#${escapeHtml(orderNumber)}</strong> has been delivered. We hope it brings you as much joy to wear as it did to make.
       </p>
       <a href="https://thepossah.com/account/orders"
          style="display:inline-block;background-color:#1F3A2D;color:#F4ECDF;padding:14px 28px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;margin-bottom:24px;">
@@ -265,7 +266,7 @@ export async function sendPaymentFailureEmail({
         Payment unsuccessful
       </h2>
       <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
-        Hi ${customerName}, we were unable to process your payment of ${formatPrice(amount)} for order <strong>#${orderNumber}</strong>.
+        Hi ${escapeHtml(customerName)}, we were unable to process your payment of ${formatPrice(amount)} for order <strong>#${escapeHtml(orderNumber)}</strong>.
         No money has been deducted from your account.
       </p>
       <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
@@ -308,22 +309,23 @@ export async function sendAdminOrderNotification({
   shippingAddress,
 }: AdminOrderNotificationProps): Promise<void> {
   const itemsText = items
-    .map((i) => `${i.name} (${i.colour}, ${i.size}) x${i.qty} = ${formatPrice(i.price * i.qty)}`)
+    .map((i) => escapeHtml(`${i.name} (${i.colour}, ${i.size}) x${i.qty} = ${formatPrice(i.price * i.qty)}`))
     .join('\n')
 
-  const addr =
+  const addr = escapeHtml(
     typeof shippingAddress === 'object'
       ? [shippingAddress.line1, shippingAddress.line2, shippingAddress.city, shippingAddress.state, shippingAddress.pincode]
           .filter(Boolean)
           .join(', ')
       : String(shippingAddress)
+  )
 
   const body = `
     <tr><td>
       <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:400;color:#1A1A1A;margin:0 0 16px;">
-        New Order: #${orderNumber}
+        New Order: #${escapeHtml(orderNumber)}
       </h2>
-      <p style="color:#1A1A1A;font-size:15px;margin:0 0 8px;"><strong>Customer:</strong> ${customerName} (${customerEmail})</p>
+      <p style="color:#1A1A1A;font-size:15px;margin:0 0 8px;"><strong>Customer:</strong> ${escapeHtml(customerName)} (${escapeHtml(customerEmail)})</p>
       <p style="color:#1A1A1A;font-size:15px;margin:0 0 8px;"><strong>Total:</strong> ${formatPrice(total)}</p>
       <p style="color:#1A1A1A;font-size:15px;margin:0 0 8px;"><strong>Ship to:</strong> ${addr}</p>
       <pre style="background:#f5f5f5;padding:12px;font-size:13px;color:#333;white-space:pre-wrap;">${itemsText}</pre>

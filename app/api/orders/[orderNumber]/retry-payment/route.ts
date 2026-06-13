@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions, DEV_AUTH_BYPASS } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
 import { createRazorpayOrder } from '@/lib/razorpay'
 
@@ -42,7 +42,7 @@ export async function POST(
   { params }: { params: { orderNumber: string } },
 ) {
   // 1. Auth
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = DEV_AUTH_BYPASS
   const session = isDev
     ? { user: { email: process.env.ADMIN_EMAIL ?? 'dev@thepossah.com' } }
     : await getServerSession(authOptions)

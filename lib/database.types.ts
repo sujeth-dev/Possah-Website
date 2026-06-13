@@ -352,6 +352,7 @@ export type Database = {
         Row: {
           cart_fingerprint: string | null
           confirmation_email_sent_at: string | null
+          stock_decremented_at: string | null
           coupon_code: string | null
           courier: string | null
           created_at: string
@@ -384,6 +385,7 @@ export type Database = {
         Insert: {
           cart_fingerprint?: string | null
           confirmation_email_sent_at?: string | null
+          stock_decremented_at?: string | null
           coupon_code?: string | null
           courier?: string | null
           created_at?: string
@@ -416,6 +418,7 @@ export type Database = {
         Update: {
           cart_fingerprint?: string | null
           confirmation_email_sent_at?: string | null
+          stock_decremented_at?: string | null
           coupon_code?: string | null
           courier?: string | null
           created_at?: string

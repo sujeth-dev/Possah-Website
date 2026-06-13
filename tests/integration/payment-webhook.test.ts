@@ -20,6 +20,11 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }))
 
+vi.mock('@/lib/razorpay', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/razorpay')>()
+  return { ...actual, fetchRazorpayOrder: vi.fn().mockResolvedValue(null) }
+})
+
 vi.mock('@/lib/email', () => ({
   sendOrderConfirmationEmail: vi.fn().mockResolvedValue(undefined),
   sendPaymentFailureEmail: vi.fn().mockResolvedValue(undefined),
@@ -108,14 +113,75 @@ describe('POST /api/payments/webhook', () => {
       total: 100000,
     }
 
-    mockSupabaseFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => ({ data: mockOrder, error: null }) }) }),
-    })
+    // Lookup uses maybeSingle now (H-2). The stock + email idempotency claims
+    // (update -> ... -> maybeSingle) must return no row so they no-op for an
+    // order that is already paid + already processed.
+    const claimChain = {
+      update: () => claimChain,
+      eq: () => claimChain,
+      is: () => claimChain,
+      select: () => claimChain,
+      maybeSingle: () => ({ data: null, error: null }),
+      single: () => ({ data: null, error: null }),
+    }
+    const lookupChain = {
+      select: () => lookupChain,
+      eq: () => lookupChain,
+      maybeSingle: () => ({ data: mockOrder, error: null }),
+      single: () => ({ data: mockOrder, error: null }),
+      update: () => claimChain,
+    }
+    mockSupabaseFrom.mockReturnValue(lookupChain)
 
     const response = await callWebhook(body, sig)
     expect(response.status).toBe(200)
     const json = await response.json()
     expect(json.received).toBe(true)
+  })
+
+  it('H-2: reconciles a capture by receipt when gateway_order_id no longer matches', async () => {
+    const body = makeWebhookBody('payment.captured')
+    const sig = makeSignature(body, secret)
+
+    const reconciledOrder = {
+      id: 'order_db_009',
+      order_number: 'PSH-2026-0009',
+      payment_status: 'pending',
+      line_items: [],
+    }
+
+    // First orders lookup (by gateway_order_id) misses; reconcile lookup (by
+    // order_number) hits; then mark-paid + idempotent stock/email claims no-op.
+    const claimChain2: Record<string, unknown> = {}
+    Object.assign(claimChain2, {
+      update: () => claimChain2, eq: () => claimChain2, is: () => claimChain2,
+      select: () => claimChain2,
+      maybeSingle: () => ({ data: null, error: null }),
+      single: () => ({ data: null, error: null }),
+    })
+    const missChain = {
+      select: () => missChain, eq: () => missChain,
+      maybeSingle: () => ({ data: null, error: null }),
+    }
+    const hitChain = {
+      select: () => hitChain, eq: () => hitChain,
+      maybeSingle: () => ({ data: reconciledOrder, error: null }),
+      update: () => claimChain2,
+    }
+    mockSupabaseFrom
+      .mockReturnValueOnce(missChain)   // lookup by gateway_order_id -> miss
+      .mockReturnValueOnce(hitChain)    // lookup by order_number (receipt) -> hit
+      .mockReturnValue(claimChain2)     // mark-paid + stock/email claims
+
+    const { fetchRazorpayOrder } = await import('@/lib/razorpay')
+    ;(fetchRazorpayOrder as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      id: 'order_rz_stale',
+      receipt: 'PSH-2026-0009',
+    })
+
+    const response = await callWebhook(body, sig)
+    expect(response.status).toBe(200)
+    expect(fetchRazorpayOrder).toHaveBeenCalledWith('order_rz_001')
   })
 
   it('returns 200 and processes payment.failed event', async () => {

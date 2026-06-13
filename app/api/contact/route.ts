@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { Resend } from 'resend'
+import { escapeHtml } from '@/lib/html-escape'
 
 const schema = z.object({
   name: z.string().min(1).max(100),
@@ -30,12 +31,16 @@ export async function POST(req: NextRequest) {
       from: 'The Possah <noreply@thepossah.com>',
       to: 'hello@thepossah.com',
       reply_to: email,
-      subject: `Contact: ${subject} - from ${name}`,
+      // Subject is a mail header — collapse any CR/LF to prevent header
+      // injection, and keep it plain (no HTML rendered in subject lines).
+      subject: `Contact: ${subject.replace(/[\r\n]+/g, ' ')} - from ${name.replace(/[\r\n]+/g, ' ')}`,
+      // SECURITY (audit S-1): HTML-escape every user-supplied value so markup
+      // or phishing links cannot be injected into the team inbox email.
       html: `
-        <p><strong>From:</strong> ${name} (${email})</p>
-        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>From:</strong> ${escapeHtml(name)} (${escapeHtml(email)})</p>
+        <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
         <hr>
-        <p style="white-space:pre-wrap;">${message}</p>
+        <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
       `,
     })
 

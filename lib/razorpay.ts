@@ -48,6 +48,27 @@ export function verifyRazorpayPaymentSignature({
   }
 }
 
+/**
+ * Fetch a Razorpay order by id. Used by the webhook (audit H-2) to reconcile a
+ * captured payment back to our order via the order's `receipt` (= our
+ * order_number) when the local row's gateway_order_id has since been rotated by
+ * a retry/reuse and no longer matches.
+ */
+export async function fetchRazorpayOrder(
+  orderId: string,
+): Promise<{ id: string; receipt: string | null } | null> {
+  const keyId = process.env.RAZORPAY_KEY_ID
+  const keySecret = process.env.RAZORPAY_KEY_SECRET
+  if (!keyId || !keySecret) return null
+
+  const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64')
+  const res = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
+    headers: { Authorization: `Basic ${auth}` },
+  })
+  if (!res.ok) return null
+  return res.json() as Promise<{ id: string; receipt: string | null }>
+}
+
 /** Create Razorpay order via the Orders API */
 export async function createRazorpayOrder({
   amount,

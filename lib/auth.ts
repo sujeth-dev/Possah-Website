@@ -34,6 +34,21 @@ export const DEV_SESSION = {
   expires: '2099-01-01T00:00:00.000Z',
 }
 
+/**
+ * SECURITY (audit S-4): dev auth bypass gate.
+ *
+ * Previously each account/order API route did
+ *   `process.env.NODE_ENV === 'development'`
+ * to swap in DEV_SESSION. On a misconfigured deployment where NODE_ENV is not
+ * 'production' that would silently auth every request as the dev admin user.
+ *
+ * This flag requires an EXPLICIT opt-in (`ALLOW_DEV_SESSION=1`) that is never
+ * set in any deployed environment, AND hard-refuses whenever NODE_ENV is
+ * 'production'. Default is OFF.
+ */
+export const DEV_AUTH_BYPASS =
+  process.env.ALLOW_DEV_SESSION === '1' && process.env.NODE_ENV !== 'production'
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
