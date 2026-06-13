@@ -125,7 +125,7 @@ export default async function FestivePage({
             FESTIVE
           </h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'rgba(244,236,223,0.8)', marginTop: 10, maxWidth: 420, lineHeight: 1.6 }}>
-            From intimate mehndi evenings to grand wedding celebrations — pieces made to be worn, remembered, and passed on.
+            For the moments that bring us together, and the pieces that become part of them.
           </p>
         </div>
       </div>

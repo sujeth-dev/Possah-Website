@@ -136,7 +136,7 @@ export default async function BridalPage({
               lineHeight: 1.6,
             }}
           >
-            For every ritual, a piece that carries the weight of the moment — and the lightness of joy.
+            For the bride who wants to feel like herself, only more unforgettable.
           </p>
         </div>
       </div>
@@ -362,13 +362,13 @@ export default async function BridalPage({
         </div>
       </section>
 
-      {/* MTM CTA */}
+      {/* Bridal Atelier */}
       <section
         className="section-gap border-t text-center"
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'rgba(31,58,45,0.03)' }}
       >
         <div className="container-site flex flex-col items-center gap-5 max-w-[640px] mx-auto">
-          <p className="section-label">MADE-TO-MEASURE</p>
+          <p className="section-label">BRIDAL ATELIER</p>
           <h2
             style={{
               fontFamily: 'var(--font-display)',
@@ -389,7 +389,7 @@ export default async function BridalPage({
               color: 'var(--color-text-muted)',
             }}
           >
-            Bespoke bridal trousseau — from fabric selection to final fitting. Every measurement considered, every detail intentional.
+            A wedding is made of moments. The first fitting. The final drape. The quiet minutes before everything begins. Our Bridal Atelier exists to create pieces worthy of those moments. From silhouette and fabric to finishing details and fit, every garment is tailored specifically for the woman who will wear it. Because no two brides are alike. And no bridal piece should be either.
           </p>
           <Link
             href="/made-to-measure"
@@ -404,7 +404,95 @@ export default async function BridalPage({
               borderRadius: 'var(--radius-btn)',
             }}
           >
-            Enquire Now
+            Begin Your Bridal Journey
+          </Link>
+        </div>
+      </section>
+
+      {/* The Possah Bride */}
+      <section
+        className="section-gap border-t"
+        style={{ borderColor: 'var(--color-border)' }}
+      >
+        <div className="container-site flex flex-col items-center gap-5 max-w-[680px] mx-auto text-center">
+          <p
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--color-green)',
+            }}
+          >
+            THE POSSAH BRIDE
+          </p>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(22px, 3.5vw, 42px)',
+              fontWeight: '400',
+              color: 'var(--color-text)',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.25,
+            }}
+          >
+            Designed for the moments you&rsquo;ll remember forever.
+          </h2>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            From intimate ceremonies to grand celebrations, every Possah bridal piece is created to move with grace, confidence, and ease. Thoughtfully crafted and meticulously fitted, each garment balances tradition with contemporary elegance, ensuring you feel completely yourself on every step of your journey. Because the most beautiful bridal look is not the one that transforms you. It&rsquo;s the one that reveals you.
+          </p>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section
+        className="section-gap border-t text-center"
+        style={{ borderColor: 'var(--color-border)' }}
+      >
+        <div className="container-site flex flex-col items-center gap-5 max-w-[580px] mx-auto">
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(22px, 3.5vw, 42px)',
+              fontWeight: '400',
+              color: 'var(--color-text)',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.25,
+            }}
+          >
+            A once-in-a-lifetime moment deserves a once-in-a-lifetime piece.
+          </h2>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '15px',
+              lineHeight: 1.7,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            Begin your bridal consultation and create a garment tailored exclusively for you.
+          </p>
+          <Link
+            href="/contact"
+            className="inline-flex items-center justify-center px-10 py-3.5 transition-opacity duration-200 hover:opacity-80"
+            style={{
+              backgroundColor: 'var(--color-green)',
+              color: 'var(--color-white)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px',
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              borderRadius: 'var(--radius-btn)',
+            }}
+          >
+            Book A Bridal Consultation
           </Link>
         </div>
       </section>

@@ -13,22 +13,22 @@ const STEPS = [
   {
     num: '01',
     title: 'Choose Your Piece',
-    body: 'Browse the collection and select any piece marked Made-to-Measure, or contact us to discuss a fully custom creation.',
+    body: 'Begin with any Possah piece marked Made-to-Measure, or connect with our team to discuss a bespoke creation tailored to your requirements.',
   },
   {
     num: '02',
     title: 'Share Your Measurements',
-    body: 'We send you a simple measurement guide. You can also visit our Bengaluru atelier for an in-person fitting.',
+    body: 'We’ll guide you through a simple measurement process, or arrange an in-person fitting where available. Every detail is carefully recorded to ensure precision.',
   },
   {
     num: '03',
-    title: 'Fabric & Finish',
-    body: 'Choose from our curated fabric swatches. Specify your colour, embroidery density, and finishing preferences.',
+    title: 'Fabric & Finishing',
+    body: 'Select from curated fabrics, colours, and finishing details. Together, we refine the piece until it feels unmistakably yours.',
   },
   {
     num: '04',
     title: 'Crafted & Delivered',
-    body: 'Your piece is handcrafted in 15–21 days and dispatched in our signature packaging with a care card.',
+    body: 'Your garment is handcrafted with care and completed over 15–21 days before arriving in our signature packaging, ready to be worn and remembered.',
   },
 ]
 
@@ -87,7 +87,7 @@ export default function MadeToMeasurePage() {
               letterSpacing: '-0.01em',
             }}
           >
-            A dress that fits perfectly is not a luxury — it&rsquo;s a right. Every Made-to-Measure piece begins with your measurements and ends with a garment that could only ever belong to you.
+            Some pieces are purchased. Others are created. Our Made-to-Measure service allows each garment to be tailored specifically for you — from fit and proportions to finishing details. The result is a piece that feels less like something bought and more like something that belongs to you. Because the perfect fit should never be an afterthought.
           </p>
         </div>
       </section>
@@ -146,6 +146,34 @@ export default function MadeToMeasurePage() {
         </div>
       </section>
 
+      {/* Why Made-to-Measure */}
+      <section className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="container-site max-w-[720px]">
+          <p
+            className="mb-4"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--color-green)',
+            }}
+          >
+            WHY MADE-TO-MEASURE
+          </p>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '16px',
+              lineHeight: 1.8,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            Every woman is different. Her proportions. Her preferences. The way she likes a sleeve to fall or a hem to sit. Made-to-Measure allows us to honour those details. Each garment is adjusted specifically for the woman who will wear it, creating a level of comfort, confidence, and ease that standard sizing simply cannot replicate. Because true luxury is personal.
+          </p>
+        </div>
+      </section>
+
       {/* Gallery + CTA */}
       <section className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
         <div className="container-site">
@@ -181,7 +209,7 @@ export default function MadeToMeasurePage() {
                   lineHeight: 1.2,
                 }}
               >
-                Ready for something made only for you?
+                This piece doesn&rsquo;t exist yet. It is waiting for you.
               </h2>
               <p
                 style={{
@@ -191,7 +219,7 @@ export default function MadeToMeasurePage() {
                   color: 'var(--color-text-muted)',
                 }}
               >
-                Reach us on WhatsApp to begin your bespoke journey. We typically respond within 2 hours.
+                Begin your bespoke journey with Possah. Our team will guide you through measurements, customisation options, and timelines to create a piece designed specifically for you.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
@@ -209,7 +237,7 @@ export default function MadeToMeasurePage() {
                     borderRadius: 'var(--radius-btn)',
                   }}
                 >
-                  Chat on WhatsApp
+                  Begin Your Fitting
                 </a>
                 <Link
                   href="/contact"
@@ -224,7 +252,7 @@ export default function MadeToMeasurePage() {
                     borderRadius: 'var(--radius-btn)',
                   }}
                 >
-                  Send Enquiry
+                  Speak With Our Atelier
                 </Link>
               </div>
             </div>

@@ -10,16 +10,16 @@ export const metadata: Metadata = {
 
 const PILLARS = [
   {
-    label: 'The Craft',
-    body: 'Every piece begins with a conversation between artisan and fabric. Our artisans in Bengaluru have refined their craft across generations — we simply give their work the stage it deserves.',
+    label: 'The Woman',
+    body: 'We design for women who dress for themselves. Women who appreciate beauty, but never depend on it. Women who know that confidence cannot be stitched into a garment, only revealed by one. Possah exists to accompany her, never define her.',
   },
   {
-    label: 'The Edit',
-    body: 'We don\'t do seasons. We do considered curation. Each piece enters the collection because it belongs — not because a trend demanded it.',
+    label: 'The Piece',
+    body: 'Every Possah garment is created with intention. Thoughtful silhouettes, refined fabrics, and details that reveal themselves over time. Designed to feel effortless today and relevant years from now. Pieces made to be worn often, remembered always.',
   },
   {
-    label: 'The Promise',
-    body: 'Slow fashion, ethically made. We work directly with artisan clusters, ensuring fair wages and dignified working conditions at every step.',
+    label: 'The Making',
+    body: 'Every piece begins with patience. Crafted in small quantities and available through our made-to-measure service, each garment is produced with attention, precision, and care. Because the finest things are never rushed.',
   },
 ]
 
@@ -45,47 +45,80 @@ export default function AboutPage() {
           aria-hidden="true"
         />
         <div className="relative container-site pb-12 z-10">
+          <p
+            className="section-label"
+            style={{ color: 'rgba(244,236,223,0.7)', marginBottom: 8 }}
+          >
+            THE POSSAH
+          </p>
           <h1
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(40px, 7vw, 88px)',
+              fontSize: 'clamp(28px, 5vw, 64px)',
               fontWeight: '400',
               color: 'var(--color-white)',
-              lineHeight: 1,
-              letterSpacing: '0.04em',
+              lineHeight: 1.1,
+              letterSpacing: '0.02em',
             }}
           >
-            THE POSSAH
+            She wants what she wants.<br />So we make it.
           </h1>
           <p
             style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: 'rgba(244,236,223,0.7)',
-              marginTop: 8,
+              fontFamily: 'var(--font-body)',
+              fontSize: 'clamp(14px, 1.5vw, 18px)',
+              color: 'rgba(244,236,223,0.8)',
+              marginTop: 12,
+              maxWidth: 480,
+              lineHeight: 1.6,
             }}
           >
-            Bengaluru · Est. 2024
+            Modern couture and considered ready-to-wear for women who dress with intention.
           </p>
         </div>
       </div>
 
-      {/* Brand statement */}
+      {/* Philosophy */}
       <section className="section-gap">
         <div className="container-site max-w-[800px]">
           <p
+            className="mb-4"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--color-green)',
+            }}
+          >
+            THE PHILOSOPHY
+          </p>
+          <h2
+            className="mb-6"
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(22px, 3.5vw, 40px)',
+              fontSize: 'clamp(24px, 3.5vw, 44px)',
               fontWeight: '400',
               color: 'var(--color-text)',
-              lineHeight: 1.4,
+              lineHeight: 1.25,
               letterSpacing: '-0.01em',
             }}
           >
-            The Possah is not a fashion brand. It is a love letter to Indian craft — written in fabric, worn on skin, remembered long after the evening ends.
+            For women who choose with certainty.
+          </h2>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '16px',
+              lineHeight: 1.8,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            Possah was created for women who know themselves. Not for trends. Not for occasions. Not for approval. For the woman who trusts her instincts, values beauty without excess, and understands that true elegance never asks for attention.
+            <br /><br />
+            We design for the moments that matter and the ones that don&rsquo;t announce themselves. A wedding. A celebration. A quiet dinner. A spontaneous evening. An ordinary afternoon that somehow becomes unforgettable.
+            <br /><br />
+            Our pieces are created to move effortlessly between these moments. Rooted in Indian craftsmanship and shaped by a contemporary perspective, every silhouette is considered, refined, and designed to feel distinctly personal. Because luxury isn&rsquo;t about having more. It&rsquo;s about knowing exactly what belongs.
           </p>
         </div>
       </section>
@@ -140,18 +173,29 @@ export default function AboutPage() {
               />
             </div>
             <div className="flex flex-col gap-6">
+              <p
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10px',
+                  letterSpacing: '0.22em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-green)',
+                }}
+              >
+                A NOTE FROM DEEPTHI
+              </p>
               <blockquote
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(20px, 3vw, 32px)',
+                  fontSize: 'clamp(18px, 2.5vw, 28px)',
                   fontWeight: '400',
                   color: 'var(--color-text)',
-                  lineHeight: 1.4,
+                  lineHeight: 1.45,
                   letterSpacing: '-0.01em',
                   fontStyle: 'italic',
                 }}
               >
-                &ldquo;I wanted to build a brand that treats Indian handloom not as heritage — but as currency. The most relevant thing a woman can wear today.&rdquo;
+                &ldquo;I never wanted to create clothes that simply looked beautiful. I wanted to create pieces that made women feel unmistakably themselves. The most memorable women I&rsquo;ve known were never the loudest in the room. They carried a quiet certainty about who they were, what they loved, and what belonged to them. Possah was created for those women. Every silhouette, every fabric, every detail begins with a simple belief: when a woman feels completely herself, nothing is more beautiful.&rdquo;
               </blockquote>
               <p
                 style={{
@@ -162,10 +206,51 @@ export default function AboutPage() {
                   color: 'var(--color-text-muted)',
                 }}
               >
-                — Founder, The Possah
+                — Deepthi, Founder, The Possah
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Our Promise */}
+      <section className="section-gap border-t" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="container-site max-w-[720px]">
+          <p
+            className="mb-4"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--color-green)',
+            }}
+          >
+            OUR PROMISE
+          </p>
+          <h2
+            className="mb-6"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(22px, 3.5vw, 40px)',
+              fontWeight: '400',
+              color: 'var(--color-text)',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.3,
+            }}
+          >
+            Made with intention.
+          </h2>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            We believe clothing should feel personal. That is why many Possah pieces are available through our made-to-measure service, allowing every garment to be tailored to the woman who wears it. The result is a piece that feels less like something purchased and more like something created for you. Because the perfect fit is never an afterthought.
+          </p>
         </div>
       </section>
 
@@ -235,7 +320,7 @@ export default function AboutPage() {
         className="section-gap border-t text-center"
         style={{ borderColor: 'var(--color-border)' }}
       >
-        <div className="container-site flex flex-col items-center gap-6">
+        <div className="container-site flex flex-col items-center gap-4">
           <h2
             style={{
               fontFamily: 'var(--font-display)',
@@ -247,9 +332,19 @@ export default function AboutPage() {
           >
             Wear it. Feel it. Remember it.
           </h2>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '15px',
+              lineHeight: 1.7,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            Discover pieces designed to become part of your story.
+          </p>
           <Link
             href="/shop/sarees"
-            className="inline-flex items-center justify-center px-10 py-3.5 transition-opacity duration-200 hover:opacity-80"
+            className="inline-flex items-center justify-center px-10 py-3.5 transition-opacity duration-200 hover:opacity-80 mt-2"
             style={{
               backgroundColor: 'var(--color-green)',
               color: 'var(--color-white)',
@@ -260,7 +355,7 @@ export default function AboutPage() {
               borderRadius: 'var(--radius-btn)',
             }}
           >
-            Explore The Edit
+            Explore The Collection
           </Link>
         </div>
       </section>
