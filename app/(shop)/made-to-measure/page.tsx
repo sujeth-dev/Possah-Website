@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { whatsappUrl } from '@/lib/utils'
@@ -43,7 +43,7 @@ export default function MadeToMeasurePage() {
         style={{ minHeight: 'clamp(280px, 40vw, 500px)' }}
       >
         <Image
-          src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+          src="https://cdn.thepossah.com/ui/placeholder.svg"
           alt="Made-to-Measure atelier — The Possah"
           fill
           priority
@@ -180,10 +180,10 @@ export default function MadeToMeasurePage() {
           <div className="grid md:grid-cols-2 gap-10 lg:gap-20 items-center">
             <div className="grid grid-cols-2 gap-3">
               {[
-                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
-                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
-                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
-                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
+                'https://cdn.thepossah.com/ui/placeholder.svg',
+                'https://cdn.thepossah.com/ui/placeholder.svg',
+                'https://cdn.thepossah.com/ui/placeholder.svg',
+                'https://cdn.thepossah.com/ui/placeholder.svg',
               ].map(
                 (src, i) => (
                   <div

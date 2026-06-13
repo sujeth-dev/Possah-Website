@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
@@ -19,7 +19,7 @@ type OccasionTile = {
   externalHref?: string
 }
 
-const PH = 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg'
+const PH = 'https://cdn.thepossah.com/ui/placeholder.svg'
 
 const OCCASIONS: OccasionTile[] = [
   { label: 'Cocktail & Party', image: PH, tag: 'Cocktail' },
@@ -100,7 +100,7 @@ export default async function FestivePage({
         style={{ minHeight: 'clamp(280px, 40vw, 520px)' }}
       >
         <ImageWithFallback
-          src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+          src="https://cdn.thepossah.com/ui/placeholder.svg"
           alt="The Possah Festive"
           fill
           priority

@@ -1,4 +1,4 @@
-import Image from 'next/image'
+﻿import Image from 'next/image'
 import Link from 'next/link'
 
 export function CategorySplit() {
@@ -8,7 +8,7 @@ export function CategorySplit() {
         {/* Ethnic */}
         <div className="relative group overflow-hidden" style={{ minHeight: '440px' }}>
           <Image
-            src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+            src="https://cdn.thepossah.com/ui/placeholder.svg"
             alt="Ethnic — Sarees, Lehengas, Kurta Sets"
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
@@ -57,7 +57,7 @@ export function CategorySplit() {
         {/* Western */}
         <div className="relative group overflow-hidden" style={{ minHeight: '440px' }}>
           <Image
-            src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+            src="https://cdn.thepossah.com/ui/placeholder.svg"
             alt="Western — Co-Ords, Dresses, Tops, Bottoms"
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"

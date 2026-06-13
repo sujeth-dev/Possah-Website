@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { createPublicClient } from '@/lib/supabase/public'
 import { HeroSlider } from '@/components/homepage/HeroSlider'
 import { CategorySplit } from '@/components/homepage/CategorySplit'
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 }
 
 // Fallback data in case DB isn't seeded yet
-const PH = 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg'
+const PH = 'https://cdn.thepossah.com/ui/placeholder.svg'
 
 const FALLBACK_HERO_SLIDES = [
   {

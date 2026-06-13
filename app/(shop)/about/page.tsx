@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
 
@@ -32,7 +32,7 @@ export default function AboutPage() {
         style={{ minHeight: 'clamp(320px, 45vw, 560px)' }}
       >
         <ImageWithFallback
-          src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+          src="https://cdn.thepossah.com/ui/placeholder.svg"
           alt="The Possah — Artisan weaving"
           fill
           priority
@@ -165,7 +165,7 @@ export default function AboutPage() {
               style={{ borderRadius: 'var(--radius-card)' }}
             >
               <ImageWithFallback
-                src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+                src="https://cdn.thepossah.com/ui/placeholder.svg"
                 alt="Founder — The Possah"
                 fill
                 className="object-cover object-center"
