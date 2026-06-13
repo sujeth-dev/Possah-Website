@@ -20,6 +20,8 @@ interface Article {
   is_featured: boolean
 }
 
+const PH = 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg'
+
 const STATIC_ARTICLES: Article[] = [
   {
     id: '1',
@@ -27,7 +29,7 @@ const STATIC_ARTICLES: Article[] = [
     title: 'The Language of Chikankari',
     category: 'Craft',
     author: 'The Possah',
-    featured_image: '/images/journal-chikankari.jpg',
+    featured_image: PH,
     published_at: '2024-09-01T00:00:00Z',
     is_featured: true,
   },
@@ -37,7 +39,7 @@ const STATIC_ARTICLES: Article[] = [
     title: 'Dressing for the Mehendi',
     category: 'Style',
     author: 'The Possah',
-    featured_image: '/images/journal-mehendi.jpg',
+    featured_image: PH,
     published_at: '2024-09-15T00:00:00Z',
     is_featured: false,
   },
@@ -47,7 +49,7 @@ const STATIC_ARTICLES: Article[] = [
     title: 'Why Linen, Every Summer',
     category: 'Fabric',
     author: 'The Possah',
-    featured_image: '/images/journal-linen.jpg',
+    featured_image: PH,
     published_at: '2024-10-01T00:00:00Z',
     is_featured: false,
   },
@@ -120,7 +122,7 @@ export default async function JournalPage() {
               style={{ aspectRatio: '4/3', borderRadius: 'var(--radius-card)' }}
             >
               <Image
-                src={featured.featured_image || 'https://placehold.co/800x600/1F3A2D/F4ECDF.png?text=Journal'}
+                src={featured.featured_image || PH}
                 alt={featured.title}
                 fill
                 priority
@@ -197,7 +199,7 @@ export default async function JournalPage() {
                   style={{ aspectRatio: '4/3', borderRadius: 'var(--radius-card)' }}
                 >
                   <Image
-                    src={article.featured_image || 'https://placehold.co/800x600/1F3A2D/F4ECDF.png?text=Journal'}
+                    src={article.featured_image || PH}
                     alt={article.title}
                     fill
                     className="object-cover object-center img-hover-scale"

@@ -19,12 +19,14 @@ type OccasionTile = {
   externalHref?: string
 }
 
+const PH = 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg'
+
 const OCCASIONS: OccasionTile[] = [
-  { label: 'Cocktail & Party', image: '/images/festive-eid.jpg',      tag: 'Cocktail' },
-  { label: 'Vacation Glam',    image: '/images/festive-navratri.jpg', tag: 'Evening'  },
-  { label: 'Festive Edit',     image: '/images/festive-diwali.jpg',   tag: null       },
-  { label: 'Everyday Luxe',    image: '/images/festive-sangeet.jpg',  tag: 'Everyday' },
-  { label: 'Custom Couture',   image: '/images/festive-hero.jpg',     tag: null, externalHref: '/made-to-measure' },
+  { label: 'Cocktail & Party', image: PH, tag: 'Cocktail' },
+  { label: 'Vacation Glam',    image: PH, tag: 'Evening'  },
+  { label: 'Festive Edit',     image: PH, tag: null       },
+  { label: 'Everyday Luxe',    image: PH, tag: 'Everyday' },
+  { label: 'Custom Couture',   image: PH, tag: null, externalHref: '/made-to-measure' },
 ]
 
 async function getFestiveProducts(occasion: string | null): Promise<ProductCardData[]> {
@@ -98,7 +100,7 @@ export default async function FestivePage({
         style={{ minHeight: 'clamp(280px, 40vw, 520px)' }}
       >
         <ImageWithFallback
-          src="/images/festive-hero.jpg"
+          src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
           alt="The Possah Festive"
           fill
           priority

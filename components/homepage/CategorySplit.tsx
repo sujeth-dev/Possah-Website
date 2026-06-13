@@ -8,7 +8,7 @@ export function CategorySplit() {
         {/* Ethnic */}
         <div className="relative group overflow-hidden" style={{ minHeight: '440px' }}>
           <Image
-            src="https://placehold.co/720x900/1F3A2D/F4ECDF.png?text=Ethnic"
+            src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
             alt="Ethnic — Sarees, Lehengas, Kurta Sets"
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
@@ -57,7 +57,7 @@ export function CategorySplit() {
         {/* Western */}
         <div className="relative group overflow-hidden" style={{ minHeight: '440px' }}>
           <Image
-            src="https://placehold.co/720x900/1F3A2D/F4ECDF.png?text=Western"
+            src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
             alt="Western — Co-Ords, Dresses, Tops, Bottoms"
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"

@@ -18,13 +18,15 @@ type OccasionTile = {
   tag: string | null
 }
 
+const PH = 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg'
+
 const OCCASIONS: OccasionTile[] = [
-  { label: 'Reception Glam',     image: '/images/bridal-wedding.jpg', tag: 'Wedding'  },
-  { label: "Mehendi's Edit",     image: '/images/bridal-mehendi.jpg', tag: 'Mehendi'  },
-  { label: 'Sangeet Edit',       image: '/images/bridal-sangeet.jpg', tag: 'Sangeet'  },
-  { label: 'Haldi Edit',         image: '/images/bridal-haldi.jpg',   tag: 'Haldi'    },
-  { label: 'Wedding Guest Edit', image: '/images/bridal-wedding.jpg', tag: 'Wedding'  },
-  { label: 'Cocktail Night',     image: '/images/bridal-sangeet.jpg', tag: 'Cocktail' },
+  { label: 'Reception Glam',     image: PH, tag: 'Wedding'  },
+  { label: "Mehendi's Edit",     image: PH, tag: 'Mehendi'  },
+  { label: 'Sangeet Edit',       image: PH, tag: 'Sangeet'  },
+  { label: 'Haldi Edit',         image: PH, tag: 'Haldi'    },
+  { label: 'Wedding Guest Edit', image: PH, tag: 'Wedding'  },
+  { label: 'Cocktail Night',     image: PH, tag: 'Cocktail' },
 ]
 
 async function getBridalProducts(occasion: string | null): Promise<ProductCardData[]> {
@@ -98,7 +100,7 @@ export default async function BridalPage({
         style={{ minHeight: 'clamp(280px, 40vw, 520px)' }}
       >
         <ImageWithFallback
-          src="/images/bridal-hero.jpg"
+          src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
           alt="The Possah Bridal"
           fill
           priority

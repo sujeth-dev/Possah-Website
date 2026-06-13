@@ -8,7 +8,7 @@ type Props = Omit<ComponentProps<typeof Image>, 'onError'> & {
 }
 
 export function ImageWithFallback({
-  fallbackSrc = '/images/placeholder-product.jpg',
+  fallbackSrc = 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
   alt,
   ...props
 }: Props) {

@@ -43,7 +43,7 @@ export default function MadeToMeasurePage() {
         style={{ minHeight: 'clamp(280px, 40vw, 500px)' }}
       >
         <Image
-          src="/images/mtm-hero.jpg"
+          src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
           alt="Made-to-Measure atelier — The Possah"
           fill
           priority
@@ -179,7 +179,12 @@ export default function MadeToMeasurePage() {
         <div className="container-site">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-20 items-center">
             <div className="grid grid-cols-2 gap-3">
-              {['/images/mtm-1.jpg', '/images/mtm-2.jpg', '/images/mtm-3.jpg', '/images/mtm-4.jpg'].map(
+              {[
+                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
+                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
+                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
+                'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
+              ].map(
                 (src, i) => (
                   <div
                     key={i}

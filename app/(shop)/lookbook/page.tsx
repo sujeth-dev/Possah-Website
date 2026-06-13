@@ -20,6 +20,8 @@ interface Lookbook {
   concept_text: string | null
 }
 
+const PH = 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg'
+
 const STATIC_LOOKBOOKS: Lookbook[] = [
   {
     id: '1',
@@ -28,7 +30,7 @@ const STATIC_LOOKBOOKS: Lookbook[] = [
     year: 2024,
     theme_word: 'Devotion',
     chapter_number: 1,
-    hero_image: '/images/lookbook-ceremony.jpg',
+    hero_image: PH,
     concept_text: 'For the bride who dresses with intention.',
   },
   {
@@ -38,7 +40,7 @@ const STATIC_LOOKBOOKS: Lookbook[] = [
     year: 2024,
     theme_word: 'Radiance',
     chapter_number: 2,
-    hero_image: '/images/lookbook-festive.jpg',
+    hero_image: PH,
     concept_text: 'The festive palette, reinterpreted.',
   },
   {
@@ -48,7 +50,7 @@ const STATIC_LOOKBOOKS: Lookbook[] = [
     year: 2024,
     theme_word: 'Ease',
     chapter_number: 3,
-    hero_image: '/images/lookbook-everyday.jpg',
+    hero_image: PH,
     concept_text: 'Linen, cotton, and the beauty of not trying too hard.',
   },
 ]
@@ -103,7 +105,7 @@ export default async function LookbookPage() {
               }}
             >
               <Image
-                src={lb.hero_image || 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Lookbook'}
+                src={lb.hero_image || PH}
                 alt={lb.collection_name}
                 fill
                 className="object-cover object-center img-hover-scale"
