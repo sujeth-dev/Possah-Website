@@ -1,5 +1,7 @@
 // @ts-check
 
+const isDev = process.env.NODE_ENV !== 'production'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -67,8 +69,8 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // Next.js inlines hydration scripts; Razorpay checkout script is loaded at runtime
-              "script-src 'self' 'unsafe-inline' checkout.razorpay.com",
+              // Next.js inlines hydration scripts; dev mode also uses eval() for HMR
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} checkout.razorpay.com`,
               // Next.js inlines critical CSS
               "style-src 'self' 'unsafe-inline'",
               // Images: self + R2 CDN + Supabase storage + Cloudinary (legacy)

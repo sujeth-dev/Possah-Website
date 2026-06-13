@@ -15,9 +15,13 @@ export async function api(method, path, body) {
   const timer      = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
   try {
+    const adminToken = env.ADMIN_TEST_SECRET
     const opts = {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken ? { 'X-Admin-Test-Token': adminToken } : {}),
+      },
       signal: controller.signal,
     }
     if (body !== undefined) opts.body = JSON.stringify(body)
