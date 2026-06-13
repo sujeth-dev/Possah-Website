@@ -107,7 +107,7 @@ export async function openRazorpayCheckout(opts: OpenRazorpayOptions): Promise<v
     currency: 'INR',
     name: 'The Possah',
     description: `Order #${opts.orderNumber}`,
-    image: 'https://thepossah.com/images/logo-rp.png',
+    image: `${window.location.origin}/images/logo-rp.png`,
     prefill: { name: opts.name, email: opts.email, contact: opts.phone },
     theme: { color: themeColour },
     handler: (response: Record<string, unknown>) => {
