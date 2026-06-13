@@ -18,6 +18,7 @@ import {
   EXPRESS_SHIPPING_COST as EXPRESS_COST,
   GIFT_WRAP_COST,
 } from '@/lib/constants'
+import { openRazorpayCheckout } from '@/lib/razorpay-client'
 
 // ─── Zod Schema ──────────────────────────────────────────────────────────────
 
@@ -119,68 +120,6 @@ const inputStyle: React.CSSProperties = {
 const inputErrorStyle: React.CSSProperties = {
   ...inputStyle,
   border: '1px solid var(--color-rose)',
-}
-
-// ─── Razorpay helper ─────────────────────────────────────────────────────────
-
-interface RazorpayOptions {
-  orderId: string
-  amount: number
-  orderNumber: string
-  name: string
-  email: string
-  phone: string
-  onSuccess: (paymentId: string, signature: string) => void
-  onPaymentFailed: (code: string, description: string) => void
-  onDismiss: () => void
-}
-
-function initRazorpay({
-  orderId,
-  amount,
-  orderNumber,
-  name,
-  email,
-  phone,
-  onSuccess,
-  onPaymentFailed,
-  onDismiss,
-}: RazorpayOptions) {
-  type RzpInstance = {
-    open: () => void
-    on: (event: string, handler: (resp: Record<string, unknown>) => void) => void
-  }
-  const RzpCtor = (window as Window & typeof globalThis & { Razorpay: new (opts: Record<string, unknown>) => RzpInstance }).Razorpay
-
-  const rz = new RzpCtor({
-    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    order_id: orderId,
-    amount,
-    currency: 'INR',
-    name: 'The Possah',
-    description: `Order #${orderNumber}`,
-    image: 'https://thepossah.com/images/logo-rp.png',
-    prefill: { name, email, contact: phone },
-    theme: { color: '#1F3A2D' },
-    handler: (response: Record<string, unknown>) => {
-      onSuccess(response.razorpay_payment_id as string, response.razorpay_signature as string)
-    },
-    modal: {
-      backdropclose: false,
-      escape: false,
-      handleback: true,
-      confirm_close: true,
-      ondismiss: onDismiss,
-    },
-  })
-
-  // FIX-PAY-01: capture payment.failed event from the modal
-  rz.on('payment.failed', (response: Record<string, unknown>) => {
-    const err = (response.error ?? {}) as Record<string, string>
-    onPaymentFailed(err.code ?? 'UNKNOWN', err.description ?? 'Payment failed')
-  })
-
-  rz.open()
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -415,17 +354,24 @@ export function CheckoutForm() {
         }
       }
 
-      if (typeof window !== 'undefined' && (window as Window & typeof globalThis & { Razorpay?: unknown }).Razorpay) {
-        // Razorpay script loaded
-        initRazorpay({
+      // openRazorpayCheckout loads the script if needed, then opens the modal.
+      // Throws if the script fails — the catch block handles the U-2 case.
+      try {
+        await openRazorpayCheckout({
           orderId: razorpay_order_id,
           amount,
           orderNumber: order_number,
           name: `${data.first_name} ${data.last_name}`,
           email: data.email,
           phone: data.phone,
+          // Stricter modal options for checkout (vs. the retry flow which uses defaults)
+          modalOptions: {
+            backdropclose: false,
+            escape: false,
+            handleback: true,
+            confirm_close: true,
+          },
           onPaymentFailed: (code, description) => {
-            // FIX-PAY-01: surface failure to user — do NOT clear cart
             setServerError(
               code === 'BAD_REQUEST_ERROR'
                 ? 'Payment failed due to a technical issue. Please try again.'
@@ -433,8 +379,7 @@ export function CheckoutForm() {
             )
             setSubmitting(false)
           },
-          onSuccess: async (paymentId: string, signature: string) => {
-            // Server-side HMAC verification before clearing cart
+          onSuccess: async (paymentId, signature) => {
             try {
               const verifyRes = await fetch('/api/payments/verify', {
                 method: 'POST',
@@ -446,17 +391,15 @@ export function CheckoutForm() {
                   order_number,
                 }),
               })
-              // Even if verify call fails, redirect — webhook is the safety net
               if (!verifyRes.ok) {
                 console.error('[checkout] Verify endpoint error — webhook will reconcile')
               }
             } catch {
               // Network error: webhook reconciles
             }
-            // GA4: purchase — fires after HMAC verify, before redirect
             trackPurchase({
               transactionId: order_number,
-              value: amount / 100, // convert paise → rupees
+              value: amount / 100,
               items: items.map((i) => ({
                 item_id: i.productId,
                 item_name: i.name,
@@ -476,10 +419,9 @@ export function CheckoutForm() {
             setServerError('Payment was cancelled. Your order is saved — complete payment to confirm.')
           },
         })
-      } else {
-        // FIX (audit U-2): the Razorpay script failed to load. Do NOT fake a
-        // successful order — the customer has not paid. Keep the cart and the
-        // saved pending order intact and surface a clear, retryable error.
+      } catch {
+        // U-2 fix: script failed to load or Razorpay constructor unavailable.
+        // Do NOT fake success — surface a clear retryable error.
         setServerError(
           'Payment could not be started — the secure payment window failed to load. Please check your connection and try again.',
         )

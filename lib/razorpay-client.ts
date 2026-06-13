@@ -40,6 +40,12 @@ export interface OpenRazorpayOptions {
   phone: string
   /** Hex theme colour. Defaults to brand green. */
   themeColour?: string
+  /**
+   * Extra Razorpay modal config merged on top of the default `{ ondismiss }`.
+   * Checkout uses stricter options (backdropclose, escape, handleback, confirm_close);
+   * the retry flow on /account/orders uses the defaults.
+   */
+  modalOptions?: Record<string, unknown>
 
   onSuccess: (paymentId: string, signature: string) => void
   onPaymentFailed: (code: string, description: string) => void
@@ -110,7 +116,7 @@ export async function openRazorpayCheckout(opts: OpenRazorpayOptions): Promise<v
         String(response.razorpay_signature ?? ''),
       )
     },
-    modal: { ondismiss: () => opts.onDismiss() },
+    modal: { ondismiss: () => opts.onDismiss(), ...opts.modalOptions },
   })
 
   rz.on('payment.failed', (response: Record<string, unknown>) => {
