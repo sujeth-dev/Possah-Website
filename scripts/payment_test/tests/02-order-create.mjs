@@ -11,8 +11,8 @@
  *   VALID-GIFT     — valid order with gift_wrap=true → total includes ₹150
  *   PRICE-SPOOF    — client sends lower price → server uses DB price
  *   PRICE-VERIFY   — server total = DB price × qty + shipping (not client total)
- *   NO-STOCK       — qty > beta variant stock (1) → 400
- *   INVALID-VARIANT— unknown variant_id → 400
+ *   NO-STOCK       — qty > beta variant stock (1) → 409
+ *   INVALID-VARIANT— unknown variant_id → 404
  *   INVALID-PRODUCT— variant exists but product inactive → 400 (requires separate seed)
  *   COUPON-PCT     — valid 20% coupon → discount applied to total
  *   COUPON-FLAT    — valid ₹300 flat coupon → discount applied
@@ -142,7 +142,7 @@ export async function run(ctx) {
       }],
       shipping: 199,
     }))
-    A.status('NO-STOCK', 'oversell qty=2, stock=1 → 400', res, 400)
+    A.status('NO-STOCK', 'oversell qty=2, stock=1 → 409', res, 409)
     A.ok('NO-STOCK', 'message mentions stock/available',
       res.data?.message?.toLowerCase().includes('stock') ||
       res.data?.message?.toLowerCase().includes('left') ||
@@ -164,7 +164,7 @@ export async function run(ctx) {
         size: 'XL',
       }],
     }))
-    A.status('INVALID-VARIANT', 'unknown variant_id → 400', res, 400)
+    A.status('INVALID-VARIANT', 'unknown variant_id → 404', res, 404)
     A.ok('INVALID-VARIANT', 'message mentions availability',
       typeof res.data?.message === 'string',
       'Error message must be present for invalid variant.')

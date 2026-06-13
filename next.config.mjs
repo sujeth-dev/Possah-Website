@@ -63,6 +63,24 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              // Next.js inlines hydration scripts; Razorpay checkout script is loaded at runtime
+              "script-src 'self' 'unsafe-inline' checkout.razorpay.com",
+              // Next.js inlines critical CSS
+              "style-src 'self' 'unsafe-inline'",
+              // Images: self + R2 CDN + Supabase storage + Cloudinary (legacy)
+              "img-src 'self' data: blob: cdn.thepossah.com *.r2.dev *.supabase.co res.cloudinary.com placehold.co",
+              "font-src 'self' data:",
+              // API calls: Supabase, Razorpay, Google Analytics
+              "connect-src 'self' *.supabase.co api.razorpay.com www.google-analytics.com www.googletagmanager.com",
+              // Razorpay checkout modal is iframed
+              "frame-src checkout.razorpay.com api.razorpay.com",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
         ],
       },
     ]

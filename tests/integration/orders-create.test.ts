@@ -58,7 +58,21 @@ const mockSupabaseClient = {
       }
     }
     if (table === 'orders') {
-      return {
+      // Fluent chain handles select/update/eq/lt/is/or/order/limit used by the
+      // lazy-expiry sweep; insert override handles the actual order creation.
+      const chain: Record<string, unknown> = {
+        data: [],
+        error: null,
+        select: () => chain,
+        update: () => chain,
+        eq: () => chain,
+        lt: () => chain,
+        is: () => chain,
+        or: () => chain,
+        order: () => chain,
+        limit: () => chain,
+        single: () => ({ data: null, error: null }),
+        maybeSingle: () => ({ data: null, error: null }),
         insert: () => ({
           select: () => ({
             single: () => ({
@@ -70,6 +84,7 @@ const mockSupabaseClient = {
           }),
         }),
       }
+      return chain
     }
     return { select: () => ({ data: [], error: null }) }
   }),
