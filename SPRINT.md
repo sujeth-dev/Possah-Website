@@ -1,9 +1,9 @@
 # The Possah — Go-Live Sprint
 
-**Last Updated:** May 2026
-**Status:** Phase 1 ✅ Phase 2 ✅ — This sprint is everything between current state and production.
-**Go-live target:** End of Sprint 4
-**Rule:** Nothing ships to production until the Go-Live Gate (end of Sprint 4) passes. Staging runs continuous deployment from `main`. Production is a manual promote after the gate.
+**Last Updated:** June 2026
+**Status:** Phase 1 ✅ Phase 2 ✅ Phase 3 ✅ Phase 4 ✅ Phase 5 ✅ — All sprints complete. Pending: domain attach + Razorpay webhook registration + Tier 5 audit re-score.
+**Go-live target:** Domain attach 2026-06-14 (tomorrow)
+**Rule:** Nothing ships to production until the Go-Live Gate passes. Staging runs continuous deployment from `main`. Production is a manual promote after the gate.
 
 > RLS and rate limiting are intentionally excluded. Not needed at current scale.
 > Vercel CDN handles DDoS. Razorpay handles payment fraud. No Upstash Redis required.

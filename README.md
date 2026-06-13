@@ -25,9 +25,20 @@ npm run dev          # start dev server
 npm run build        # production build
 npm run lint         # ESLint
 npm run typecheck    # tsc --noEmit
-npm test             # Vitest unit tests
+npm test             # Vitest unit tests (81 tests)
 npm run test:api     # admin API test suite
-npm run test:payment # payment flow test suite
+npm run test:payment # payment flow test suite (104 tests)
+npm run test:e2e     # Playwright E2E (50 tests — needs dev server running)
+```
+
+**Test loop before every deploy (in order):**
+```
+1. npm run typecheck   → 0 errors
+2. npm run lint        → 0 errors (1 pre-existing warning OK)
+3. npm test            → 81/81
+4. npm run test:payment → 104/104
+5. npm run build       → 0 errors
+6. npm run test:e2e    → 50/50
 ```
 
 ---
@@ -56,10 +67,16 @@ npm run test:payment # payment flow test suite
 Run all migrations in order, then seeds:
 
 ```
-supabase/migrations/001 → 025   run once each, in order
+supabase/migrations/001 → 029   run once each, in order
 seeds/seed_categories.sql       run after migrations
 seeds/seed_homepage_config.sql  run after seed_categories
 ```
+
+Key migrations:
+- `025` — pending order dedupe + confirmation email idempotency guard
+- `026` — addresses default + unique constraint
+- `028` — order status history table (audit trail for shipped/delivered emails)
+- `029` — stock decrement guard (atomic, runs exactly once per paid order)
 
 Real product data (42 products) is managed by the pipeline — not SQL seeds.
 See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
@@ -106,4 +123,71 @@ See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
 - **Image fallbacks** — `ImageWithFallback` client component for about/bridal/festive hero images
 - **Privacy + Terms pages** — `/privacy` and `/terms` created; footer anchors fixed
 - **Razorpay modal** — `handleback: true`, `confirm_close: true` to prevent viewport takeover on browser back
+
+### Phase 3 — Production-readiness audit (2026-06-13)
+
+Security, reliability, and validation hardening across the full stack.
+
+**Security (S-series):**
+- **S-1: Email injection closed** — user input (name, notes) HTML-escaped before it reaches Resend email templates; `escapeHtml()` in `lib/email.ts`
+- **S-2: Search injection closed** — `/api/search` now uses parameterised Supabase `.or()` builder, not raw string interpolation; invalid characters stripped before query
+- **S-3: Admin dev bypass removed** — `middleware.ts` no longer has a `NODE_ENV === 'development'` bypass for `/admin`; unauthenticated requests always redirect
+- **S-4: CSP header added** — `Content-Security-Policy` in `next.config.mjs` headers; scopes scripts, frames, images, and connect-src to known origins (Razorpay, Supabase, R2)
+
+**Reliability (H-series):**
+- **H-1: Stock decrement idempotency** — `lib/stock.ts` shared helper uses an atomic `UPDATE … WHERE stock_decremented_at IS NULL` claim; runs exactly once per paid order regardless of whether `/verify` or the Razorpay webhook fires first (or both)
+- **H-2: Webhook/verify race** — webhook now reconciles by `gateway_order_id` when the row's `gateway_order_id` no longer matches (retry scenario); order always flips to `paid`
+- **Migration 029** — adds `stock_decremented_at TIMESTAMPTZ` column + partial index to `orders` table; backfills existing paid orders
+
+**Validation (U-series):**
+- **U-1: Pagination hardened** — `/api/products` clamps `page` to a safe integer; `page=abc`, `page=-1`, `page=0` all behave as page 1
+- **U-2: Checkout network failure** — `CheckoutForm` now surfaces a retryable error if Razorpay script fails to load or the modal errors out; cart stays full, user is never sent to confirmation on failure
+
+**Test suite (new):**
+- 81 Vitest unit tests across 8 files: `razorpay.test.ts`, `coupons.test.ts`, `stock.test.ts`, `html-escape.test.ts`, `ProductGallery.test.tsx`, plus integration tests for orders-create, payment-webhook, payments-verify
+- Payment flow test suite: 104/104 (in `scripts/payment_test/`)
+- Next.js bumped to 14.2.35 (latest patched 14.2.x)
+- `ImageWithFallback` alt prop made required (closes `jsx-a11y/alt-text` lint warning)
+- Razorpay client consolidated — `CheckoutForm` now uses shared `openRazorpayCheckout` from `lib/razorpay-client.ts`
+
+### Phase 4 — Order management + PDP enhancements (2026-06-13)
+
+**Order status history + emails:**
+- **Migration 028** — `order_status_history` audit table; every fulfillment status change logged with `from_status`, `to_status`, `changed_by`, timestamp
+- Shipped/delivered emails fire automatically when admin updates status; de-duped: same `to_status` within 1 hour is skipped
+- **Resend confirmation** — button on admin order detail page; server-side rate-limited to once per 60s; every resend logged to history
+- **Email preview tool** — `/admin/email-preview`; pick any recent order + override recipient email; sends tagged `test=true` in Resend with no DB side-effects
+- Status timeline visible on admin order detail: dot + from→to + relative time + changed_by
+
+**PDP improvements:**
+- **Hover magnifier** — `MagnifierLens` component wraps main gallery image; desktop-only (detects `(hover: hover) and (pointer: fine)`); crosshair cursor, 300×400px zoom panel via `createPortal` to `document.body` (avoids overflow clipping); rAF-throttled mousemove
+- Mobile/touch: click → lightbox unchanged
+
+**Cart size swap:**
+- `availableVariants` stored on `CartItem` at `addToCart` time (same colour group)
+- Cart shows `<select>` dropdown for items with 2+ size options; out-of-stock options disabled
+- `updateVariant` action: merges qty if target variant already in cart, otherwise swaps in-place
+
+**E2E test expansion (Tier 4):**
+- 5 new Playwright spec files: `storefront.spec.ts`, `pdp.spec.ts`, `account.spec.ts`, `admin.spec.ts`, `search.spec.ts`
+- 50 tests total (25 chromium + 25 Mobile Chrome)
+- API mocking with `page.route()` for search and checkout flows
+
+### Phase 5 — SEO + speed + DB audit (2026-06-13)
+
+**SEO (already in place, verified in Phase 5 audit):**
+- `app/sitemap.ts` — dynamic sitemap; includes all active products, all categories, journal articles, static pages; changeFrequency + priority set per route type
+- `app/robots.ts` — disallows `/admin`, `/api`, `/account`, `/cart`, `/checkout`, `/order`; sitemap pointer to `https://thepossah.com/sitemap.xml`
+- PDP `generateMetadata` — uses admin-set `meta_title`/`meta_description` from DB with fallback to `product.name`/`product.description`; description trimmed to 160 chars; `og:title` + `og:description` included in openGraph block
+- Category pages — `generateMetadata` with canonical URL
+- PDP JSON-LD — `Product` schema + `BreadcrumbList` schema in `<script type="application/ld+json">` blocks
+- Category JSON-LD — `BreadcrumbList` schema on category listing pages
+
+**Speed (audited, all already correct):**
+- Hero slider: `priority={i === 0}` on first slide only; other slides lazy-loaded
+- Fonts: `next/font/google` with `display: 'swap'` for Inter, Playfair Display, JetBrains Mono — no `@import` from Google Fonts
+- Image `sizes` props: all `100vw` usages on genuinely full-width hero/banner images; product cards use `(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw`
+
+**DB audit:**
+- All columns on `orders` and `products` tables confirmed active in code — no deprecated columns to rename or drop
 
