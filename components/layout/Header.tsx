@@ -30,9 +30,10 @@ const NAV_ITEMS = [
     ],
   },
   { label: 'BEST SELLERS', href: '/best-sellers' },
-  { label: 'BRIDAL',       href: '/bridal'       },
-  { label: 'FESTIVE',      href: '/festive'      },
-  { label: 'ABOUT',        href: '/about'        },
+  { label: 'BRIDAL',          href: '/bridal'          },
+  { label: 'FESTIVE',         href: '/festive'         },
+  { label: 'MADE-TO-MEASURE', href: '/made-to-measure' },
+  { label: 'ABOUT',           href: '/about'           },
 ] as const
 
 type NavItem = (typeof NAV_ITEMS)[number]

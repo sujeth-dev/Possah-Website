@@ -176,7 +176,7 @@ export function Footer() {
                 opacity: 0.6,
               }}
             >
-              HAUTE COUTURE · BENGALURU
+              HAUTE COUTURE
             </p>
             <address
               className="not-italic"

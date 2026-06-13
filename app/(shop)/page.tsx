@@ -32,7 +32,7 @@ const FALLBACK_COLLECTION_BANNER = {
   headline: 'Chapter 04: Veil',
   subtitle: 'The Spring Collection',
   ctaLabel: 'Shop the Collection',
-  ctaLink: '/lookbook/spring-26',
+  ctaLink: '/festive',
 }
 
 const FALLBACK_OCCASION_TILES = [
