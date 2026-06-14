@@ -75,7 +75,7 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // Next.js inlines hydration scripts; dev mode also uses eval() for HMR
-              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} checkout.razorpay.com cdn.razorpay.com static.cloudflareinsights.com`,
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} checkout.razorpay.com cdn.razorpay.com static.cloudflareinsights.com www.googletagmanager.com`,
               // Next.js inlines critical CSS
               "style-src 'self' 'unsafe-inline'",
               // Images: self + R2 CDN + Supabase storage + Cloudinary (legacy)

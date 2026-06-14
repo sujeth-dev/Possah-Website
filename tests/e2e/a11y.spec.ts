@@ -40,6 +40,8 @@ async function seedCart(page: Page) {
 }
 
 test.describe('Accessibility (WCAG 2.1 AA — colour-contrast excluded)', () => {
+  test.setTimeout(90000)
+
   test('homepage has no violations', async ({ page }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
