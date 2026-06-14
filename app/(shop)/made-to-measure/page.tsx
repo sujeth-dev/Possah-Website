@@ -9,6 +9,13 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://thepossah.com/made-to-measure' },
 }
 
+const INTRO_LINES = [
+  'Some pieces are purchased. Others are created.',
+  'Our Made-to-Measure service allows each garment to be tailored specifically for you — from fit and proportions to finishing details.',
+  'The result is a piece that feels less like something bought and more like something that belongs to you.',
+  'Because the perfect fit should never be an afterthought.',
+]
+
 const STEPS = [
   {
     num: '01',
@@ -76,19 +83,22 @@ export default function MadeToMeasurePage() {
 
       {/* Intro */}
       <section className="section-gap">
-        <div className="container-site max-w-[720px]">
-          <p
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(20px, 3vw, 36px)',
-              fontWeight: '400',
-              color: 'var(--color-text)',
-              lineHeight: 1.4,
-              letterSpacing: '-0.01em',
-            }}
-          >
-            Some pieces are purchased. Others are created. Our Made-to-Measure service allows each garment to be tailored specifically for you — from fit and proportions to finishing details. The result is a piece that feels less like something bought and more like something that belongs to you. Because the perfect fit should never be an afterthought.
-          </p>
+        <div className="container-site max-w-[720px] flex flex-col gap-6">
+          {INTRO_LINES.map((line, i) => (
+            <p
+              key={i}
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(20px, 3vw, 36px)',
+                fontWeight: '400',
+                color: 'var(--color-text)',
+                lineHeight: 1.4,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {line}
+            </p>
+          ))}
         </div>
       </section>
 

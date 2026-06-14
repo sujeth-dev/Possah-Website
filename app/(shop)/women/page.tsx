@@ -154,9 +154,12 @@ function CategoryCard({
           sizes="(max-width: 768px) 50vw, 33vw"
         />
       ) : (
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: 'var(--color-surface-2, #e8e4de)' }}
+        <Image
+          src="https://cdn.thepossah.com/ui/placeholder.svg"
+          alt={label}
+          fill
+          className="object-cover object-center"
+          sizes="(max-width: 768px) 50vw, 33vw"
         />
       )}
       <div
@@ -223,7 +226,7 @@ export default async function WomenPage() {
         aria-label="Women — The Possah"
       >
         <Image
-          src="/images/women-hero.jpg"
+          src="https://cdn.thepossah.com/ui/placeholder.svg"
           alt="The Possah Women"
           fill
           priority

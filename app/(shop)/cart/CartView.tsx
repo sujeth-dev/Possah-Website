@@ -91,7 +91,7 @@ export function CartView() {
           </p>
         </div>
         <Link
-          href="/shop/sarees"
+          href="/women"
           className="inline-flex items-center justify-center px-10 py-3.5 transition-opacity duration-200 hover:opacity-80"
           style={{
             backgroundColor: 'var(--color-green)',
@@ -663,7 +663,7 @@ export function CartView() {
           </Link>
 
           <Link
-            href="/shop/sarees"
+            href="/women"
             className="text-center hover:opacity-60 transition-opacity duration-200"
             style={{
               fontFamily: 'var(--font-body)',

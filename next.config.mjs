@@ -49,6 +49,11 @@ const nextConfig = {
       'lucide-react',
     ],
   },
+  async redirects() {
+    return [
+      { source: '/shop', destination: '/women', permanent: false },
+    ]
+  },
   async headers() {
     return [
       {

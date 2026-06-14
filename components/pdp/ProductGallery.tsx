@@ -24,7 +24,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
   useEffect(() => { setMounted(true) }, [])
 
   const validImages = images.filter((img) => img.url?.trim())
-  const safeImages = validImages.length > 0 ? validImages : [{ url: 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah', alt: productName }]
+  const safeImages = validImages.length > 0 ? validImages : [{ url: 'https://cdn.thepossah.com/ui/placeholder.svg', alt: productName }]
   const active = safeImages[activeIndex] ?? safeImages[0]
 
   const goNext = useCallback(() => {

@@ -25,7 +25,7 @@ export default function CategoryError({
           <button onClick={reset} style={{ padding: '12px 24px', backgroundColor: 'var(--color-green)', color: 'var(--color-bg)', border: 'none', borderRadius: 'var(--radius-btn)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer' }}>
             Try again
           </button>
-          <Link href="/shop" style={{ padding: '12px 24px', border: '1px solid var(--color-text)', color: 'var(--color-text)', textDecoration: 'none', borderRadius: 'var(--radius-btn)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+          <Link href="/women" style={{ padding: '12px 24px', border: '1px solid var(--color-text)', color: 'var(--color-text)', textDecoration: 'none', borderRadius: 'var(--radius-btn)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
             All collections
           </Link>
         </div>

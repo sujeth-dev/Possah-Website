@@ -343,7 +343,7 @@ export default function AboutPage() {
             Discover pieces designed to become part of your story.
           </p>
           <Link
-            href="/shop/sarees"
+            href="/women"
             className="inline-flex items-center justify-center px-10 py-3.5 transition-opacity duration-200 hover:opacity-80 mt-2"
             style={{
               backgroundColor: 'var(--color-green)',

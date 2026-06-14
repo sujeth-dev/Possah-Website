@@ -27,7 +27,7 @@ export function NewArrivals({ products }: NewArrivalsProps) {
             New Arrivals
           </h2>
           <Link
-            href="/shop/sarees?sort=newest"
+            href="/women"
             className="flex items-center gap-1.5 transition-opacity duration-200 hover:opacity-60"
             style={{
               fontFamily: 'var(--font-body)',

@@ -70,7 +70,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
 
   const selectedVariant = colourVariants.find((v) => v.size === selectedSize) ?? null
   const inWishlist = isInWishlist(product.id)
-  const primaryImage = product.images[0]?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah'
+  const primaryImage = product.images[0]?.url ?? 'https://cdn.thepossah.com/ui/placeholder.svg'
   const showAudio = (product.is_new_arrival || product.is_top_selling) && !!product.audio_url
 
   // GA4: view_item on mount

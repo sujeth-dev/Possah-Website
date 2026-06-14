@@ -83,7 +83,7 @@ export default function CartError({
           </button>
 
           <Link
-            href="/shop"
+            href="/women"
             style={{
               padding: '12px 28px',
               border: '1px solid var(--color-text)',

@@ -37,7 +37,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       productId: product.id,
       variantId: null,
       name: product.name,
-      image: primaryImage?.url ?? 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah',
+      image: primaryImage?.url ?? 'https://cdn.thepossah.com/ui/placeholder.svg',
       price: product.price,
       slug: productHref,
     })
@@ -53,7 +53,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       <Link href={productHref} className="block relative overflow-hidden aspect-product">
         {/* Primary image */}
         <Image
-          src={primaryImage?.url || 'https://placehold.co/600x800/1F3A2D/F4ECDF.png?text=Possah'}
+          src={primaryImage?.url || 'https://cdn.thepossah.com/ui/placeholder.svg'}
           alt={primaryImage?.alt ?? product.name}
           fill
           priority={priority}

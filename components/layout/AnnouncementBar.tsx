@@ -41,7 +41,7 @@ export function AnnouncementBar() {
             <>
               NEW ARRIVALS:{' '}
               <Link
-                href="/shop/sarees"
+                href="/women"
                 className="underline underline-offset-2 hover:opacity-80 transition-opacity duration-200"
                 onClick={(e) => e.stopPropagation()}
               >

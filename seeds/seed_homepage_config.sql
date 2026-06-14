@@ -11,21 +11,21 @@ INSERT INTO homepage_config (
   '[
     {
       "id": "slide-1",
-      "image": "/images/placeholder-hero.jpg",
+      "image": "https://cdn.thepossah.com/ui/placeholder.svg",
       "headline": "she wants what she wants.",
       "subheadline": "Couture, off-duty. Spring ''26",
       "ctaLabel": "Shop the Collection",
-      "ctaLink": "/shop/sarees"
+      "ctaLink": "/women"
     }
   ]'::jsonb,
 
   -- Collection banner
   '{
-    "image": "/images/placeholder-banner.jpg",
+    "image": "https://cdn.thepossah.com/ui/placeholder.svg",
     "headline": "Chapter 04: Veil",
     "subtitle": "The Spring Collection",
     "ctaLabel": "Shop the Collection",
-    "ctaLink": "/lookbook/spring-26"
+    "ctaLink": "/festive"
   }'::jsonb,
 
   -- New arrival product IDs
@@ -33,15 +33,15 @@ INSERT INTO homepage_config (
 
   -- Occasion tiles (8 tiles)
   '[
-    { "id": "everyday",  "label": "EVERYDAY",  "image": "/images/placeholder-occasion.jpg", "link": "/shop/sarees?occasion=Everyday"  },
-    { "id": "brunch",    "label": "BRUNCH",    "image": "/images/placeholder-occasion.jpg", "link": "/shop/sarees?occasion=Brunch"    },
-    { "id": "workwear",  "label": "WORKWEAR",  "image": "/images/placeholder-occasion.jpg", "link": "/shop/co-ords?occasion=Workwear" },
-    { "id": "evening",   "label": "EVENING",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/lehengas?occasion=Evening"  },
-    { "id": "sangeet",   "label": "SANGEET",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/lehengas?occasion=Sangeet"  },
-    { "id": "mehendi",   "label": "MEHENDI",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/sarees?occasion=Mehendi"   },
-    { "id": "haldi",     "label": "HALDI",     "image": "/images/placeholder-occasion.jpg", "link": "/shop/kurta-sets?occasion=Haldi" },
-    { "id": "wedding",   "label": "WEDDING",   "image": "/images/placeholder-occasion.jpg", "link": "/shop/lehengas?occasion=Wedding"  },
-    { "id": "cocktail",  "label": "COCKTAIL",  "image": "/images/placeholder-occasion.jpg", "link": "/shop/sarees?occasion=Cocktail"  }
+    { "id": "everyday",  "label": "EVERYDAY",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Everyday"  },
+    { "id": "brunch",    "label": "BRUNCH",    "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Brunch"    },
+    { "id": "workwear",  "label": "WORKWEAR",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/co-ords?occasion=Workwear" },
+    { "id": "evening",   "label": "EVENING",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/lehengas?occasion=Evening"  },
+    { "id": "sangeet",   "label": "SANGEET",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/lehengas?occasion=Sangeet"  },
+    { "id": "mehendi",   "label": "MEHENDI",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Mehendi"   },
+    { "id": "haldi",     "label": "HALDI",     "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/kurta-sets?occasion=Haldi" },
+    { "id": "wedding",   "label": "WEDDING",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/lehengas?occasion=Wedding"  },
+    { "id": "cocktail",  "label": "COCKTAIL",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Cocktail"  }
   ]'::jsonb
 );
 
@@ -52,7 +52,7 @@ INSERT INTO lookbooks (
 ) VALUES (
   'cccccccc-0001-0001-0001-000000000001',
   'Possah Spring 26', 'Spring', 2026, 'Veil', 4,
-  '/images/placeholder-hero.jpg',
+  'https://cdn.thepossah.com/ui/placeholder.svg',
   'Veil is about the moment before — the pause, the preparation, the quiet certainty. These are not clothes for blending in. They are for the woman who has already decided.',
   TRUE
 ) ON CONFLICT DO NOTHING;

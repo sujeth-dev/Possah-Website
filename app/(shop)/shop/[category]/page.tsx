@@ -204,7 +204,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         aria-label={`${category.name} category`}
       >
         <Image
-          src={category.hero_image_url || 'https://placehold.co/1440x480/1F3A2D/F4ECDF.png?text=Category'}
+          src={category.hero_image_url || 'https://cdn.thepossah.com/ui/placeholder.svg'}
           alt={category.name}
           fill
           priority

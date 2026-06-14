@@ -36,7 +36,7 @@ export function CategorySplit() {
               ETHNIC
             </h2>
             <Link
-              href="/shop/sarees"
+              href="/women"
               className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-70"
               style={{
                 fontFamily: 'var(--font-body)',

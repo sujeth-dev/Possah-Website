@@ -83,6 +83,15 @@ See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
 
 ---
 
+## Images
+
+CDN: `https://cdn.thepossah.com` (Cloudflare R2 custom domain — `possah-media` bucket).
+All placeholder slots across the site are wired to `cdn.thepossah.com/ui/placeholder.svg` until real photography is ready.
+
+For upload paths, dimensions, and per-page replacement locations → **[`docs/image-guide.md`](./docs/image-guide.md)**
+
+---
+
 ## Current state (June 2026)
 
 - 42 products live — 16 dresses, 13 tops, 4 co-ords, 1 kurta set, 4 sarees, 4 lehengas
