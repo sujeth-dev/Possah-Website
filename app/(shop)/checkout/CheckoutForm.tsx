@@ -132,15 +132,11 @@ export function CheckoutForm() {
   const [serverError, setServerError] = useState<string | null>(null)
   const paymentDone = useRef(false)
 
-  // Wait for Zustand persist to rehydrate from localStorage before checking cart emptiness.
-  // Without this, count===0 on the first render (SSR/hydration) fires the redirect to /cart
-  // even when the cart actually has items in localStorage.
-  const [storeHydrated, setStoreHydrated] = useState(() => useCartStore.persist.hasHydrated())
-  useEffect(() => {
-    if (storeHydrated) return
-    const unsub = useCartStore.persist.onFinishHydration(() => setStoreHydrated(true))
-    return unsub
-  }, [storeHydrated])
+  // Zustand persist rehydrates synchronously from localStorage during client-side init,
+  // but on the first SSR render count===0 which would fire the redirect before items load.
+  // A simple mount flag is enough: by the time useEffect runs, the store has hydrated.
+  const [storeHydrated, setStoreHydrated] = useState(false)
+  useEffect(() => { setStoreHydrated(true) }, [])
 
   const hasGiftWrap = searchParams.get('gift') === '1'
   const coupon = useCouponStore()
