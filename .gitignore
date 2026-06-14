@@ -38,3 +38,14 @@ scripts/payment_test/reports/
 scripts/data_ops/backup/
 scripts/data_ops/category_map.json
 scripts/data_ops/image_manifest.json
+
+# Playwright output
+test-results/
+playwright-report/
+
+# Screenshot artifacts from manual test scripts
+scripts/screenshots/
+
+# Misc logs
+*.log
+.cowork-sync-test
