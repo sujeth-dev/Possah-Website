@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { cache } from 'react'
 import { createPublicClient } from '@/lib/supabase/public'
 
 import { FilterSidebar } from '@/components/shop/FilterSidebar'
@@ -12,7 +13,7 @@ import { YouMightAlsoLike } from '@/components/shop/YouMightAlsoLike'
 import { MobileFilterDrawer } from '@/components/shop/MobileFilterDrawer'
 import type { ProductCardData } from '@/app/(shop)/page'
 
-export const revalidate = 60
+export const revalidate = 3600
 
 const VALID_GENDERS = ['women', 'men', 'kids', 'unisex']
 
@@ -40,19 +41,14 @@ async function getCategoryAndProducts(
   searchParams: Record<string, string | string[] | undefined>
 ) {
   try {
-    const supabase = createPublicClient()
-
-    const { data: category } = await supabase
-      .from('categories')
-      .select('*')
-      .eq('slug', slug)
-      .single()
+    const category = await getCategoryBySlug(slug)
 
     if (!category) return { category: null, products: [], total: 0, relatedProducts: [] }
 
     // Redirect guard: if this category's gender doesn't match the URL gender, 404
     if (category.gender !== genderParam) return { category: null, products: [], total: 0, relatedProducts: [] }
 
+    const supabase = createPublicClient()
     let query = supabase
       .from('products')
       .select(`
@@ -139,24 +135,24 @@ async function getCategoryAndProducts(
   }
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+// cache() deduplicates the DB call between generateMetadata and CategoryPage within the same render
+const getCategoryBySlug = cache(async (slug: string) => {
   try {
     const supabase = createPublicClient()
-    const { data: category } = await supabase
-      .from('categories')
-      .select('name, slug')
-      .eq('slug', params.category)
-      .single()
-
-    if (!category) return { title: 'Shop' }
-
-    return {
-      title: `${category.name}`,
-      description: `Shop ${category.name} at The Possah — handcrafted luxury Indian fashion. Sarees, lehengas, co-ords and more.`,
-      alternates: { canonical: `https://thepossah.com/${params.gender}/${category.slug}` },
-    }
+    const { data } = await supabase.from('categories').select('*').eq('slug', slug).single()
+    return data
   } catch {
-    return { title: 'Shop' }
+    return null
+  }
+})
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const category = await getCategoryBySlug(params.category)
+  if (!category) return { title: 'Shop' }
+  return {
+    title: `${category.name}`,
+    description: `Shop ${category.name} at The Possah — handcrafted luxury Indian fashion. Sarees, lehengas, co-ords and more.`,
+    alternates: { canonical: `https://thepossah.com/${params.gender}/${category.slug}` },
   }
 }
 

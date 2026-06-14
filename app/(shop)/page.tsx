@@ -9,6 +9,8 @@ import { OccasionGrid } from '@/components/homepage/OccasionGrid'
 import { MtmCta } from '@/components/homepage/MtmCta'
 import { parseJson } from '@/lib/utils'
 
+export const revalidate = 3600
+
 export const metadata: Metadata = {
   title: 'The Possah — she wants what she wants.',
   description:
