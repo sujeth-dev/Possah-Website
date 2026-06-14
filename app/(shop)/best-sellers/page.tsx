@@ -8,7 +8,7 @@ import { MobileFilterDrawer } from '@/components/shop/MobileFilterDrawer'
 import { CategoryListing } from '@/components/shop/CategoryListing'
 import type { ProductCardData } from '@/app/(shop)/page'
 
-export const revalidate = 60
+export const revalidate = 3600
 
 const PAGE_SIZE = 24
 

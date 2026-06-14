@@ -196,9 +196,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!data) return { title: 'Product Not Found', robots: { index: false } }
   const { product, categoryName } = data
   const firstImage = product.images[0]?.url
-  const title = product.meta_title ?? product.name
+  const title = product.meta_title || product.name
   const description = product.meta_description
-    ?? product.description
+    || product.description
     ?? `${product.name} — ${product.fabric ?? categoryName} at The Possah. Handcrafted luxury Indian fashion.`
   return {
     title,
