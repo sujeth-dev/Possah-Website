@@ -1,6 +1,6 @@
 # The Possah — Image Guide
 
-> **Status as of 2026-06-13:** All missing images replaced with a branded CDN placeholder SVG. Zero broken image errors. When real photography is ready, follow this guide page-by-page to swap each placeholder for the real image.
+> **Status as of 2026-06-14:** All missing images replaced with a branded CDN placeholder SVG (`cdn.thepossah.com/ui/placeholder.svg`). Zero `placehold.co` references remain. Zero broken image errors. When real photography is ready, follow this guide page-by-page to swap each placeholder for the real image.
 
 ---
 
@@ -34,7 +34,7 @@ Wraps Next.js `Image`. If the primary `src` fails to load (network error, 404, 4
 
 ## 2. The Branded Placeholder SVG
 
-**Current URL:** `https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg`
+**Current URL:** `https://cdn.thepossah.com/ui/placeholder.svg`
 
 **Design:** 600×600 viewBox, deep green `#1F3A2D` background, cream `#F4ECDF` "P" monogram, thin separator, "THE POSSAH" wordmark, diamond ornaments. Crops cleanly to any aspect ratio (hero, portrait, square, landscape) via `object-fit: cover`.
 
@@ -135,11 +135,11 @@ For every image below, the process is:
 **To replace (both panels):**
 ```diff
 // components/homepage/CategorySplit.tsx  line 11
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/categories/ethnic-split.jpg"
 
 // line 60
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/categories/western-split.jpg"
 ```
 
@@ -180,7 +180,7 @@ Once all 6 are updated, remove the `const PH = ...` line.
 **To replace:**
 ```diff
 // components/homepage/MtmCta.tsx  line 84
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/mtm/mtm-cta.jpg"
 ```
 
@@ -197,7 +197,7 @@ Once all 6 are updated, remove the `const PH = ...` line.
 **To replace:**
 ```diff
 // app/(shop)/about/page.tsx  line ~35  (inside ImageWithFallback)
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/about/about-hero.jpg"
 ```
 
@@ -210,7 +210,7 @@ Once all 6 are updated, remove the `const PH = ...` line.
 **To replace:**
 ```diff
 // app/(shop)/about/page.tsx  line ~168  (inside ImageWithFallback)
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/about/founder.jpg"
 ```
 
@@ -227,7 +227,7 @@ Once all 6 are updated, remove the `const PH = ...` line.
 **To replace:**
 ```diff
 // app/(shop)/bridal/page.tsx  line ~101  (inside ImageWithFallback)
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/bridal/bridal-hero.jpg"
 ```
 
@@ -265,7 +265,7 @@ Once all 6 are updated, remove `const PH = ...`.
 **To replace:**
 ```diff
 // app/(shop)/festive/page.tsx  line ~101  (inside ImageWithFallback)
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/festive/festive-hero.jpg"
 ```
 
@@ -302,7 +302,7 @@ Once all 5 are updated, remove `const PH = ...`.
 **To replace:**
 ```diff
 // app/(shop)/made-to-measure/page.tsx  line ~46  (inside Image component)
-- src="https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg"
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
 + src="https://cdn.thepossah.com/mtm/mtm-hero.jpg"
 ```
 
@@ -318,10 +318,10 @@ Once all 5 are updated, remove `const PH = ...`.
 **To replace:** Update the array of 4 src strings in the `.map()` at line ~182:
 ```diff
 {[
-- 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
-- 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
-- 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
-- 'https://pub-bd1604488a4e4de8a91122f401a32be2.r2.dev/ui/placeholder.svg',
+- 'https://cdn.thepossah.com/ui/placeholder.svg',
+- 'https://cdn.thepossah.com/ui/placeholder.svg',
+- 'https://cdn.thepossah.com/ui/placeholder.svg',
+- 'https://cdn.thepossah.com/ui/placeholder.svg',
 + 'https://cdn.thepossah.com/mtm/mtm-1.jpg',
 + 'https://cdn.thepossah.com/mtm/mtm-2.jpg',
 + 'https://cdn.thepossah.com/mtm/mtm-3.jpg',
@@ -385,6 +385,55 @@ Also update the JSX fallback in two places (featured article + article grid):
 
 ---
 
+### 4.11 Women Page (`app/(shop)/women/page.tsx`)
+
+#### Section: Hero (line ~226)
+
+| # | Image | What it should show | Real CDN path | Dimensions |
+|---|---|---|---|---|
+| 1 | Women hero | Editorial — woman in Possah piece | `cdn.thepossah.com/women/women-hero.jpg` | 1440 × 820px |
+
+**To replace:**
+```diff
+// app/(shop)/women/page.tsx  line ~226
+- src="https://cdn.thepossah.com/ui/placeholder.svg"
++ src="https://cdn.thepossah.com/women/women-hero.jpg"
+```
+
+#### Section: Category cards (10 cards — 6 Ethnic + 4 Western)
+
+These pull `hero_image_url` from the `categories` table in Supabase. When null, the CDN placeholder shows. **Update via Supabase, not code.**
+
+| Category | Real CDN path | Dimensions |
+|---|---|---|
+| Sarees | `cdn.thepossah.com/categories/cat-sarees.jpg` | 400 × 600px (2:3) |
+| Lehengas | `cdn.thepossah.com/categories/cat-lehengas.jpg` | 400 × 600px |
+| Kurta Sets | `cdn.thepossah.com/categories/cat-kurta-sets.jpg` | 400 × 600px |
+| Dress Material | `cdn.thepossah.com/categories/cat-dress-material.jpg` | 400 × 600px |
+| Fabrics | `cdn.thepossah.com/categories/cat-fabrics.jpg` | 400 × 600px |
+| Blouses | `cdn.thepossah.com/categories/cat-blouses.jpg` | 400 × 600px |
+| Co-Ords | `cdn.thepossah.com/categories/cat-co-ords.jpg` | 400 × 600px |
+| Dresses | `cdn.thepossah.com/categories/cat-dresses.jpg` | 400 × 600px |
+| Tops | `cdn.thepossah.com/categories/cat-tops.jpg` | 400 × 600px |
+| Bottoms | `cdn.thepossah.com/categories/cat-bottoms.jpg` | 400 × 600px |
+
+**To update (Supabase SQL editor):**
+```sql
+UPDATE categories SET hero_image_url = 'https://cdn.thepossah.com/categories/cat-sarees.jpg' WHERE slug = 'sarees';
+UPDATE categories SET hero_image_url = 'https://cdn.thepossah.com/categories/cat-lehengas.jpg' WHERE slug = 'lehengas';
+-- repeat for each category
+```
+
+> Also applies to `/shop/[category]` hero banners — same `hero_image_url` column drives both.
+
+---
+
+### 4.12 Category Pages (`app/(shop)/shop/[category]/page.tsx`)
+
+The hero banner pulls `hero_image_url` from the `categories` table. Same column as Women page category cards (4.11). Update via Supabase SQL above — one update covers both `/women` cards and `/shop/[category]` hero.
+
+---
+
 ## 5. Product Images
 
 Product images are **100% database-driven** — uploaded via Admin → Products → each product's image gallery. These are stored in Cloudflare R2 and served via the CDN URL. No code changes needed.
@@ -438,6 +487,10 @@ Print this and check off each image as it is photographed, uploaded, and wired:
 - [ ] Category Circles — Kurta Sets (`categories/cat-kurta-sets.jpg`)
 - [ ] Category Circles — Tops (`categories/cat-tops.jpg`)
 - [ ] MtmCta promo image (`mtm/mtm-cta.jpg`)
+
+### Women
+- [ ] Women hero (`women/women-hero.jpg`)
+- [ ] Category cards ×10 (via Supabase `categories.hero_image_url` — see 4.11)
 
 ### About
 - [ ] About hero (`about/about-hero.jpg`)

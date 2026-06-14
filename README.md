@@ -200,3 +200,23 @@ Security, reliability, and validation hardening across the full stack.
 **DB audit:**
 - All columns on `orders` and `products` tables confirmed active in code — no deprecated columns to rename or drop
 
+### Phase 6 — Routing, image polish + CDN (2026-06-14)
+
+**Routing:**
+- `/shop` → `/women` permanent redirect added to `next.config.mjs` (was a 404)
+- All generic "Shop Collection" CTAs (CategorySplit, NewArrivals, AnnouncementBar, empty cart, About, 404 page, error pages) now point to `/women` instead of `/shop/sarees`
+
+**Images — zero `placehold.co` remaining:**
+- Women page hero + 10 category cards: null fallback swapped from plain grey `<div>` to CDN placeholder `Image`
+- `/shop/[category]` hero banner: `placehold.co` fallback → CDN placeholder
+- ProductGallery, ProductInfo, ProductCard: product image fallback → CDN placeholder
+- `seeds/seed_homepage_config.sql`: all `/images/placeholder-*.jpg` → CDN placeholder; `/lookbook/spring-26` → `/festive`; hero slide CTA → `/women`
+
+**CSP + CDN (previous session):**
+- Razorpay `connect-src` widened to `*.razorpay.com` (fixes `lumberjack.razorpay.com` console error)
+- R2 custom domain `cdn.thepossah.com` live; all hardcoded `r2.dev` URLs replaced; `NEXT_PUBLIC_R2_PUBLIC_URL` updated in Vercel
+
+**Copy:**
+- Made-to-Measure intro: single dense paragraph split into 4 separate prop-style lines with `gap-6` spacing
+
+
