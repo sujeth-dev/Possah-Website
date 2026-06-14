@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useId, cloneElement, isValidElement } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -41,9 +41,11 @@ const inputErrorStyle: React.CSSProperties = {
 }
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  const id = useId()
   return (
     <div className="flex flex-col gap-1.5">
       <label
+        htmlFor={id}
         style={{
           fontFamily: 'var(--font-mono)',
           fontSize: '10px',
@@ -54,7 +56,9 @@ function Field({ label, error, children }: { label: string; error?: string; chil
       >
         {label}
       </label>
-      {children}
+      {isValidElement(children)
+        ? cloneElement(children as React.ReactElement<{ id?: string }>, { id })
+        : children}
       {error && (
         <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-rose)' }}>
           {error}

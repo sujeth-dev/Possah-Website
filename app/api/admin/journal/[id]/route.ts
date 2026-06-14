@@ -3,7 +3,6 @@ import { requireAdminAuth } from '@/lib/admin-auth'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { slugify } from '@/lib/utils'
 
 const ArticleUpdateSchema = z.object({
   title:          z.string().min(1).max(200).optional(),
@@ -70,8 +69,8 @@ export async function PATCH(
     if (d.is_featured    !== undefined) updates.is_featured    = d.is_featured
     if (d.published_at   !== undefined) updates.published_at   = d.published_at
 
-    // Auto-slug if title changed without explicit slug
-    if (d.title && !d.slug) updates.slug = slugify(d.title)
+    // Do NOT auto-slug on PATCH — changing a title shouldn't silently change the URL.
+    // Callers that want a new slug must supply it explicitly.
 
     if (Object.keys(updates).length === 0) return NextResponse.json({ ok: true })
 

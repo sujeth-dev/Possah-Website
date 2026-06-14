@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId, cloneElement, isValidElement } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -74,9 +74,11 @@ function Field({
   required?: boolean
   children: React.ReactNode
 }) {
+  const id = useId()
   return (
     <div className="flex flex-col gap-1.5">
       <label
+        htmlFor={id}
         style={{
           fontFamily: 'var(--font-mono)',
           fontSize: '10px',
@@ -92,7 +94,9 @@ function Field({
           </span>
         )}
       </label>
-      {children}
+      {isValidElement(children)
+        ? cloneElement(children as React.ReactElement<{ id?: string }>, { id })
+        : children}
       {error && (
         <p
           role="alert"

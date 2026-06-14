@@ -1,6 +1,7 @@
 import { api } from '../lib/http.mjs'
 import { makeAssertCollection, printHeader } from '../lib/assert.mjs'
 import { BASE_URL } from '../lib/http.mjs'
+import { env } from '../lib/env.mjs'
 import { SEEDS } from '../seed.mjs'
 
 export async function run(ctx) {
@@ -72,7 +73,10 @@ export async function run(ctx) {
   // ── CSV EXPORT ────────────────────────────────────────────────────────────────
   {
     const url  = `${BASE_URL}/api/admin/orders?format=csv`
-    const res2 = await fetch(url)
+    const adminToken = env.ADMIN_TEST_SECRET
+    const res2 = await fetch(url, {
+      headers: adminToken ? { 'X-Admin-Test-Token': adminToken } : {},
+    })
     const ct   = res2.headers.get('content-type') ?? ''
     const cd   = res2.headers.get('content-disposition') ?? ''
     const body = await res2.text()
