@@ -193,7 +193,7 @@ async function getProductData(slug: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const data = await getProductData(params.slug)
-  if (!data) return { title: 'Product Not Found' }
+  if (!data) return { title: 'Product Not Found', robots: { index: false } }
   const { product, categoryName } = data
   const firstImage = product.images[0]?.url
   const title = product.meta_title ?? product.name

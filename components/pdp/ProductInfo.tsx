@@ -64,7 +64,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
   const [addedState, setAddedState] = useState<'idle' | 'added'>('idle')
   const [sizeError, setSizeError] = useState(false)
 
-  const colourVariants = colourMap.get(selectedColour)?.variants ?? []
+  const colourVariants = useMemo(() => colourMap.get(selectedColour)?.variants ?? [], [colourMap, selectedColour])
   const availableSizes = colourVariants
     .sort((a, b) => SIZE_ORDER.indexOf(a.size) - SIZE_ORDER.indexOf(b.size))
     .map((v) => v.size)
@@ -124,7 +124,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
       price: product.price,
       qty: 1,
     })
-  }, [selectedSize, selectedVariant, addToCart, product, primaryImage, selectedColour, colourMap])
+  }, [selectedSize, selectedVariant, addToCart, product, primaryImage, selectedColour, colourMap, colourVariants])
 
   const handleWishlist = () => {
     toggleItem({

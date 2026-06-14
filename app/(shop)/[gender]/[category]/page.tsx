@@ -148,7 +148,7 @@ const getCategoryBySlug = cache(async (slug: string) => {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const category = await getCategoryBySlug(params.category)
-  if (!category) return { title: 'Shop' }
+  if (!category) return { title: 'Shop', robots: { index: false } }
   return {
     title: `${category.name}`,
     description: `Shop ${category.name} at The Possah — handcrafted luxury Indian fashion. Sarees, lehengas, co-ords and more.`,
