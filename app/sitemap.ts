@@ -5,6 +5,7 @@ const BASE_URL = 'https://thepossah.com'
 
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
   { url: BASE_URL,                            priority: 1.0,  changeFrequency: 'daily'   },
+  { url: `${BASE_URL}/women`,               priority: 0.95, changeFrequency: 'daily'   },
   { url: `${BASE_URL}/about`,                 priority: 0.7,  changeFrequency: 'monthly' },
   { url: `${BASE_URL}/bridal`,                priority: 0.8,  changeFrequency: 'weekly'  },
   { url: `${BASE_URL}/festive`,               priority: 0.8,  changeFrequency: 'weekly'  },
@@ -22,11 +23,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Categories
   const { data: categories } = await supabase
     .from('categories')
-    .select('slug, updated_at')
+    .select('slug, gender, updated_at')
     .order('slug')
 
   const categoryRoutes: MetadataRoute.Sitemap = (categories ?? []).map((c) => ({
-    url: `${BASE_URL}/shop/${c.slug}`,
+    url: `${BASE_URL}/${c.gender ?? 'women'}/${c.slug}`,
     lastModified: c.updated_at ? new Date(c.updated_at) : undefined,
     priority: 0.9,
     changeFrequency: 'daily' as const,
@@ -37,15 +38,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from('products')
     .select(`
       slug, updated_at,
-      categories (slug)
+      categories (slug, gender)
     `)
     .eq('is_active', true)
     .order('created_at', { ascending: false })
 
   const productRoutes: MetadataRoute.Sitemap = (products ?? []).map((p) => {
-    const categorySlug = ((p.categories as unknown) as { slug: string } | null)?.slug ?? 'sarees'
+    const cat = ((p.categories as unknown) as { slug: string; gender: string } | null)
+    const categorySlug = cat?.slug ?? 'sarees'
+    const gender = cat?.gender ?? 'women'
     return {
-      url: `${BASE_URL}/shop/${categorySlug}/${p.slug}`,
+      url: `${BASE_URL}/${gender}/${categorySlug}/${p.slug}`,
       lastModified: p.updated_at ? new Date(p.updated_at) : undefined,
       priority: 0.8,
       changeFrequency: 'weekly' as const,

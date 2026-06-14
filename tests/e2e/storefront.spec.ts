@@ -22,8 +22,8 @@ test.describe('Storefront pages', () => {
     expect(response?.status()).toBe(200)
   })
 
-  test('/shop/sarees returns 200 with category heading', async ({ page }) => {
-    const response = await page.goto('/shop/sarees', { waitUntil: 'domcontentloaded' })
+  test('/women/sarees returns 200 with category heading', async ({ page }) => {
+    const response = await page.goto('/women/sarees', { waitUntil: 'domcontentloaded' })
     expect(response?.status()).toBe(200)
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 8000 })
   })
@@ -33,16 +33,23 @@ test.describe('Storefront pages', () => {
     await page.waitForLoadState('domcontentloaded')
     // Count all category links in the DOM (nav may be collapsed on mobile but links still exist)
     const count = await page.locator(
-      'a[href*="/shop/"], a[href="/new-in"], a[href="/women"], a[href="/best-sellers"]',
+      'a[href*="/women/"], a[href="/new-in"], a[href="/women"], a[href="/best-sellers"]',
     ).count()
     expect(count).toBeGreaterThan(0)
   })
 
-  test('/shop/sarees shows product grid container', async ({ page }) => {
-    await page.goto('/shop/sarees', { waitUntil: 'domcontentloaded' })
+  test('/women/sarees shows product grid container', async ({ page }) => {
+    await page.goto('/women/sarees', { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(2000)
     // The flex layout wrapping the filter sidebar and product area is always rendered
     const gridArea = page.locator('.flex-1.min-w-0').first()
     await expect(gridArea).toBeVisible({ timeout: 8000 })
+  })
+
+  test('/shop/sarees redirects to /women/sarees', async ({ page }) => {
+    const response = await page.goto('/shop/sarees', { waitUntil: 'domcontentloaded' })
+    // Next.js permanent redirect — browser follows it, end URL should be /women/sarees
+    expect(page.url()).toContain('/women/sarees')
+    expect(response?.status()).toBe(200)
   })
 })

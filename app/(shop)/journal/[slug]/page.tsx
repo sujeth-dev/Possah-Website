@@ -166,7 +166,7 @@ export default async function JournalArticlePage({ params }: PageProps) {
             ← All Stories
           </Link>
           <Link
-            href="/shop/sarees"
+            href="/women"
             className="hover:opacity-60 transition-opacity duration-200"
             style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}
           >

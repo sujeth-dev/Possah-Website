@@ -33,15 +33,15 @@ INSERT INTO homepage_config (
 
   -- Occasion tiles (8 tiles)
   '[
-    { "id": "everyday",  "label": "EVERYDAY",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Everyday"  },
-    { "id": "brunch",    "label": "BRUNCH",    "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Brunch"    },
-    { "id": "workwear",  "label": "WORKWEAR",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/co-ords?occasion=Workwear" },
-    { "id": "evening",   "label": "EVENING",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/lehengas?occasion=Evening"  },
-    { "id": "sangeet",   "label": "SANGEET",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/lehengas?occasion=Sangeet"  },
-    { "id": "mehendi",   "label": "MEHENDI",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Mehendi"   },
-    { "id": "haldi",     "label": "HALDI",     "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/kurta-sets?occasion=Haldi" },
-    { "id": "wedding",   "label": "WEDDING",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/lehengas?occasion=Wedding"  },
-    { "id": "cocktail",  "label": "COCKTAIL",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/shop/sarees?occasion=Cocktail"  }
+    { "id": "everyday",  "label": "EVERYDAY",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/sarees?occasion=Everyday"  },
+    { "id": "brunch",    "label": "BRUNCH",    "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/sarees?occasion=Brunch"    },
+    { "id": "workwear",  "label": "WORKWEAR",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/co-ords?occasion=Workwear" },
+    { "id": "evening",   "label": "EVENING",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/lehengas?occasion=Evening"  },
+    { "id": "sangeet",   "label": "SANGEET",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/lehengas?occasion=Sangeet"  },
+    { "id": "mehendi",   "label": "MEHENDI",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/sarees?occasion=Mehendi"   },
+    { "id": "haldi",     "label": "HALDI",     "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/kurta-sets?occasion=Haldi" },
+    { "id": "wedding",   "label": "WEDDING",   "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/lehengas?occasion=Wedding"  },
+    { "id": "cocktail",  "label": "COCKTAIL",  "image": "https://cdn.thepossah.com/ui/placeholder.svg", "link": "/women/sarees?occasion=Cocktail"  }
   ]'::jsonb
 );
 

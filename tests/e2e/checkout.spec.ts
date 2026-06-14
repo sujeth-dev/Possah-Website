@@ -15,13 +15,13 @@ test.describe('Checkout flow', () => {
         productId: 'test-product-id',
         variantId: 'test-variant-id',
         name: 'Test Silk Saree',
-        image: 'https://via.placeholder.com/300x400',
+        image: 'https://cdn.thepossah.com/ui/placeholder.svg',
         price: 9999,
         colour: 'Ivory',
         colourHex: '#F4ECDF',
         size: 'Free Size',
         qty: 1,
-        slug: 'test-silk-saree',
+        slug: '/women/sarees/test-silk-saree',
       }
       const state = { state: { items: [cartItem] }, version: 0 }
       localStorage.setItem('possah-cart', JSON.stringify(state))
@@ -31,7 +31,8 @@ test.describe('Checkout flow', () => {
   test('cart page shows items and proceeds to checkout', async ({ page }) => {
     await page.goto('/cart')
     await expect(page.getByText('Test Silk Saree')).toBeVisible()
-    await expect(page.getByText('₹9,999')).toBeVisible()
+    // Price appears multiple times (item, subtotal, total) — first is the line-item price
+    await expect(page.getByText('₹9,999').first()).toBeVisible()
 
     const checkoutBtn = page.getByRole('link', { name: /checkout/i })
     await expect(checkoutBtn).toBeVisible()
@@ -46,8 +47,8 @@ test.describe('Checkout flow', () => {
     const payButton = page.getByRole('button', { name: /pay/i })
     await payButton.click()
 
-    // Validation errors should appear
-    await expect(page.getByText(/first name required/i)).toBeVisible()
+    // Validation errors should appear (Zod message: min 2 chars)
+    await expect(page.getByText(/first name too short/i)).toBeVisible()
   })
 
   test('checkout form accepts valid inputs and opens Razorpay modal', async ({ page }) => {
@@ -120,8 +121,8 @@ test.describe('Checkout flow', () => {
 test.describe('Authentication', () => {
   test('sign-in page renders without errors', async ({ page }) => {
     await page.goto('/auth/signin')
-    await expect(page.getByText(/sign in/i)).toBeVisible()
-    await expect(page.getByText(/google/i)).toBeVisible()
+    await expect(page.getByRole('heading', { name: /sign in with google/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /continue with google/i })).toBeVisible()
   })
 
   test('admin redirect goes to sign-in when unauthenticated', async ({ page }) => {

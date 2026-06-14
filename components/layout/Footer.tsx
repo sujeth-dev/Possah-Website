@@ -10,7 +10,7 @@ const ATELIER_ADDRESS_LINES = [
 
 /* ── Link groups ──────────────────────────────────────────────────────────── */
 const SHOP_LINKS = [
-  { label: 'New In',       href: '/shop/sarees?sort=newest' },
+  { label: 'New In',       href: '/women/sarees?sort=newest' },
   { label: 'Best Sellers', href: '/best-sellers'            },
   { label: 'Bridal',       href: '/bridal'                  },
   { label: 'Festive',      href: '/festive'                 },
@@ -19,19 +19,19 @@ const SHOP_LINKS = [
 ] as const
 
 const ETHNIC_LINKS = [
-  { label: 'Sarees',         href: '/shop/sarees'         },
-  { label: 'Lehengas',       href: '/shop/lehengas'       },
-  { label: 'Kurta Sets',     href: '/shop/kurta-sets'     },
-  { label: 'Dress Material', href: '/shop/dress-material' },
-  { label: 'Fabrics',        href: '/shop/fabrics'        },
-  { label: 'Blouses',        href: '/shop/blouses'        },
+  { label: 'Sarees',         href: '/women/sarees'         },
+  { label: 'Lehengas',       href: '/women/lehengas'       },
+  { label: 'Kurta Sets',     href: '/women/kurta-sets'     },
+  { label: 'Dress Material', href: '/women/dress-material' },
+  { label: 'Fabrics',        href: '/women/fabrics'        },
+  { label: 'Blouses',        href: '/women/blouses'        },
 ] as const
 
 const WESTERN_LINKS = [
-  { label: 'Co-Ords', href: '/shop/co-ords' },
-  { label: 'Dresses', href: '/shop/dresses' },
-  { label: 'Tops',    href: '/shop/tops'    },
-  { label: 'Bottoms', href: '/shop/bottoms' },
+  { label: 'Co-Ords', href: '/women/co-ords' },
+  { label: 'Dresses', href: '/women/dresses' },
+  { label: 'Tops',    href: '/women/tops'    },
+  { label: 'Bottoms', href: '/women/bottoms' },
 ] as const
 
 const HELP_LINKS = [

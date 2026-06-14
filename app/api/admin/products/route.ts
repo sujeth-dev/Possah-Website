@@ -201,12 +201,13 @@ export async function POST(request: NextRequest) {
       // Fetch category slug for targeted revalidation
       const { data: cat } = await supabase
         .from('categories')
-        .select('slug')
+        .select('slug, gender')
         .eq('id', data.category_id)
         .single()
       if (cat?.slug) {
-        revalidatePath(`/shop/${cat.slug}`)
-        revalidatePath(`/shop/${cat.slug}/${data.slug}`)
+        const g = cat.gender ?? 'women'
+        revalidatePath(`/${g}/${cat.slug}`)
+        revalidatePath(`/${g}/${cat.slug}/${data.slug}`)
       }
     }
 

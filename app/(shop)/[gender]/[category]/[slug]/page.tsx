@@ -3,20 +3,26 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createPublicClient } from '@/lib/supabase/public'
 
-// FIX-FE-04: ISR — revalidate every hour. Static params generated at build time.
 export const revalidate = 3600
+
+const VALID_GENDERS = ['women', 'men', 'kids', 'unisex']
 
 export async function generateStaticParams() {
   const supabase = createPublicClient()
   const { data } = await supabase
     .from('products')
-    .select('slug, categories(slug)')
+    .select('slug, categories(slug, gender)')
     .eq('is_active', true)
-  return (data ?? []).map((p) => ({
-    category: ((p.categories as unknown) as { slug: string } | null)?.slug ?? 'uncategorised',
-    slug: p.slug,
-  }))
+  return (data ?? []).map((p) => {
+    const cat = (p.categories as unknown) as { slug: string; gender: string } | null
+    return {
+      gender:   cat?.gender   ?? 'women',
+      category: cat?.slug     ?? 'uncategorised',
+      slug:     p.slug,
+    }
+  })
 }
+
 import { formatPrice, isImageUrl } from '@/lib/utils'
 import { ProductGallery } from '@/components/pdp/ProductGallery'
 import { ProductInfo } from '@/components/pdp/ProductInfo'
@@ -26,19 +32,16 @@ import { ReviewsSection } from '@/components/pdp/ReviewsSection'
 import { YouMightAlsoLike } from '@/components/shop/YouMightAlsoLike'
 import type { ProductCardData } from '@/app/(shop)/page'
 
-// Keep formatPrice import used in structured data below
 void formatPrice
 
 interface PageProps {
-  params: { category: string; slug: string }
+  params: { gender: string; category: string; slug: string }
 }
 
 async function getProductData(slug: string) {
   try {
     const supabase = createPublicClient()
 
-    // FIX-FE-05: fetch product first (needed for product.id/category_id),
-    // then fan out the remaining 3 queries in parallel.
     const { data: product } = await supabase
       .from('products')
       .select(`
@@ -47,7 +50,7 @@ async function getProductData(slug: string) {
         price, compare_price, is_new_arrival, is_top_selling,
         is_active, audio_url, sub_line, category_id,
         meta_title, meta_description,
-        categories (slug, name),
+        categories (slug, name, gender),
         product_images (url, alt, position),
         product_tags (tag)
       `)
@@ -57,7 +60,6 @@ async function getProductData(slug: string) {
 
     if (!product) return null
 
-    // Parallel fan-out — all 4 secondary queries run simultaneously
     const [
       { data: variants },
       { data: reviews },
@@ -83,7 +85,7 @@ async function getProductData(slug: string) {
         .select(`
           id, slug, name, fabric, price, compare_price,
           is_new_arrival, is_top_selling,
-          categories (slug),
+          categories (slug, gender),
           product_images (url, alt, position),
           product_tags (tag)
         `)
@@ -97,7 +99,7 @@ async function getProductData(slug: string) {
         .select(`
           id, slug, name, fabric, price, compare_price,
           is_new_arrival, is_top_selling,
-          categories (slug),
+          categories (slug, gender),
           product_images (url, alt, position),
           product_tags (tag)
         `)
@@ -107,11 +109,17 @@ async function getProductData(slug: string) {
         .limit(5),
     ])
 
+    const catInfo = (product.categories as unknown) as { slug: string; name: string; gender: string } | null
+    const categorySlug   = catInfo?.slug   ?? ''
+    const categoryName   = catInfo?.name   ?? ''
+    const categoryGender = catInfo?.gender ?? 'women'
+
     const mapProductCard = (raw: typeof categoryProducts): ProductCardData[] =>
       (raw ?? []).map((p) => ({
         id: p.id,
         slug: p.slug,
-        category_slug: ((p.categories as unknown) as { slug: string } | null)?.slug ?? categorySlug,
+        category_slug:   ((p.categories as unknown) as { slug: string; gender: string } | null)?.slug   ?? categorySlug,
+        category_gender: ((p.categories as unknown) as { slug: string; gender: string } | null)?.gender ?? categoryGender,
         name: p.name,
         fabric: p.fabric,
         price: p.price,
@@ -140,9 +148,6 @@ async function getProductData(slug: string) {
       ? reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length
       : 0
 
-    const categorySlug = ((product.categories as unknown) as { slug: string; name: string } | null)?.slug ?? ''
-    const categoryName = ((product.categories as unknown) as { slug: string; name: string } | null)?.name ?? ''
-
     return {
       product: {
         id: product.id,
@@ -163,10 +168,12 @@ async function getProductData(slug: string) {
         audio_url: product.audio_url,
         sub_line: product.sub_line,
         category_slug: categorySlug,
+        category_gender: categoryGender,
         images: sortedImages,
         tags: ((product.product_tags as { tag: string }[]) ?? []).map((t) => t.tag),
       },
       categoryName,
+      categoryGender,
       variants: (variants ?? []).map((v) => ({
         id: v.id,
         colour: v.colour_name,
@@ -196,7 +203,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description: description.slice(0, 160),
-    alternates: { canonical: `https://thepossah.com/shop/${product.category_slug}/${product.slug}` },
+    alternates: { canonical: `https://thepossah.com/${params.gender}/${product.category_slug}/${product.slug}` },
     openGraph: {
       title,
       description: description.slice(0, 160),
@@ -206,6 +213,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {
+  if (!VALID_GENDERS.includes(params.gender)) notFound()
+
   const data = await getProductData(params.slug)
   if (!data) notFound()
 
@@ -226,7 +235,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
       availability: variants.length > 0
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
-      url: `https://thepossah.com/shop/${product.category_slug}/${product.slug}`,
+      url: `https://thepossah.com/${params.gender}/${product.category_slug}/${product.slug}`,
     },
     ...(reviews.length > 0 && {
       aggregateRating: {
@@ -241,10 +250,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://thepossah.com' },
-      { '@type': 'ListItem', position: 2, name: 'Shop', item: `https://thepossah.com/shop/${product.category_slug ?? params.category}` },
-      { '@type': 'ListItem', position: 3, name: categoryName, item: `https://thepossah.com/shop/${product.category_slug}` },
-      { '@type': 'ListItem', position: 4, name: product.name, item: `https://thepossah.com/shop/${product.category_slug}/${product.slug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home',                                    item: 'https://thepossah.com' },
+      { '@type': 'ListItem', position: 2, name: params.gender.charAt(0).toUpperCase() + params.gender.slice(1), item: `https://thepossah.com/${params.gender}` },
+      { '@type': 'ListItem', position: 3, name: categoryName,                               item: `https://thepossah.com/${params.gender}/${product.category_slug}` },
+      { '@type': 'ListItem', position: 4, name: product.name,                               item: `https://thepossah.com/${params.gender}/${product.category_slug}/${product.slug}` },
     ],
   }
 
@@ -260,9 +269,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
             style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
             <li><Link href="/" className="hover:opacity-70">Home</Link></li>
             <li aria-hidden="true">›</li>
-            <li><Link href="/shop/sarees" className="hover:opacity-70">Shop</Link></li>
+            <li><Link href={`/${params.gender}`} className="hover:opacity-70" style={{ textTransform: 'capitalize' }}>{params.gender}</Link></li>
             <li aria-hidden="true">›</li>
-            <li><Link href={`/shop/${product.category_slug}`} className="hover:opacity-70">{categoryName}</Link></li>
+            <li><Link href={`/${params.gender}/${product.category_slug}`} className="hover:opacity-70">{categoryName}</Link></li>
             <li aria-hidden="true">›</li>
             <li aria-current="page" style={{ color: 'var(--color-text)' }}>{product.name}</li>
           </ol>
@@ -277,7 +286,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Craft Behind */}
       {product.craft_story_body && (
         <CraftBehind
           craftStory={product.craft_story_body}

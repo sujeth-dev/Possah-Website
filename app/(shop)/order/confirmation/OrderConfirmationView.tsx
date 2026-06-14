@@ -385,7 +385,7 @@ export function OrderConfirmationView({
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3 w-full">
         <Link
-          href="/shop/sarees"
+          href="/women"
           className="flex-1 flex items-center justify-center py-3.5 transition-opacity duration-200 hover:opacity-80"
           style={{
             backgroundColor: 'var(--color-green)',

@@ -147,7 +147,7 @@ export default async function OrdersPage() {
             No orders yet.
           </p>
           <Link
-            href="/shop/sarees"
+            href="/women"
             className="inline-flex items-center justify-center px-8 py-3 transition-opacity duration-200 hover:opacity-80"
             style={{
               backgroundColor: 'var(--color-green)',

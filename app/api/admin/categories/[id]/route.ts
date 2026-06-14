@@ -10,6 +10,7 @@ const CategoryUpdateSchema = z.object({
   slug:           z.string().min(1).regex(/^[a-z0-9-]+$/).optional(),
   parent_id:      z.string().uuid().optional().nullable(),
   nav_section:    z.string().max(100).optional().nullable(),
+  gender:         z.enum(['women', 'men', 'kids', 'unisex']).optional(),
   hero_image_url: z.string().url().optional().nullable(),
   position:       z.number().int().min(0).optional(),
 })
@@ -36,6 +37,7 @@ export async function PATCH(
     if (data.slug !== undefined)           updateFields.slug           = data.slug
     if (data.parent_id !== undefined)      updateFields.parent_id      = data.parent_id
     if (data.nav_section !== undefined)    updateFields.nav_section    = data.nav_section
+    if (data.gender !== undefined)         updateFields.gender         = data.gender
     if (data.hero_image_url !== undefined) updateFields.hero_image_url = data.hero_image_url
     if (data.position !== undefined)       updateFields.position       = data.position
 

@@ -51,7 +51,7 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      { source: '/shop', destination: '/women', permanent: false },
+      { source: '/shop/:path*', destination: '/women/:path*', permanent: true },
     ]
   },
   async headers() {

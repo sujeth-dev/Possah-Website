@@ -44,7 +44,7 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
     occasion_tiles:    Array.from({ length: 8 }, (_, i) => ({
       image_url: '',
       label:     ['Everyday', 'Brunch', 'Workwear', 'Evening', 'Sangeet', 'Mehendi', 'Haldi', 'Wedding'][i],
-      link:      `/shop?occasion=${['everyday','brunch','workwear','evening','sangeet','mehendi','haldi','wedding'][i]}`,
+      link:      `/women/sarees?occasion=${['Everyday','Brunch','Workwear','Evening','Sangeet','Mehendi','Haldi','Wedding'][i]}`,
     })),
   }
 

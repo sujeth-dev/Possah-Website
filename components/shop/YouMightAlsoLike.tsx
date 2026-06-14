@@ -30,7 +30,7 @@ export function YouMightAlsoLike({
             {heading}
           </h2>
           <Link
-            href="/shop/sarees"
+            href="/women"
             className="flex items-center gap-1 hover:opacity-60 transition-opacity duration-200"
             style={{
               fontFamily: 'var(--font-body)',

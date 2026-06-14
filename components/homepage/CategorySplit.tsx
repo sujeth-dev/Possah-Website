@@ -83,7 +83,7 @@ export function CategorySplit() {
               WESTERN
             </h2>
             <Link
-              href="/shop/co-ords"
+              href="/women/co-ords"
               className="flex items-center gap-2 transition-opacity duration-200 hover:opacity-70"
               style={{
                 fontFamily: 'var(--font-body)',

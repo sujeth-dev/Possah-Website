@@ -307,7 +307,7 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
             </div>
             {savedCategorySlug && (
               <Link
-                href={`/shop/${savedCategorySlug}/${savedSlug}`}
+                href={`/women/${savedCategorySlug}/${savedSlug}`}
                 target="_blank"
                 style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: '#166534', fontWeight: '500', textDecoration: 'underline' }}
               >

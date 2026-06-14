@@ -12,6 +12,7 @@ interface CategoryRow {
   parent_id: string | null
   parent_name: string | null
   nav_section: string | null
+  gender: string | null
   hero_image_url: string | null
   position: number
   product_count: number
@@ -24,7 +25,7 @@ async function getCategories(): Promise<CategoryRow[]> {
     const { data: categories, error } = await supabase
       .from('categories')
       .select(`
-        id, name, slug, parent_id, nav_section, hero_image_url, position,
+        id, name, slug, parent_id, nav_section, gender, hero_image_url, position,
         parent:parent_id (name)
       `)
       .order('position')
@@ -56,6 +57,7 @@ async function getCategories(): Promise<CategoryRow[]> {
         parent_id:      cat.parent_id,
         parent_name:    (parent as { name?: string } | null)?.name ?? null,
         nav_section:    cat.nav_section,
+        gender:         (cat as unknown as { gender?: string | null }).gender ?? null,
         hero_image_url: cat.hero_image_url,
         position:       cat.position,
         product_count:  countMap[cat.id] ?? 0,

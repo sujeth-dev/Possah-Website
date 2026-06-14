@@ -452,7 +452,7 @@ export default async function AdminProductsPage({
                         </Link>
                         {product.category_slug && (
                           <Link
-                            href={`/shop/${product.category_slug}/${product.slug}`}
+                            href={`/women/${product.category_slug}/${product.slug}`}
                             target="_blank"
                             style={{
                               fontFamily: 'var(--font-body)',

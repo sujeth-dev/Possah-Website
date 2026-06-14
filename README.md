@@ -219,4 +219,30 @@ Security, reliability, and validation hardening across the full stack.
 **Copy:**
 - Made-to-Measure intro: single dense paragraph split into 4 separate prop-style lines with `gap-6` spacing
 
+### Phase 7 — Routing restructure: `/[gender]/[category]/[slug]` (2026-06-14)
+
+Complete routing overhaul for consistent URL namespace and future Men/Kids scaling.
+
+**What changed:**
+- New canonical URL structure: `/women/sarees/product-slug` (was `/shop/sarees/product-slug`)
+- `app/(shop)/[gender]/` dynamic segment replaces static `women/` folder; `[gender]/[category]/` replaces `shop/[category]/`
+- `notFound()` guard on all new routes — unrecognised gender values (e.g. `/sarees`) return 404
+- DB migration `030`: `ALTER TABLE categories ADD COLUMN gender TEXT NOT NULL DEFAULT 'women'`; all 13 existing categories automatically get `'women'`
+- `/shop/:path*` → `/women/:path*` permanent (308) wildcard redirect in `next.config.mjs`; preserves link equity and works for bookmarks/old search engine entries
+- `ProductCard.tsx` URL builder: `/${category_gender}/${category_slug}/${slug}` (was `/shop/...`)
+- `WishlistView`, `CartView`, `ProductInfo`: slug stored as full URL path; no prefix prepended
+- `revalidatePath` in admin product APIs updated to new path pattern
+- `sitemap.ts` emits `/${gender}/${slug}` for categories and `/${gender}/${category}/${slug}` for products
+- All hardcoded `/shop/` links removed from Header, Footer, CategoryCircles, CategorySplit, YouMightAlsoLike, journal, account/orders, order confirmation, HomepageEditor defaults, admin product list
+- `generateStaticParams` on all three new route levels; routes build as SSG (`●`)
+
+**Scaling to Men/Kids:** Create category in admin → set gender = Men → routes work automatically. No new files needed.
+
+**Test scripts:** `scripts/routing-check.sh` (typecheck + lint + build after each step), `scripts/route-audit.sh` (curl-based route existence audit against a running server)
+
+---
+
+**Key migrations pending (run in Supabase):**
+- `030_categories_gender.sql` — adds `gender` column to `categories`
+- `031_homepage_config_links.sql` — updates live `homepage_config` occasion tile links from `/shop/` to `/women/`
 

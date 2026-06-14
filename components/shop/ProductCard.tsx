@@ -22,7 +22,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const primaryImage = product.images[0]
   const hoverImage = product.images[1] ?? product.images[0]
   const inWishlist = isInWishlist(product.id)
-  const productHref = `/shop/${product.category_slug ?? 'shop'}/${product.slug}`
+  const productHref = `/${product.category_gender ?? 'women'}/${product.category_slug ?? 'women'}/${product.slug}`
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault()

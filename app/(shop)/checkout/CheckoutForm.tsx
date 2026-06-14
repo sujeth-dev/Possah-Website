@@ -132,6 +132,16 @@ export function CheckoutForm() {
   const [serverError, setServerError] = useState<string | null>(null)
   const paymentDone = useRef(false)
 
+  // Wait for Zustand persist to rehydrate from localStorage before checking cart emptiness.
+  // Without this, count===0 on the first render (SSR/hydration) fires the redirect to /cart
+  // even when the cart actually has items in localStorage.
+  const [storeHydrated, setStoreHydrated] = useState(() => useCartStore.persist.hasHydrated())
+  useEffect(() => {
+    if (storeHydrated) return
+    const unsub = useCartStore.persist.onFinishHydration(() => setStoreHydrated(true))
+    return unsub
+  }, [storeHydrated])
+
   const hasGiftWrap = searchParams.get('gift') === '1'
   const coupon = useCouponStore()
   const [couponInput, setCouponInput]     = useState(coupon.code)
@@ -267,11 +277,13 @@ export function CheckoutForm() {
     coupon.clearCoupon()
   }
 
-  // Redirect to cart if empty — skip after successful payment (paymentDone prevents race with clearCart)
+  // Redirect to cart if empty — skip after successful payment (paymentDone prevents race with clearCart).
+  // storeHydrated guard prevents premature redirect before Zustand loads from localStorage.
   useEffect(() => {
+    if (!storeHydrated) return
     if (paymentDone.current) return
     if (count === 0) router.replace('/cart')
-  }, [count, router])
+  }, [count, router, storeHydrated])
 
   const onSubmit = async (data: CheckoutFields) => {
     if (items.length === 0) return
@@ -433,7 +445,7 @@ export function CheckoutForm() {
     }
   }
 
-  if (count === 0) return null
+  if (!storeHydrated || count === 0) return null
 
   return (
     <>

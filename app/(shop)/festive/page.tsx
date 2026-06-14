@@ -49,7 +49,7 @@ async function getFestiveProducts(occasion: string | null): Promise<ProductCardD
       .select(`
         id, slug, name, fabric, price, compare_price,
         is_new_arrival, is_top_selling,
-        categories (slug),
+        categories (slug, gender),
         product_images (url, alt, position),
         product_tags (tag)
       `)
@@ -67,7 +67,8 @@ async function getFestiveProducts(occasion: string | null): Promise<ProductCardD
     return (data ?? []).map((p) => ({
       id: p.id,
       slug: p.slug,
-      category_slug: ((p.categories as unknown) as { slug: string } | null)?.slug ?? 'sarees',
+      category_slug:   ((p.categories as unknown) as { slug: string; gender: string } | null)?.slug   ?? 'sarees',
+      category_gender: ((p.categories as unknown) as { slug: string; gender: string } | null)?.gender ?? 'women',
       name: p.name,
       fabric: p.fabric,
       price: p.price,

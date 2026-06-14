@@ -11,6 +11,7 @@ interface Category {
   parent_id: string | null
   parent_name: string | null
   nav_section: string | null
+  gender: string | null
   hero_image_url: string | null
   position: number
   product_count: number
@@ -173,7 +174,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
           <table className="w-full min-w-[600px]" style={{ borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: 'var(--color-white)', borderBottom: '1px solid var(--color-border)' }}>
-                {['', 'Name', 'Slug', 'Parent', 'Nav Section', 'Products', 'Actions'].map((h) => (
+                {['', 'Name', 'Slug', 'Parent', 'Nav Section', 'Gender', 'Products', 'Actions'].map((h) => (
                   <th
                     key={h}
                     className="text-left px-4 py-3"
@@ -229,6 +230,11 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
                   <td className="px-4 py-3">
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
                       {cat.nav_section ?? '—'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                      {cat.gender}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -331,6 +337,8 @@ const NAV_SECTIONS = [
   'Accessories',
 ]
 
+const GENDERS = ['women', 'men', 'kids', 'unisex'] as const
+
 function CategoryModal({ category, allCategories, onSave, onClose }: CategoryModalProps) {
   const isEdit = Boolean(category)
 
@@ -338,6 +346,7 @@ function CategoryModal({ category, allCategories, onSave, onClose }: CategoryMod
   const [slug,         setSlug]         = useState(category?.slug         ?? '')
   const [parentId,     setParentId]     = useState(category?.parent_id    ?? '')
   const [navSection,   setNavSection]   = useState(category?.nav_section  ?? '')
+  const [gender,       setGender]       = useState(category?.gender       ?? 'women')
   const [heroImageUrl, setHeroImageUrl] = useState(category?.hero_image_url ?? '')
   const [slugManual,   setSlugManual]   = useState(isEdit)
   const [saving,       setSaving]       = useState(false)
@@ -363,6 +372,7 @@ function CategoryModal({ category, allCategories, onSave, onClose }: CategoryMod
         slug,
         parent_id:      parentId || null,
         nav_section:    navSection || null,
+        gender,
         hero_image_url: heroImageUrl || null,
       }
 
@@ -394,6 +404,7 @@ function CategoryModal({ category, allCategories, onSave, onClose }: CategoryMod
         parent_id:      parentId || null,
         parent_name:    allCategories.find((c) => c.id === parentId)?.name ?? null,
         nav_section:    navSection || null,
+        gender,
         hero_image_url: heroImageUrl || null,
         position:       category?.position ?? 0,
         product_count:  category?.product_count ?? 0,
@@ -492,6 +503,12 @@ function CategoryModal({ category, allCategories, onSave, onClose }: CategoryMod
               <select value={navSection} onChange={(e) => setNavSection(e.target.value)} style={modalInputStyle}>
                 <option value="">— None —</option>
                 {NAV_SECTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </ModalField>
+
+            <ModalField label="Gender" required>
+              <select value={gender} onChange={(e) => setGender(e.target.value)} style={modalInputStyle}>
+                {GENDERS.map((g) => <option key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</option>)}
               </select>
             </ModalField>
 

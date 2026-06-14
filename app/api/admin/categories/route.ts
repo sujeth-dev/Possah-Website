@@ -6,12 +6,13 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils'
 
 const CategorySchema = z.object({
-  name:        z.string().min(1, 'Name required').max(100),
-  slug:        z.string().min(1, 'Slug required').regex(/^[a-z0-9-]+$/),
-  parent_id:   z.string().uuid().optional().nullable(),
-  nav_section: z.string().max(100).optional().nullable(),
+  name:           z.string().min(1, 'Name required').max(100),
+  slug:           z.string().min(1, 'Slug required').regex(/^[a-z0-9-]+$/),
+  parent_id:      z.string().uuid().optional().nullable(),
+  nav_section:    z.string().max(100).optional().nullable(),
+  gender:         z.enum(['women', 'men', 'kids', 'unisex']).optional().default('women'),
   hero_image_url: z.string().url().optional().nullable(),
-  position:    z.number().int().min(0).optional(),
+  position:       z.number().int().min(0).optional(),
 })
 
 // GET /api/admin/categories — all categories
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
         slug:           data.slug || slugify(data.name),
         parent_id:      data.parent_id ?? null,
         nav_section:    data.nav_section ?? null,
+        gender:         data.gender ?? 'women',
         hero_image_url: data.hero_image_url ?? null,
         position,
       })

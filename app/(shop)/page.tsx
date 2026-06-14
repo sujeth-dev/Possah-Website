@@ -25,7 +25,7 @@ const FALLBACK_HERO_SLIDES = [
     headline: 'she wants what she wants.',
     subheadline: 'Couture, off-duty. Spring \'26',
     ctaLabel: 'Shop the Collection',
-    ctaLink: '/shop/sarees',
+    ctaLink: '/women',
   },
 ]
 
@@ -38,14 +38,14 @@ const FALLBACK_COLLECTION_BANNER = {
 }
 
 const FALLBACK_OCCASION_TILES = [
-  { id: 'everyday', label: 'EVERYDAY', image: PH, link: '/shop/sarees?occasion=Everyday' },
-  { id: 'brunch',   label: 'BRUNCH',   image: PH, link: '/shop/sarees?occasion=Brunch'   },
-  { id: 'workwear', label: 'WORKWEAR', image: PH, link: '/shop/co-ords?occasion=Workwear' },
-  { id: 'evening',  label: 'EVENING',  image: PH, link: '/shop/lehengas?occasion=Evening' },
-  { id: 'sangeet',  label: 'SANGEET',  image: PH, link: '/shop/lehengas?occasion=Sangeet' },
-  { id: 'mehendi',  label: 'MEHENDI',  image: PH, link: '/shop/sarees?occasion=Mehendi'  },
-  { id: 'haldi',    label: 'HALDI',    image: PH, link: '/shop/kurta-sets?occasion=Haldi' },
-  { id: 'wedding',  label: 'WEDDING',  image: PH, link: '/shop/lehengas?occasion=Wedding' },
+  { id: 'everyday', label: 'EVERYDAY', image: PH, link: '/women/sarees?occasion=Everyday' },
+  { id: 'brunch',   label: 'BRUNCH',   image: PH, link: '/women/sarees?occasion=Brunch'   },
+  { id: 'workwear', label: 'WORKWEAR', image: PH, link: '/women/co-ords?occasion=Workwear' },
+  { id: 'evening',  label: 'EVENING',  image: PH, link: '/women/lehengas?occasion=Evening' },
+  { id: 'sangeet',  label: 'SANGEET',  image: PH, link: '/women/lehengas?occasion=Sangeet' },
+  { id: 'mehendi',  label: 'MEHENDI',  image: PH, link: '/women/sarees?occasion=Mehendi'  },
+  { id: 'haldi',    label: 'HALDI',    image: PH, link: '/women/kurta-sets?occasion=Haldi' },
+  { id: 'wedding',  label: 'WEDDING',  image: PH, link: '/women/lehengas?occasion=Wedding' },
 ]
 
 export interface HeroSlide {
@@ -76,6 +76,7 @@ export interface ProductCardData {
   id: string
   slug: string
   category_slug: string
+  category_gender: string
   name: string
   fabric: string | null
   price: number
@@ -89,7 +90,7 @@ export interface ProductCardData {
 const PRODUCT_SELECT = `
   id, slug, name, fabric, price, compare_price,
   is_new_arrival, is_top_selling,
-  categories (slug),
+  categories (slug, gender),
   product_images (url, alt, position),
   product_tags (tag)
 `
@@ -181,14 +182,15 @@ export default async function HomePage() {
       id:    String(t.id    ?? t.label ?? i),
       label: String(t.label ?? ''),
       image: String(t.image ?? t.image_url ?? ''),
-      link:  String(t.link  ?? '/shop/sarees'),
+      link:  String(t.link  ?? '/women'),
     }))
   })()
 
   const newArrivalProducts: ProductCardData[] = (products ?? []).map((p) => ({
     id: p.id,
     slug: p.slug,
-    category_slug: ((p.categories as unknown) as { slug: string } | null)?.slug ?? 'sarees',
+    category_slug:   ((p.categories as unknown) as { slug: string; gender: string } | null)?.slug   ?? 'sarees',
+    category_gender: ((p.categories as unknown) as { slug: string; gender: string } | null)?.gender ?? 'women',
     name: p.name,
     fabric: p.fabric,
     price: p.price,

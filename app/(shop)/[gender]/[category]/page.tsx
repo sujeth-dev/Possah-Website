@@ -12,13 +12,14 @@ import { YouMightAlsoLike } from '@/components/shop/YouMightAlsoLike'
 import { MobileFilterDrawer } from '@/components/shop/MobileFilterDrawer'
 import type { ProductCardData } from '@/app/(shop)/page'
 
-// FIX-FE-04: ISR -- refresh every 60 seconds
 export const revalidate = 60
+
+const VALID_GENDERS = ['women', 'men', 'kids', 'unisex']
 
 const PAGE_SIZE = 24
 
 interface PageProps {
-  params: { category: string }
+  params: { gender: string; category: string }
   searchParams: Record<string, string | string[] | undefined>
 }
 
@@ -27,14 +28,20 @@ function getString(val: string | string[] | undefined): string | undefined {
   return val
 }
 
+export async function generateStaticParams() {
+  const supabase = createPublicClient()
+  const { data } = await supabase.from('categories').select('slug, gender')
+  return (data ?? []).map((c) => ({ gender: c.gender ?? 'women', category: c.slug }))
+}
+
 async function getCategoryAndProducts(
+  genderParam: string,
   slug: string,
   searchParams: Record<string, string | string[] | undefined>
 ) {
   try {
     const supabase = createPublicClient()
 
-    // Fetch category
     const { data: category } = await supabase
       .from('categories')
       .select('*')
@@ -43,33 +50,30 @@ async function getCategoryAndProducts(
 
     if (!category) return { category: null, products: [], total: 0, relatedProducts: [] }
 
-    // Build query
+    // Redirect guard: if this category's gender doesn't match the URL gender, 404
+    if (category.gender !== genderParam) return { category: null, products: [], total: 0, relatedProducts: [] }
+
     let query = supabase
       .from('products')
       .select(`
         id, slug, name, fabric, price, compare_price,
         is_new_arrival, is_top_selling,
-        categories (slug),
+        categories (slug, gender),
         product_images (url, alt, position),
         product_tags (tag)
       `, { count: 'exact' })
       .eq('category_id', category.id)
       .eq('is_active', true)
 
-    // Filters from URL
     const occasion = getString(searchParams.occasion)
-    const fabric = getString(searchParams.fabric)
-    const size = getString(searchParams.size)
-    const subLine = getString(searchParams.sub_line)
-    const page = parseInt(getString(searchParams.page) ?? '1', 10)
-    const sort = getString(searchParams.sort) ?? 'newest'
+    const fabric   = getString(searchParams.fabric)
+    const size     = getString(searchParams.size)
+    const subLine  = getString(searchParams.sub_line)
+    const page     = parseInt(getString(searchParams.page) ?? '1', 10)
+    const sort     = getString(searchParams.sort) ?? 'newest'
 
-    // sub_line — direct column on products, apply before exec
-    if (subLine) {
-      query = query.eq('sub_line', subLine)
-    }
+    if (subLine) query = query.eq('sub_line', subLine)
 
-    // size — must pre-fetch product IDs that have a variant with this size
     if (size) {
       const { data: sizeRows } = await supabase
         .from('product_variants')
@@ -77,34 +81,28 @@ async function getCategoryAndProducts(
         .eq('size', size)
         .gt('stock_qty', 0)
       const sizeIds = [...new Set((sizeRows ?? []).map((r) => r.product_id))]
-      if (sizeIds.length === 0) {
-        return { category, products: [], total: 0, relatedProducts: [] }
-      }
+      if (sizeIds.length === 0) return { category, products: [], total: 0, relatedProducts: [] }
       query = query.in('id', sizeIds)
     }
 
-    // Sort
     switch (sort) {
-      case 'price-asc':  query = query.order('price', { ascending: true });  break
-      case 'price-desc': query = query.order('price', { ascending: false }); break
+      case 'price-asc':   query = query.order('price', { ascending: true });  break
+      case 'price-desc':  query = query.order('price', { ascending: false }); break
       case 'bestselling': query = query.eq('is_top_selling', true).order('created_at', { ascending: false }); break
-      default:           query = query.order('created_at', { ascending: false })
+      default:            query = query.order('created_at', { ascending: false })
     }
 
-    // Pagination
     const from = (page - 1) * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-    query = query.range(from, to)
+    query = query.range(from, from + PAGE_SIZE - 1)
 
     const { data: products, count } = await query
 
-    // Fetch related products for YouMightAlsoLike
     const { data: related } = await supabase
       .from('products')
       .select(`
         id, slug, name, fabric, price, compare_price,
         is_new_arrival, is_top_selling,
-        categories (slug),
+        categories (slug, gender),
         product_images (url, alt, position),
         product_tags (tag)
       `)
@@ -117,7 +115,8 @@ async function getCategoryAndProducts(
       (raw ?? []).map((p) => ({
         id: p.id,
         slug: p.slug,
-        category_slug: ((p.categories as unknown) as { slug: string } | null)?.slug ?? fallbackCategorySlug ?? 'sarees',
+        category_slug:   ((p.categories as unknown) as { slug: string; gender: string } | null)?.slug   ?? fallbackCategorySlug ?? 'sarees',
+        category_gender: ((p.categories as unknown) as { slug: string; gender: string } | null)?.gender ?? genderParam,
         name: p.name,
         fabric: p.fabric,
         price: p.price,
@@ -130,21 +129,11 @@ async function getCategoryAndProducts(
         tags: ((p.product_tags as { tag: string }[]) ?? []).map((t) => t.tag),
       }))
 
-    // Post-filter by occasion (tag) and fabric (text match)
     let mapped = mapProducts(products, category.slug)
-    if (occasion) {
-      mapped = mapped.filter((p) => p.tags.includes(occasion))
-    }
-    if (fabric) {
-      mapped = mapped.filter((p) => p.fabric?.toLowerCase().includes(fabric.toLowerCase()))
-    }
+    if (occasion) mapped = mapped.filter((p) => p.tags.includes(occasion))
+    if (fabric)   mapped = mapped.filter((p) => p.fabric?.toLowerCase().includes(fabric.toLowerCase()))
 
-    return {
-      category,
-      products: mapped,
-      total: count ?? 0,
-      relatedProducts: mapProducts(related),
-    }
+    return { category, products: mapped, total: count ?? 0, relatedProducts: mapProducts(related) }
   } catch {
     return { category: null, products: [], total: 0, relatedProducts: [] }
   }
@@ -164,7 +153,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${category.name}`,
       description: `Shop ${category.name} at The Possah — handcrafted luxury Indian fashion. Sarees, lehengas, co-ords and more.`,
-      alternates: { canonical: `https://thepossah.com/shop/${category.slug}` },
+      alternates: { canonical: `https://thepossah.com/${params.gender}/${category.slug}` },
     }
   } catch {
     return { title: 'Shop' }
@@ -172,16 +161,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CategoryPage({ params, searchParams }: PageProps) {
+  if (!VALID_GENDERS.includes(params.gender)) notFound()
+
   const { category, products, total, relatedProducts } =
-    await getCategoryAndProducts(params.category, searchParams)
+    await getCategoryAndProducts(params.gender, params.category, searchParams)
 
   if (!category) notFound()
 
-  // page/hasMore handled client-side by CategoryListing
+  const genderLabel = params.gender.charAt(0).toUpperCase() + params.gender.slice(1)
 
   return (
     <>
-      {/* Structured data — BreadcrumbList */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -189,9 +179,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://thepossah.com' },
-              { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://thepossah.com/shop/sarees' },
-              { '@type': 'ListItem', position: 3, name: category.name, item: `https://thepossah.com/shop/${category.slug}` },
+              { '@type': 'ListItem', position: 1, name: 'Home',       item: 'https://thepossah.com' },
+              { '@type': 'ListItem', position: 2, name: genderLabel,  item: `https://thepossah.com/${params.gender}` },
+              { '@type': 'ListItem', position: 3, name: category.name, item: `https://thepossah.com/${params.gender}/${category.slug}` },
             ],
           }),
         }}
@@ -238,28 +228,21 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <ol className="flex items-center gap-2" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
             <li><Link href="/" className="hover:opacity-70">Home</Link></li>
             <li aria-hidden="true">›</li>
-            <li><Link href="/shop/sarees" className="hover:opacity-70">Shop</Link></li>
+            <li><Link href={`/${params.gender}`} className="hover:opacity-70">{genderLabel}</Link></li>
             <li aria-hidden="true">›</li>
             <li aria-current="page" style={{ color: 'var(--color-text)' }}>{category.name}</li>
           </ol>
         </nav>
       </div>
 
-      {/* Main content */}
       <div className="container-site pb-20">
-        {/* Mobile: filter drawer trigger is in SortBar */}
         <MobileFilterDrawer />
-
         <div className="flex gap-10 lg:gap-14">
-          {/* Sidebar — hidden on mobile (handled by drawer) */}
           <div className="hidden md:block sticky top-[104px] self-start">
             <FilterSidebar />
           </div>
-
-          {/* Product area */}
           <div className="flex-1 min-w-0">
             <SortBar resultCount={total} showFilterButton />
-
             <CategoryListing
               key={[
                 getString(searchParams.occasion),

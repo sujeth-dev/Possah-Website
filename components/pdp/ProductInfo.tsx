@@ -34,6 +34,7 @@ interface ProductInfoProps {
     audio_url: string | null
     sub_line: string | null
     category_slug: string
+    category_gender: string
     images: { url: string; alt: string | null }[]
   }
   variants: Variant[]
@@ -104,7 +105,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
       colourHex: colourMap.get(selectedColour)?.hex ?? '#000000',
       size: selectedSize,
       qty: 1,
-      slug: `${product.category_slug}/${product.slug}`,
+      slug: `/${product.category_gender}/${product.category_slug}/${product.slug}`,
       availableVariants: colourVariants.map((v) => ({
         variantId:  v.id,
         size:       v.size,
@@ -132,7 +133,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
       name: product.name,
       image: primaryImage,
       price: product.price,
-      slug: `${product.category_slug}/${product.slug}`,
+      slug: `/${product.category_gender}/${product.category_slug}/${product.slug}`,
     })
   }
 

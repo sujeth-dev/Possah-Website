@@ -138,8 +138,8 @@ function SaveRow({ isPending, saved, error }: { isPending: boolean; saved: boole
   )
 }
 
-const EMPTY_SLIDE: HeroSlide = { image_url: '', headline: '', sub_headline: '', cta_label: 'Shop Now', cta_link: '/shop' }
-const EMPTY_BANNER: CollectionBanner = { image_url: '', headline: '', subtitle: '', cta_link: '/shop' }
+const EMPTY_SLIDE: HeroSlide = { image_url: '', headline: '', sub_headline: '', cta_label: 'Shop Now', cta_link: '/women' }
+const EMPTY_BANNER: CollectionBanner = { image_url: '', headline: '', subtitle: '', cta_link: '/women' }
 
 export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   const router = useRouter()
@@ -164,7 +164,7 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   const [tiles, setTiles]           = useState<OccasionTile[]>(
     initial.occasion_tiles?.length === 8
       ? initial.occasion_tiles
-      : Array.from({ length: 8 }, (_, i) => (initial.occasion_tiles?.[i] ?? { image_url: '', label: `Occasion ${i + 1}`, link: '/shop' }))
+      : Array.from({ length: 8 }, (_, i) => (initial.occasion_tiles?.[i] ?? { image_url: '', label: `Occasion ${i + 1}`, link: '/women' }))
   )
   const [tilesSaved, setTilesSaved] = useState(false)
   const [tilesError, setTilesError] = useState<string | null>(null)
@@ -291,7 +291,7 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                 <Field label="Headline"       value={slide.headline}     onChange={v => updateSlide(i, 'headline', v)}     placeholder="New Collection" />
                 <Field label="Sub-headline"   value={slide.sub_headline} onChange={v => updateSlide(i, 'sub_headline', v)} placeholder="Optional sub-text" />
                 <Field label="CTA Label"      value={slide.cta_label}    onChange={v => updateSlide(i, 'cta_label', v)}    placeholder="Shop Now" />
-                <Field label="CTA Link"       value={slide.cta_link}     onChange={v => updateSlide(i, 'cta_link', v)}     placeholder="/shop/sarees" />
+                <Field label="CTA Link"       value={slide.cta_link}     onChange={v => updateSlide(i, 'cta_link', v)}     placeholder="/women/sarees" />
               </div>
             </div>
           ))}

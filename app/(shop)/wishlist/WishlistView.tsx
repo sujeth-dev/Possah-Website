@@ -33,7 +33,7 @@ export function WishlistView() {
           </p>
         </div>
         <Link
-          href="/shop/sarees"
+          href="/women"
           className="inline-flex items-center justify-center px-10 py-3.5 transition-opacity duration-200 hover:opacity-80"
           style={{
             backgroundColor: 'var(--color-green)',
@@ -87,7 +87,7 @@ export function WishlistView() {
         {items.map((item) => (
           <div key={`${item.productId}-${item.variantId ?? 'default'}`} role="listitem" className="flex flex-col gap-3">
             {/* Image */}
-            <Link href={`/shop/${item.slug}`} className="block relative overflow-hidden" style={{ aspectRatio: '3/4', borderRadius: 'var(--radius-card)', backgroundColor: 'var(--color-border)' }}>
+            <Link href={item.slug} className="block relative overflow-hidden" style={{ aspectRatio: '3/4', borderRadius: 'var(--radius-card)', backgroundColor: 'var(--color-border)' }}>
               <Image
                 src={item.image}
                 alt={item.name}
@@ -117,7 +117,7 @@ export function WishlistView() {
 
             {/* Info */}
             <div className="flex flex-col gap-1">
-              <Link href={`/shop/${item.slug}`} className="hover:opacity-70 transition-opacity duration-150">
+              <Link href={item.slug} className="hover:opacity-70 transition-opacity duration-150">
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: '500', color: 'var(--color-text)', lineHeight: 1.3 }}>
                   {item.name}
                 </p>

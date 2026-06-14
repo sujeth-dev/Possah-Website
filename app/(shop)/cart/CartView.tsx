@@ -146,7 +146,7 @@ export function CartView() {
               style={{ borderColor: 'var(--color-border)' }}
             >
               {/* Product image */}
-              <Link href={`/shop/${item.slug}`} className="flex-shrink-0 block" tabIndex={-1} aria-hidden="true">
+              <Link href={item.slug} className="flex-shrink-0 block" tabIndex={-1} aria-hidden="true">
                 <div
                   className="relative overflow-hidden"
                   style={{
@@ -170,7 +170,7 @@ export function CartView() {
               <div className="flex-1 flex flex-col gap-2 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <Link
-                    href={`/shop/${item.slug}`}
+                    href={item.slug}
                     className="hover:opacity-70 transition-opacity duration-150"
                   >
                     <p

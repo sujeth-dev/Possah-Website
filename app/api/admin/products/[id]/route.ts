@@ -73,7 +73,7 @@ export async function PATCH(
     // Check product exists
     const { data: existing, error: fetchErr } = await supabase
       .from('products')
-      .select('id, slug, categories:category_id (slug)')
+      .select('id, slug, categories:category_id (slug, gender)')
       .eq('id', params.id)
       .single()
 
@@ -174,14 +174,16 @@ export async function PATCH(
     }
 
     // Bust ISR cache so shop pages reflect changes immediately
-    const finalSlug = (data.slug ?? existing.slug) as string
-    const catSlug   = (existing.categories as { slug?: string } | null)?.slug
+    const finalSlug  = (data.slug ?? existing.slug) as string
+    const catInfo    = (existing.categories as { slug?: string; gender?: string } | null)
+    const catSlug    = catInfo?.slug
+    const catGender  = catInfo?.gender ?? 'women'
     revalidatePath('/', 'layout')
     revalidatePath('/festive')
     revalidatePath('/bridal')
     if (catSlug) {
-      revalidatePath(`/shop/${catSlug}`)
-      revalidatePath(`/shop/${catSlug}/${finalSlug}`)
+      revalidatePath(`/${catGender}/${catSlug}`)
+      revalidatePath(`/${catGender}/${catSlug}/${finalSlug}`)
     }
 
     return NextResponse.json({ id: params.id, ok: true })

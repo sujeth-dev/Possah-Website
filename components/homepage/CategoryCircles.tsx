@@ -4,12 +4,12 @@ import Link from 'next/link'
 const PH = 'https://cdn.thepossah.com/ui/placeholder.svg'
 
 const CATEGORIES = [
-  { label: 'SAREES',    href: '/shop/sarees',     image: PH },
-  { label: 'LEHENGAS',  href: '/shop/lehengas',   image: PH },
-  { label: 'CO-ORDS',   href: '/shop/co-ords',    image: PH },
-  { label: 'DRESSES',   href: '/shop/dresses',    image: PH },
-  { label: 'KURTA SETS',href: '/shop/kurta-sets', image: PH },
-  { label: 'TOPS',      href: '/shop/tops',       image: PH },
+  { label: 'SAREES',    href: '/women/sarees',     image: PH },
+  { label: 'LEHENGAS',  href: '/women/lehengas',   image: PH },
+  { label: 'CO-ORDS',   href: '/women/co-ords',    image: PH },
+  { label: 'DRESSES',   href: '/women/dresses',    image: PH },
+  { label: 'KURTA SETS',href: '/women/kurta-sets', image: PH },
+  { label: 'TOPS',      href: '/women/tops',       image: PH },
 ]
 
 export function CategoryCircles() {
