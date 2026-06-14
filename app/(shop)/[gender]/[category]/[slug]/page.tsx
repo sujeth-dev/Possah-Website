@@ -199,7 +199,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = product.meta_title || product.name
   const description = product.meta_description
     || product.description
-    ?? `${product.name} — ${product.fabric ?? categoryName} at The Possah. Handcrafted luxury Indian fashion.`
+    || `${product.name} — ${product.fabric ?? categoryName} at The Possah. Handcrafted luxury Indian fashion.`
   return {
     title,
     description: description.slice(0, 160),
