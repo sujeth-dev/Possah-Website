@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { Resend } from 'resend'
 import { escapeHtml } from '@/lib/html-escape'
+import { rateLimit, getIp } from '@/lib/rate-limit'
 
 const schema = z.object({
   name: z.string().min(1).max(100),
@@ -11,6 +12,12 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  // 5 submissions per IP per 10 minutes
+  const { success } = rateLimit(`contact:${getIp(req)}`, 5, 10 * 60 * 1000)
+  if (!success) {
+    return NextResponse.json({ message: 'Too many requests. Please wait before trying again.' }, { status: 429 })
+  }
+
   const resend = new Resend(process.env.RESEND_API_KEY)
   let body: unknown
   try {

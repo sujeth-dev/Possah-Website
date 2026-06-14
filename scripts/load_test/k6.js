@@ -1,33 +1,34 @@
 /**
- * k6 load test — Possah API
+ * k6 load test — Possah production readiness
  *
- * Targets two endpoints that process real money:
- *   1. POST /api/orders/create   — order creation + Razorpay order + DB insert
- *   2. POST /api/payments/webhook — Razorpay webhook (captured + failed events)
+ * Scenarios (100 VU total):
+ *   60 VU  GET  / and /women/sarees          — page latency under load
+ *   20 VU  GET  a PDP                        — ISR / edge cache hit
+ *   12 VU  POST /api/orders/create           — order creation path (fake UUIDs → 400, no DB writes)
+ *    8 VU  POST /api/payments/webhook        — HMAC rejection path
  *
  * BEFORE RUNNING:
- *   1. Install k6: https://k6.io/docs/get-started/installation/
- *   2. Run against a staging/preview deployment, NEVER production with live keys.
- *   3. Set BASE_URL env var:
- *        k6 run -e BASE_URL=https://your-preview.vercel.app scripts/load_test/k6.js
- *   4. For webhook tests you need a valid RAZORPAY_WEBHOOK_SECRET in the target env.
- *      The script generates *invalid* signatures deliberately — the webhook must 400.
- *      To test a valid signature path: set WEBHOOK_SECRET env var when running k6.
- *
- * SCENARIO:
- *   Ramp: 0 → 20 VUs over 30 s → hold 20 VUs for 2 min → ramp down 30 s
- *   Total test duration: ~3 min
+ *   Install k6: https://k6.io/docs/get-started/installation/
+ *   k6 run -e BASE_URL=https://thepossah.com scripts/load_test/k6.js
  *
  * THRESHOLDS (fail the run if breached):
- *   - http_req_duration p(95) < 3000 ms   (orders/create is slowest — Razorpay call)
- *   - http_req_failed   < 1%               (HTTP errors, not business-logic 4xx)
- *   - order_create_success_rate > 90%      (custom metric)
+ *   - http_req_duration p(95) < 1000 ms
+ *   - http_req_failed   < 1%
+ *   - order_create_success_rate > 50%   (fake UUIDs → expected 400s)
+ *   - webhook_duration_ms p(95) < 500 ms
  */
 
 import http from 'k6/http'
 import { check, sleep } from 'k6'
 import { Counter, Rate, Trend } from 'k6/metrics'
 import { randomString } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js'
+
+// Real product slugs sampled from production — update if products change
+const PDP_SLUGS = [
+  '/women/sarees/the-dusk-saree',
+  '/women/dresses/botanical-grace-midi',
+  '/women/lehengas/bridal-lehenga-set',
+]
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -46,40 +47,49 @@ const webhookRejected = new Counter('webhook_invalid_sig_rejected')
 
 // ─── k6 options ───────────────────────────────────────────────────────────────
 
+const RAMP_STAGES = [
+  { duration: '2m',  target: 100 },  // ramp up to 100 VU
+  { duration: '5m',  target: 100 },  // hold
+  { duration: '1m',  target: 0 },    // ramp down
+]
+
 export const options = {
   scenarios: {
+    browse_pages: {
+      executor: 'ramping-vus',
+      startVUs: 0,
+      stages: RAMP_STAGES,
+      gracefulRampDown: '15s',
+      exec: 'browsePages',
+      // 60% of VUs go here
+      env: { VU_SHARE: '0.6' },
+    },
+    view_pdp: {
+      executor: 'ramping-vus',
+      startVUs: 0,
+      stages: RAMP_STAGES.map(s => ({ ...s, target: Math.round(s.target * 0.2) })),
+      gracefulRampDown: '15s',
+      exec: 'viewPdp',
+    },
     order_creation: {
       executor: 'ramping-vus',
       startVUs: 0,
-      stages: [
-        { duration: '30s', target: 10 },   // ramp up
-        { duration: '2m',  target: 10 },   // hold
-        { duration: '30s', target: 0 },    // ramp down
-      ],
+      stages: RAMP_STAGES.map(s => ({ ...s, target: Math.round(s.target * 0.12) })),
       gracefulRampDown: '10s',
       exec: 'createOrder',
     },
     webhook_load: {
       executor: 'ramping-vus',
       startVUs: 0,
-      stages: [
-        { duration: '30s', target: 10 },
-        { duration: '2m',  target: 10 },
-        { duration: '30s', target: 0 },
-      ],
+      stages: RAMP_STAGES.map(s => ({ ...s, target: Math.round(s.target * 0.08) })),
       gracefulRampDown: '10s',
       exec: 'sendWebhook',
     },
   },
   thresholds: {
-    // Overall latency across all requests
-    http_req_duration: ['p(95)<3000'],
-    // HTTP-level failures (5xx, network errors) must be < 1%
+    http_req_duration: ['p(95)<1000'],
     http_req_failed: ['rate<0.01'],
-    // Business metric: order creation must succeed > 90% of the time
-    // (Some will fail with 400 because we use randomised data — that is expected)
     order_create_success_rate: ['rate>0.5'],
-    // Webhook endpoint must respond quickly — it runs HMAC, no external calls
     webhook_duration_ms: ['p(95)<500'],
   },
 }
@@ -188,6 +198,32 @@ function buildWebhookPayload(event) {
       },
     },
   }
+}
+
+// ─── Scenario: browsePages ───────────────────────────────────────────────────
+
+export function browsePages() {
+  const pages = ['/', '/women/sarees', '/women/dresses', '/festive', '/bridal']
+  const url = BASE_URL + pages[Math.floor(Math.random() * pages.length)]
+
+  const res = http.get(url, { tags: { name: 'browse_page' } })
+  check(res, {
+    'browse: 200': (r) => r.status === 200,
+    'browse: < 1s': (r) => r.timings.duration < 1000,
+  })
+  sleep(Math.random() * 3 + 1)
+}
+
+// ─── Scenario: viewPdp ───────────────────────────────────────────────────────
+
+export function viewPdp() {
+  const slug = PDP_SLUGS[Math.floor(Math.random() * PDP_SLUGS.length)]
+  const res = http.get(`${BASE_URL}${slug}`, { tags: { name: 'pdp' } })
+  check(res, {
+    'pdp: 200': (r) => r.status === 200,
+    'pdp: < 1s': (r) => r.timings.duration < 1000,
+  })
+  sleep(Math.random() * 4 + 2)
 }
 
 // ─── Scenario: createOrder ────────────────────────────────────────────────────

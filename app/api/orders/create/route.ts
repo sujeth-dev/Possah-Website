@@ -11,6 +11,7 @@ import {
   EXPRESS_SHIPPING_COST as EXPRESS_COST,
   GIFT_WRAP_COST,
 } from '@/lib/constants'
+import { rateLimit, getIp } from '@/lib/rate-limit'
 
 // =============================================================================
 // POST /api/orders/create
@@ -92,6 +93,12 @@ type ExistingPendingOrder = {
 }
 
 export async function POST(req: NextRequest) {
+  // 10 order attempts per IP per hour
+  const { success } = rateLimit(`orders:${getIp(req)}`, 10, 60 * 60 * 1000)
+  if (!success) {
+    return NextResponse.json({ message: 'Too many requests. Please try again later.' }, { status: 429 })
+  }
+
   // ── 1. Parse + validate request ───────────────────────────────────────────
   let body: unknown
   try {

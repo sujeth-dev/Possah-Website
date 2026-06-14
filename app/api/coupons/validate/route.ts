@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServerClient } from '@/lib/supabase/server'
+import { rateLimit, getIp } from '@/lib/rate-limit'
 
 const schema = z.object({
   code: z.string().min(1).max(32).transform(s => s.toUpperCase()),
@@ -8,6 +9,12 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  // 20 attempts per IP per 5 minutes — enough for legitimate use, blocks enumeration
+  const { success } = rateLimit(`coupon:${getIp(req)}`, 20, 5 * 60 * 1000)
+  if (!success) {
+    return NextResponse.json({ valid: false, message: 'Too many requests. Please wait.' }, { status: 429 })
+  }
+
   let body: unknown
   try {
     body = await req.json()
