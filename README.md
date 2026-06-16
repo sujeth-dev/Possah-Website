@@ -59,6 +59,8 @@ npm run test:e2e     # Playwright E2E (50 tests — needs dev server running)
 | **Test setup** | [`TESTING_PLAN.md`](./TESTING_PLAN.md) |
 | **Admin test suite** | [`scripts/admin_test/GUIDE.md`](./scripts/admin_test/GUIDE.md) |
 | **Creative direction, colours, fonts** | [`docs/archive/POSSAH_CREATIVE_DIRECTION.md`](./docs/archive/POSSAH_CREATIVE_DIRECTION.md) |
+| **SEO & social shareability** | [`docs/seo-guide.md`](./docs/seo-guide.md) |
+| **Release history** | [`CHANGELOG.md`](./CHANGELOG.md) |
 
 ---
 
@@ -218,6 +220,56 @@ Security, reliability, and validation hardening across the full stack.
 
 **Copy:**
 - Made-to-Measure intro: single dense paragraph split into 4 separate prop-style lines with `gap-6` spacing
+
+### Phase 8 — SEO & Social Shareability (2026-06-16)
+
+Full SEO and social sweep — structured data, Open Graph, Twitter Cards, dynamic OG images, share drawer, performance.
+
+**Bug fixes shipped in this phase:**
+- **Admin coupons** — DB errors now surface as a red banner instead of silently showing an empty list
+- **Admin homepage** — image key mismatch fixed; `getHomepageConfig()` normalises both `image_url`/`image` and `sub_headline`/`subheadline` keys; occasion tiles always padded to 8
+- **Order emails (shipped + delivered)** — "Track Your Order" / "View Your Order" CTA now links to `/account/orders/:orderNumber` (was generic `/account/orders`)
+
+**Structured data (JSON-LD) — all verified live:**
+- **Homepage:** `ClothingStore` schema (name, address, phone, sameAs: Instagram + Pinterest + YouTube) + `WebSite` schema with `SearchAction` (Google Sitelinks Searchbox)
+- **PDP:** `Product` schema (name, images, SKU, price, InStock/OutOfStock, aggregate rating) — existing; `BreadcrumbList` — existing; now confirmed live
+- **Category pages:** `BreadcrumbList` — existing
+- **FAQ:** `FAQPage` schema — 12 Q&A pairs auto-generated from `FAQ_SECTIONS` constant; confirmed live (Google Rich Results eligible)
+- **Journal articles:** `NewsArticle` schema — headline, datePublished, author, publisher logo
+
+**Open Graph & Twitter Cards:**
+- PDP: explicit `og:type: 'website'`, `twitter:card: summary_large_image`; product CDN image at 1200×630
+- Category pages: `og:image` emitted from `category.image_url` in DB (no image if field is empty)
+- Journal articles: `og:image` from `featured_image` field
+
+**Dynamic OG image for PDP:**
+- `app/(shop)/[gender]/[category]/[slug]/opengraph-image.tsx` — auto-generated 1200×630 PNG per product
+- Layout: product photo left, brand name + price + `thepossah.com` on dark green (`#1F3A2D`) right panel
+- Uses direct Supabase REST fetch (not JS client) + manual INR formatter — both required to avoid crashes in the `next/og` sandbox
+
+**Share Drawer:**
+- `components/pdp/ShareDrawer.tsx` — "Share" button below wishlist on every PDP
+- Mobile: triggers `navigator.share()` (native OS sheet); Desktop: Copy Link / WhatsApp / Pinterest popover
+
+**Performance:**
+- `ProductCard` hover image now gets `priority` prop — preloads for above-the-fold cards
+- `NewArrivals` passes `priority={i < 4}` to first 4 cards
+
+**Docs:**
+- `docs/seo-guide.md` — full guide to every SEO touchpoint, live verification status, action items
+
+**Live verification (2026-06-16):**
+
+| Page | What's live |
+|------|-------------|
+| Homepage | ClothingStore + WebSite schemas, OG tags ✅ |
+| PDP | Product + Breadcrumb schemas, og:image (product photo), Twitter card ✅ |
+| FAQ | FAQPage schema (12 Q&As) ✅ |
+| Journal | NewsArticle schema with publisher logo ✅ |
+| Dynamic OG image | Fixed (was 404) — live after 2026-06-16 deploy ✅ |
+| Category OG image | Code live; needs `image_url` set in Supabase per category ⚠️ |
+
+---
 
 ### Phase 7 — Routing restructure: `/[gender]/[category]/[slug]` (2026-06-14)
 
