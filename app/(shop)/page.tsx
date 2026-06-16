@@ -226,7 +226,29 @@ export default async function HomePage() {
               postalCode: '560113',
               addressCountry: 'IN',
             },
-            sameAs: ['https://www.instagram.com/thepossahhautecouture/'],
+            sameAs: [
+              'https://www.instagram.com/thepossahhautecouture/',
+              'https://www.pinterest.com/thepossah/',
+              'https://www.youtube.com/@thepossah',
+            ],
+          }),
+        }}
+      />
+
+      {/* Structured data — WebSite + SearchAction */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'The Possah',
+            url: 'https://thepossah.com',
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: 'https://thepossah.com/search?q={search_term_string}',
+              'query-input': 'required name=search_term_string',
+            },
           }),
         }}
       />

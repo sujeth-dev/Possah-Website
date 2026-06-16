@@ -80,7 +80,24 @@ const FAQ_SECTIONS = [
 ]
 
 export default function FAQPage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ_SECTIONS.flatMap(({ items }) =>
+      items.map(({ q, a }) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      }))
+    ),
+  }
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
     <div className="container-site py-16 pb-24 max-w-[800px] mx-auto">
       <p className="section-label mb-4">HELP</p>
       <h1
@@ -170,5 +187,6 @@ export default function FAQPage() {
         </Link>
       </div>
     </div>
+    </>
   )
 }

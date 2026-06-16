@@ -7,6 +7,7 @@ import { useCartStore } from '@/lib/store/cartStore'
 import { useWishlistStore } from '@/lib/store/wishlistStore'
 import { AudioPlayer } from '@/components/ui/AudioPlayer'
 import { AccordionItem as Accordion, AccordionGroup } from '@/components/ui/Accordion'
+import { ShareDrawer } from './ShareDrawer'
 import { Badge } from '@/components/ui/Badge'
 import { trackViewItem, trackAddToCart } from '@/lib/analytics'
 
@@ -305,6 +306,14 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
           </svg>
         </button>
       </div>
+
+      {/* Share */}
+      <ShareDrawer
+        url={`https://thepossah.com/${product.category_gender}/${product.category_slug}/${product.slug}`}
+        title={product.name}
+        image={primaryImage}
+        description={product.description ?? undefined}
+      />
 
       {/* WhatsApp */}
       <a

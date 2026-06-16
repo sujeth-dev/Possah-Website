@@ -61,6 +61,26 @@ export default async function JournalArticlePage({ params }: PageProps) {
 
   return (
     <>
+      {/* Structured data — NewsArticle */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            headline: article.title,
+            ...(article.featured_image && { image: article.featured_image }),
+            ...(article.published_at && { datePublished: article.published_at }),
+            author: { '@type': 'Organization', name: 'The Possah' },
+            publisher: {
+              '@type': 'Organization',
+              name: 'The Possah',
+              logo: { '@type': 'ImageObject', url: 'https://cdn.thepossah.com/1781254169345-name.webp' },
+            },
+          }),
+        }}
+      />
+
       {/* Hero */}
       {article.featured_image && (
         <div

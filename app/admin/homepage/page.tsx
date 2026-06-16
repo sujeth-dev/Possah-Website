@@ -54,13 +54,33 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
     const { data }  = await supabase.from('homepage_config').select('*').eq('id', SINGLETON_ID).maybeSingle()
     if (!data) return defaults
 
+    const rawSlides = (data.hero_slides as Record<string, string>[]) ?? []
+    const rawBanner = data.collection_banner as Record<string, string> | null
+    const rawTiles  = (data.occasion_tiles as Record<string, string>[]) ?? []
+
     return {
-      hero_slides:       (data.hero_slides as HeroSlide[]) ?? [],
-      collection_banner: data.collection_banner as CollectionBanner | null,
-      new_arrival_ids:   (data.new_arrival_ids as string[]) ?? [],
-      occasion_tiles:    (data.occasion_tiles as OccasionTile[])?.length === 8
-        ? data.occasion_tiles as OccasionTile[]
-        : defaults.occasion_tiles,
+      hero_slides: rawSlides.map(s => ({
+        image_url:    s.image_url    || s.image       || '',
+        headline:     s.headline     || '',
+        sub_headline: s.sub_headline || s.subheadline || '',
+        cta_label:    s.cta_label    || s.ctaLabel    || '',
+        cta_link:     s.cta_link     || s.ctaLink     || '',
+      })),
+      collection_banner: rawBanner ? {
+        image_url: rawBanner.image_url || rawBanner.image   || '',
+        headline:  rawBanner.headline  || '',
+        subtitle:  rawBanner.subtitle  || '',
+        cta_link:  rawBanner.cta_link  || rawBanner.ctaLink || '',
+      } : null,
+      new_arrival_ids: (data.new_arrival_ids as string[]) ?? [],
+      occasion_tiles: (() => {
+        const tiles = rawTiles.map(t => ({
+          image_url: t.image_url || t.image || '',
+          label:     t.label     || '',
+          link:      t.link      || '',
+        }))
+        return Array.from({ length: 8 }, (_, i) => tiles[i] ?? defaults.occasion_tiles[i])
+      })(),
     }
   } catch {
     return defaults

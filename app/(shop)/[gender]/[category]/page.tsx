@@ -153,6 +153,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${category.name}`,
     description: `Shop ${category.name} at The Possah — handcrafted luxury Indian fashion. Sarees, lehengas, co-ords and more.`,
     alternates: { canonical: `https://thepossah.com/${params.gender}/${category.slug}` },
+    openGraph: {
+      title: category.name,
+      description: `Shop ${category.name} at The Possah — handcrafted luxury Indian fashion.`,
+      ...(category.image_url && { images: [{ url: category.image_url, width: 1200, height: 630, alt: category.name }] }),
+    },
   }
 }
 

@@ -47,8 +47,8 @@ export function NewArrivals({ products }: NewArrivalsProps) {
         {/* Grid — 2 col mobile, 6 col desktop (2 rows) */}
         {displayed.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-8 md:gap-y-12">
-            {displayed.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {displayed.map((product, i) => (
+              <ProductCard key={product.id} product={product} priority={i < 4} />
             ))}
           </div>
         ) : (

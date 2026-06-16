@@ -205,6 +205,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: description.slice(0, 160),
     alternates: { canonical: `https://thepossah.com/${params.gender}/${product.category_slug}/${product.slug}` },
     openGraph: {
+      type: 'website',
       title,
       description: description.slice(0, 160),
       ...(firstImage && { images: [{ url: firstImage, width: 1200, height: 630, alt: product.name }] }),

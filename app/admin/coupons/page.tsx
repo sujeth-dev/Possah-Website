@@ -5,7 +5,20 @@ import { CouponManager } from './CouponManager'
 export const metadata: Metadata = { title: 'Coupons' }
 export const dynamic = 'force-dynamic'
 
-async function getCoupons() {
+interface Coupon {
+  id:              string
+  code:            string
+  type:            'percent' | 'flat' | 'free_shipping'
+  value:           number
+  min_order_value: number
+  usage_limit:     number | null
+  usage_count:     number
+  expiry_date:     string | null
+  is_active:       boolean
+  created_at:      string
+}
+
+async function getCoupons(): Promise<{ coupons: Coupon[]; dbError: string | null }> {
   try {
     const supabase = createAdminClient()
     const { data, error } = await supabase
@@ -13,16 +26,15 @@ async function getCoupons() {
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (error) { console.error('[Admin Coupons]', error); return [] }
-    return data ?? []
+    if (error) return { coupons: [], dbError: error.message }
+    return { coupons: data ?? [], dbError: null }
   } catch (err) {
-    console.error('[Admin Coupons] unexpected:', err)
-    return []
+    return { coupons: [], dbError: String(err) }
   }
 }
 
 export default async function AdminCouponsPage() {
-  const coupons = await getCoupons()
+  const { coupons, dbError } = await getCoupons()
 
   return (
     <div className="p-6 md:p-8">
@@ -34,6 +46,12 @@ export default async function AdminCouponsPage() {
           {coupons.length} coupon{coupons.length !== 1 ? 's' : ''}. Create discount codes for your customers.
         </p>
       </div>
+
+      {dbError && (
+        <p className="text-red-600 mb-4" style={{ fontFamily: 'var(--font-body)', fontSize: '13px' }}>
+          Error loading coupons: {dbError}
+        </p>
+      )}
 
       <CouponManager initialCoupons={coupons} />
     </div>

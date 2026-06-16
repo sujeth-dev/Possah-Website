@@ -188,7 +188,7 @@ export async function sendShippedEmail({
         Hi ${escapeHtml(customerName)}, your Possah order <strong>#${escapeHtml(orderNumber)}</strong> has been dispatched. It will reach you in 2–5 business days.
       </p>
       ${trackingBlock}
-      <a href="https://thepossah.com/account/orders"
+      <a href="https://thepossah.com/account/orders/${encodeURIComponent(orderNumber)}"
          style="display:inline-block;background-color:#1F3A2D;color:#F4ECDF;padding:14px 28px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;margin-bottom:24px;">
         TRACK YOUR ORDER
       </a>
@@ -228,7 +228,7 @@ export async function sendDeliveredEmail({
       <p style="color:#6B6B6B;font-size:15px;line-height:1.6;margin:0 0 24px;">
         Hi ${escapeHtml(customerName)}, your Possah order <strong>#${escapeHtml(orderNumber)}</strong> has been delivered. We hope it brings you as much joy to wear as it did to make.
       </p>
-      <a href="https://thepossah.com/account/orders"
+      <a href="https://thepossah.com/account/orders/${encodeURIComponent(orderNumber)}"
          style="display:inline-block;background-color:#1F3A2D;color:#F4ECDF;padding:14px 28px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;margin-bottom:24px;">
         VIEW YOUR ORDER
       </a>

@@ -69,6 +69,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             src={hoverImage.url}
             alt={hoverImage.alt ?? product.name}
             fill
+            priority={priority}
             quality={80}
             className="object-cover object-top transition-opacity duration-400"
             style={{ opacity: hovered ? 1 : 0 }}
