@@ -1,5 +1,4 @@
 import { ImageResponse } from 'next/og'
-import { createPublicClient } from '@/lib/supabase/public'
 
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
@@ -11,24 +10,34 @@ interface Props {
 
 async function getOgData(slug: string) {
   try {
-    const supabase = createPublicClient()
-    const { data } = await supabase
-      .from('products')
-      .select('name, price, product_images(url, position)')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .single()
-    if (!data) return null
-    const images = ((data.product_images as { url: string; position: number }[]) ?? [])
-      .sort((a, b) => a.position - b.position)
-    return { name: data.name as string, price: data.price as number, imageUrl: images[0]?.url ?? null }
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !key) return null
+
+    const res = await fetch(
+      `${url}/rest/v1/products?slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=name,price,product_images(url,position)&limit=1`,
+      {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        next: { revalidate: 3600 },
+      }
+    )
+    if (!res.ok) return null
+    const rows = await res.json() as { name: string; price: number; product_images: { url: string; position: number }[] }[]
+    const row = rows[0]
+    if (!row) return null
+    const images = (row.product_images ?? []).sort((a, b) => a.position - b.position)
+    return { name: row.name, price: row.price, imageUrl: images[0]?.url ?? null }
   } catch {
     return null
   }
 }
 
 function formatINR(price: number): string {
-  return `₹${price.toLocaleString('en-IN')}`
+  const s = String(Math.round(price))
+  const last3 = s.slice(-3)
+  const rest = s.slice(0, -3)
+  const grouped = rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3
+  return '₹' + grouped
 }
 
 export default async function Image({ params }: Props) {
