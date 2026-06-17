@@ -188,6 +188,31 @@ export default async function HomePage() {
     }))
   })()
 
+  const categorySplitImages = (() => {
+    const raw = parseJson<Record<string, unknown>>(config?.category_split, {})
+    return {
+      ethnicImage:  raw.ethnic_image  ? String(raw.ethnic_image)  : undefined,
+      westernImage: raw.western_image ? String(raw.western_image) : undefined,
+    }
+  })()
+
+  const categoryCirclesImages = (() => {
+    const raw = parseJson<Record<string, unknown>>(config?.category_circles, {})
+    return {
+      sarees:     raw.sarees     ? String(raw.sarees)     : null,
+      lehengas:   raw.lehengas   ? String(raw.lehengas)   : null,
+      co_ords:    raw.co_ords    ? String(raw.co_ords)    : null,
+      dresses:    raw.dresses    ? String(raw.dresses)    : null,
+      kurta_sets: raw.kurta_sets ? String(raw.kurta_sets) : null,
+      tops:       raw.tops       ? String(raw.tops)       : null,
+    }
+  })()
+
+  const mtmCtaImage = (() => {
+    const raw = parseJson<Record<string, unknown>>(config?.mtm_cta, {})
+    return raw.image_url ? String(raw.image_url) : undefined
+  })()
+
   const newArrivalProducts: ProductCardData[] = (products ?? []).map((p) => ({
     id: p.id,
     slug: p.slug,
@@ -254,12 +279,12 @@ export default async function HomePage() {
       />
 
       <HeroSlider slides={heroSlides} />
-      <CategorySplit />
-      <CategoryCircles />
+      <CategorySplit ethnicImage={categorySplitImages.ethnicImage} westernImage={categorySplitImages.westernImage} />
+      <CategoryCircles images={categoryCirclesImages} />
       <NewArrivals products={newArrivalProducts} />
       <CollectionBanner data={collectionBanner} />
       <OccasionGrid tiles={occasionTiles} />
-      <MtmCta />
+      <MtmCta imageUrl={mtmCtaImage} />
     </>
   )
 }

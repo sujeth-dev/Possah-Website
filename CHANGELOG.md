@@ -4,6 +4,69 @@ All notable changes to this project, newest first.
 
 ---
 
+## [Unreleased] — 2026-06-17 — Admin Image CRUD + Mobile Fixes + Cart Toast
+
+### Summary
+Three independent improvements: full admin control over all homepage section images, mobile layout fixes for the filter bar and order progress tracker, and an "Added to Bag" toast with a "Go to Bag" CTA after add-to-cart.
+
+### New Features
+
+#### Task 1 — Admin Homepage Complete Image CRUD
+Three homepage sections previously had hardcoded placeholder images with no admin access. All three are now fully configurable from `/admin/homepage`.
+
+| Section | Admin field | Upload path |
+|---|---|---|
+| Category Split (Ethnic / Western) | `category_split` | `uploads/homepage/category-split` |
+| Category Circles (6 categories) | `category_circles` | `uploads/homepage/circles` |
+| Made-to-Measure CTA | `mtm_cta` | `uploads/homepage/mtm` |
+
+- **DB migration** `032_homepage_config_image_sections.sql` — adds `category_split`, `category_circles`, `mtm_cta` JSONB columns to `homepage_config`
+- **API** — new Zod schemas + PATCH handler fields for all three sections
+- **Admin editor** — three new form sections with `ImageUploadField` components, save handlers, and saved/error state (consistent with existing sections)
+- **Homepage components** — `CategorySplit`, `CategoryCircles`, `MtmCta` now accept optional image props; fall back to placeholder when empty
+
+#### Task 4 — Add-to-Cart "Go to Bag" Toast
+After adding a product to the bag, a toast notification now appears showing the product thumbnail, name, price, and a "Go to Bag →" link to `/cart`.
+
+- `lib/store/cartToastStore.ts` — new ephemeral Zustand store (no persistence)
+- `components/ui/AddedToBagToast.tsx` — toast component: green brand colours, `role="status"` / `aria-live="polite"`, auto-dismisses at 4s, timer resets on rapid re-adds
+- Mounted in `app/(shop)/layout.tsx`
+- CSS: `@keyframes toastSlideUp` + `.toast-position` responsive class in `globals.css` (bottom-centre on mobile, top-right on desktop ≥768px)
+
+### Bug Fixes / Mobile Fixes
+
+#### Task 2a — SortBar mobile layout
+The filter button (10px mono uppercase) previously sat inline with "Showing X pieces" (13px body font), creating visual mismatch. Replaced with a two-row mobile layout:
+- Row 1: Filters button (left) + Sort dropdown (right)
+- Row 2: Piece count in matching mono style
+- Desktop layout unchanged.
+
+#### Task 2b — OrderProgressBar on mobile
+- **Connecting line** — replaced fragile `margin: '-22px auto 0'` negative-margin hack with `position: absolute` anchored at `top: CIRCLE_SIZE / 2`. Line now correctly centres on circles at all screen widths.
+- **Label overflow** — step labels (`"Confirmed"`, etc.) at 10px + letter-spacing overflowed on 280–320px screens. Non-active labels now hidden below `sm` breakpoint; only the active step label shows. All 5 circles remain visible for progress context.
+
+### Files Changed
+- `supabase/migrations/032_homepage_config_image_sections.sql` *(new)*
+- `lib/store/cartToastStore.ts` *(new)*
+- `components/ui/AddedToBagToast.tsx` *(new)*
+- `scripts/verify/task1-homepage-images.js` *(new)*
+- `scripts/verify/task2-mobile-ui.js` *(new)*
+- `scripts/verify/task4-cart-toast.js` *(new)*
+- `app/api/admin/homepage/route.ts`
+- `app/admin/homepage/HomepageEditor.tsx`
+- `app/admin/homepage/page.tsx`
+- `components/homepage/CategorySplit.tsx`
+- `components/homepage/CategoryCircles.tsx`
+- `components/homepage/MtmCta.tsx`
+- `app/(shop)/page.tsx`
+- `app/(shop)/layout.tsx`
+- `components/pdp/ProductInfo.tsx`
+- `components/shop/SortBar.tsx`
+- `components/account/OrderProgressBar.tsx`
+- `styles/globals.css`
+
+---
+
 ## [Phase 8] — 2026-06-16 — SEO & Social Shareability
 
 ### Summary

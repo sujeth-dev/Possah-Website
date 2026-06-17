@@ -31,6 +31,9 @@ interface HomepageConfig {
   collection_banner: CollectionBanner | null
   new_arrival_ids:   string[]
   occasion_tiles:    OccasionTile[]
+  category_split?:   { ethnic_image?: string; western_image?: string }
+  category_circles?: { sarees?: string; lehengas?: string; co_ords?: string; dresses?: string; kurta_sets?: string; tops?: string }
+  mtm_cta?:          { image_url?: string }
 }
 
 // Must stay in sync with the constant in app/api/admin/homepage/route.ts
@@ -46,6 +49,9 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
       label:     ['Everyday', 'Brunch', 'Workwear', 'Evening', 'Sangeet', 'Mehendi', 'Haldi', 'Wedding'][i],
       link:      `/women/sarees?occasion=${['Everyday','Brunch','Workwear','Evening','Sangeet','Mehendi','Haldi','Wedding'][i]}`,
     })),
+    category_split:   {},
+    category_circles: {},
+    mtm_cta:          {},
   }
 
   try {
@@ -81,6 +87,9 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
         }))
         return Array.from({ length: 8 }, (_, i) => tiles[i] ?? defaults.occasion_tiles[i])
       })(),
+      category_split:   (data.category_split   as HomepageConfig['category_split'])   ?? {},
+      category_circles: (data.category_circles as HomepageConfig['category_circles']) ?? {},
+      mtm_cta:          (data.mtm_cta          as HomepageConfig['mtm_cta'])          ?? {},
     }
   } catch {
     return defaults

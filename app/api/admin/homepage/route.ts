@@ -25,11 +25,32 @@ const OccasionTileSchema = z.object({
   link:      z.string().max(200),
 })
 
+const CategorySplitSchema = z.object({
+  ethnic_image:  z.string().url().optional().nullable(),
+  western_image: z.string().url().optional().nullable(),
+})
+
+const CategoryCirclesSchema = z.object({
+  sarees:     z.string().url().optional().nullable(),
+  lehengas:   z.string().url().optional().nullable(),
+  co_ords:    z.string().url().optional().nullable(),
+  dresses:    z.string().url().optional().nullable(),
+  kurta_sets: z.string().url().optional().nullable(),
+  tops:       z.string().url().optional().nullable(),
+})
+
+const MtmCtaSchema = z.object({
+  image_url: z.string().url().optional().nullable(),
+})
+
 const HomepageUpdateSchema = z.object({
   hero_slides:       z.array(HeroSlideSchema).optional(),
   collection_banner: z.union([CollectionBannerSchema, z.null(), z.record(z.unknown())]).optional(),
   new_arrival_ids:   z.array(z.string().uuid()).optional(),
   occasion_tiles:    z.array(OccasionTileSchema).length(8).optional(),
+  category_split:    z.union([CategorySplitSchema, z.null(), z.record(z.unknown())]).optional(),
+  category_circles:  z.union([CategoryCirclesSchema, z.null(), z.record(z.unknown())]).optional(),
+  mtm_cta:           z.union([MtmCtaSchema, z.null(), z.record(z.unknown())]).optional(),
 })
 
 const SINGLETON_ID = '00000000-0000-0000-0000-000000000001'
@@ -83,6 +104,9 @@ export async function PATCH(request: NextRequest) {
     if (parsed.data.collection_banner !== undefined) updates.collection_banner = parsed.data.collection_banner ?? {}
     if (parsed.data.new_arrival_ids   !== undefined) updates.new_arrival_ids   = parsed.data.new_arrival_ids
     if (parsed.data.occasion_tiles    !== undefined) updates.occasion_tiles    = parsed.data.occasion_tiles
+    if (parsed.data.category_split    !== undefined) updates.category_split    = parsed.data.category_split    ?? {}
+    if (parsed.data.category_circles  !== undefined) updates.category_circles  = parsed.data.category_circles  ?? {}
+    if (parsed.data.mtm_cta           !== undefined) updates.mtm_cta           = parsed.data.mtm_cta           ?? {}
 
     if (Object.keys(updates).length === 0) return NextResponse.json({ ok: true })
 

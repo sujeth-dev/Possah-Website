@@ -1,7 +1,9 @@
 ﻿import Image from 'next/image'
 import Link from 'next/link'
 
-export function MtmCta() {
+const PH = 'https://cdn.thepossah.com/ui/placeholder.svg'
+
+export function MtmCta({ imageUrl }: { imageUrl?: string | null }) {
   return (
     <section
       aria-label="Made-to-Measure"
@@ -81,7 +83,7 @@ export function MtmCta() {
           {/* Right — image */}
           <div className="relative order-1 md:order-2 overflow-hidden" style={{ minHeight: '280px' }}>
             <Image
-              src="https://cdn.thepossah.com/ui/placeholder.svg"
+              src={imageUrl || PH}
               alt="Artisan hands working on fabric — Made-to-Measure"
               fill
               className="object-cover object-center"

@@ -25,11 +25,32 @@ interface OccasionTile {
   link:      string
 }
 
+interface CategorySplit {
+  ethnic_image?:  string | null
+  western_image?: string | null
+}
+
+interface CategoryCircles {
+  sarees?:     string | null
+  lehengas?:   string | null
+  co_ords?:    string | null
+  dresses?:    string | null
+  kurta_sets?: string | null
+  tops?:       string | null
+}
+
+interface MtmCta {
+  image_url?: string | null
+}
+
 interface HomepageConfig {
   hero_slides:       HeroSlide[]
   collection_banner: CollectionBanner | null
   new_arrival_ids:   string[]
   occasion_tiles:    OccasionTile[]
+  category_split?:   CategorySplit
+  category_circles?: CategoryCircles
+  mtm_cta?:          MtmCta
 }
 
 interface Product {
@@ -169,6 +190,21 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   const [tilesSaved, setTilesSaved] = useState(false)
   const [tilesError, setTilesError] = useState<string | null>(null)
 
+  // Category Split (Ethnic / Western)
+  const [categorySplit, setCategorySplit]   = useState<CategorySplit>(initial.category_split ?? {})
+  const [splitSaved, setSplitSaved]         = useState(false)
+  const [splitError, setSplitError]         = useState<string | null>(null)
+
+  // Category Circles (6 categories)
+  const [categoryCircles, setCategoryCircles] = useState<CategoryCircles>(initial.category_circles ?? {})
+  const [circlesSaved, setCirclesSaved]       = useState(false)
+  const [circlesError, setCirclesError]       = useState<string | null>(null)
+
+  // Made-to-Measure CTA
+  const [mtmCta, setMtmCta]         = useState<MtmCta>(initial.mtm_cta ?? {})
+  const [mtmSaved, setMtmSaved]     = useState(false)
+  const [mtmError, setMtmError]     = useState<string | null>(null)
+
   async function patch(body: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> {
     const res = await fetch('/api/admin/homepage', {
       method:  'PATCH',
@@ -218,6 +254,36 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
       const r = await patch({ occasion_tiles: tiles })
       if (!r.ok) { setTilesError(r.error ?? 'Failed'); return }
       setTilesSaved(true); setTimeout(() => setTilesSaved(false), 2500); router.refresh()
+    })
+  }
+
+  function saveCategorySplit(e: React.FormEvent) {
+    e.preventDefault()
+    setSplitError(null); setSplitSaved(false)
+    startTransition(async () => {
+      const r = await patch({ category_split: categorySplit })
+      if (!r.ok) { setSplitError(r.error ?? 'Failed'); return }
+      setSplitSaved(true); setTimeout(() => setSplitSaved(false), 2500); router.refresh()
+    })
+  }
+
+  function saveCategoryCircles(e: React.FormEvent) {
+    e.preventDefault()
+    setCirclesError(null); setCirclesSaved(false)
+    startTransition(async () => {
+      const r = await patch({ category_circles: categoryCircles })
+      if (!r.ok) { setCirclesError(r.error ?? 'Failed'); return }
+      setCirclesSaved(true); setTimeout(() => setCirclesSaved(false), 2500); router.refresh()
+    })
+  }
+
+  function saveMtmCta(e: React.FormEvent) {
+    e.preventDefault()
+    setMtmError(null); setMtmSaved(false)
+    startTransition(async () => {
+      const r = await patch({ mtm_cta: mtmCta })
+      if (!r.ok) { setMtmError(r.error ?? 'Failed'); return }
+      setMtmSaved(true); setTimeout(() => setMtmSaved(false), 2500); router.refresh()
     })
   }
 
@@ -409,6 +475,93 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
           </div>
 
           <SaveRow isPending={isPending} saved={tilesSaved} error={tilesError} />
+        </div>
+      </form>
+
+      {/* ── CATEGORY SPLIT (ETHNIC / WESTERN) ───────────────────── */}
+      <form onSubmit={saveCategorySplit}>
+        <div style={card}>
+          <p style={sectionTitle}>Category Split — Ethnic &amp; Western</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
+            Full-width split banner below the hero. Two tall images side-by-side linking to Ethnic and Western shops.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>ETHNIC PANEL</p>
+              <ImageUploadField
+                label="Image"
+                value={categorySplit.ethnic_image ?? ''}
+                onChange={v => setCategorySplit(s => ({ ...s, ethnic_image: v }))}
+                pathPrefix="uploads/homepage/category-split"
+              />
+            </div>
+            <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>WESTERN PANEL</p>
+              <ImageUploadField
+                label="Image"
+                value={categorySplit.western_image ?? ''}
+                onChange={v => setCategorySplit(s => ({ ...s, western_image: v }))}
+                pathPrefix="uploads/homepage/category-split"
+              />
+            </div>
+          </div>
+          <SaveRow isPending={isPending} saved={splitSaved} error={splitError} />
+        </div>
+      </form>
+
+      {/* ── CATEGORY CIRCLES ────────────────────────────────────────── */}
+      <form onSubmit={saveCategoryCircles}>
+        <div style={card}>
+          <p style={sectionTitle}>Category Circles (6 fixed)</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
+            Six circular category thumbnails. Labels and links are fixed — only images are configurable.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            {(
+              [
+                { key: 'sarees',     label: 'SAREES',     href: '/women/sarees'     },
+                { key: 'lehengas',   label: 'LEHENGAS',   href: '/women/lehengas'   },
+                { key: 'co_ords',    label: 'CO-ORDS',    href: '/women/co-ords'    },
+                { key: 'dresses',    label: 'DRESSES',    href: '/women/dresses'    },
+                { key: 'kurta_sets', label: 'KURTA SETS', href: '/women/kurta-sets' },
+                { key: 'tops',       label: 'TOPS',       href: '/women/tops'       },
+              ] as const
+            ).map(({ key, label, href }) => (
+              <div
+                key={key}
+                style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}
+              >
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>{label}</p>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>{href}</p>
+                <ImageUploadField
+                  label="Image"
+                  value={categoryCircles[key] ?? ''}
+                  onChange={v => setCategoryCircles(c => ({ ...c, [key]: v }))}
+                  pathPrefix="uploads/homepage/circles"
+                />
+              </div>
+            ))}
+          </div>
+          <SaveRow isPending={isPending} saved={circlesSaved} error={circlesError} />
+        </div>
+      </form>
+
+      {/* ── MADE-TO-MEASURE CTA ─────────────────────────────────────── */}
+      <form onSubmit={saveMtmCta}>
+        <div style={card}>
+          <p style={sectionTitle}>Made-to-Measure CTA</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
+            Right-side image for the Made-to-Measure section near the bottom of the homepage.
+          </p>
+          <div style={{ maxWidth: '320px' }}>
+            <ImageUploadField
+              label="Image"
+              value={mtmCta.image_url ?? ''}
+              onChange={v => setMtmCta({ image_url: v })}
+              pathPrefix="uploads/homepage/mtm"
+            />
+          </div>
+          <SaveRow isPending={isPending} saved={mtmSaved} error={mtmError} />
         </div>
       </form>
     </div>

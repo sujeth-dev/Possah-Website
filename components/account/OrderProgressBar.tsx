@@ -169,6 +169,8 @@ function MiniBar({ step, failed }: { step: number; failed: boolean }) {
 
 // ── Full variant ────────────────────────────────────────────────────────────
 
+const CIRCLE_SIZE = 28
+
 function FullBar({ step, failed }: { step: number; failed: boolean }) {
   return (
     <div
@@ -176,96 +178,99 @@ function FullBar({ step, failed }: { step: number; failed: boolean }) {
       aria-label={`Order progress: step ${step} of 5${failed ? ' (payment failed)' : ''}`}
       style={{ width: '100%' }}
     >
-      <div className="flex items-start justify-between">
-        {STEPS.map((label, i) => {
-          const stepNumber = i + 1
-          const reached = stepNumber <= step
-          const active = stepNumber === step
-          const isFailedFirst = failed && i === 0
-          const circleBg = isFailedFirst
-            ? 'var(--color-orange)'
-            : reached
-            ? 'var(--color-green)'
-            : 'var(--color-bg)'
-          const circleBorder = isFailedFirst
-            ? 'var(--color-orange)'
-            : reached
-            ? 'var(--color-green)'
-            : 'var(--color-border)'
-          const circleFg = reached ? 'var(--color-bg)' : 'var(--color-text-muted)'
+      {/* Wrapper — position:relative so the connector bar can be absolute */}
+      <div style={{ position: 'relative' }}>
 
-          return (
-            <div
-              key={label}
-              className="flex flex-col items-center text-center"
-              style={{ flex: '1 1 0', minWidth: 0 }}
-            >
-              <div
-                aria-hidden="true"
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  backgroundColor: circleBg,
-                  border: `1.5px solid ${circleBorder}`,
-                  color: circleFg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
-                  letterSpacing: '0.04em',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                {reached ? (
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M2 6.5l2.5 2.5L10 3.5" />
-                  </svg>
-                ) : (
-                  stepNumber
-                )}
-              </div>
-              <span
-                style={{
-                  marginTop: 8,
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '10px',
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                  color: active ? 'var(--color-green)' : 'var(--color-text-muted)',
-                  fontWeight: active ? 600 : 400,
-                  lineHeight: 1.3,
-                }}
-              >
-                {label}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Connecting bar behind the circles */}
-      <div
-        aria-hidden="true"
-        style={{
-          height: 1.5,
-          backgroundColor: 'var(--color-border)',
-          width: 'calc(100% - 28px)',
-          margin: '-22px auto 0',
-          position: 'relative',
-          zIndex: 0,
-        }}
-      >
+        {/* Connecting bar — absolutely positioned at vertical centre of circles */}
         <div
+          aria-hidden="true"
           style={{
-            width: `${Math.max(0, (step - 1) / 4) * 100}%`,
-            height: '100%',
-            backgroundColor: failed ? 'var(--color-orange)' : 'var(--color-green)',
-            transition: 'width 0.25s ease',
+            position:        'absolute',
+            top:             CIRCLE_SIZE / 2,   // 14px — vertical centre of the 28px circles
+            left:            CIRCLE_SIZE / 2,   // inset so bar starts at first circle centre
+            right:           CIRCLE_SIZE / 2,   // inset so bar ends at last circle centre
+            height:          1.5,
+            backgroundColor: 'var(--color-border)',
+            zIndex:          0,
           }}
-        />
+        >
+          <div
+            style={{
+              width:           `${Math.max(0, (step - 1) / 4) * 100}%`,
+              height:          '100%',
+              backgroundColor: failed ? 'var(--color-orange)' : 'var(--color-green)',
+              transition:      'width 0.25s ease',
+            }}
+          />
+        </div>
+
+        {/* Steps row — z-index 1 so circles sit above the bar */}
+        <div className="relative flex items-start justify-between" style={{ zIndex: 1 }}>
+          {STEPS.map((label, i) => {
+            const stepNumber   = i + 1
+            const reached      = stepNumber <= step
+            const active       = stepNumber === step
+            const isFailedFirst = failed && i === 0
+            const circleBg     = isFailedFirst ? 'var(--color-orange)' : reached ? 'var(--color-green)' : 'var(--color-bg)'
+            const circleBorder = isFailedFirst ? 'var(--color-orange)' : reached ? 'var(--color-green)' : 'var(--color-border)'
+            const circleFg     = reached ? 'var(--color-bg)' : 'var(--color-text-muted)'
+
+            return (
+              <div
+                key={label}
+                className="flex flex-col items-center text-center"
+                style={{ flex: '1 1 0', minWidth: 0 }}
+              >
+                <div
+                  aria-hidden="true"
+                  style={{
+                    width:           CIRCLE_SIZE,
+                    height:          CIRCLE_SIZE,
+                    borderRadius:    '50%',
+                    backgroundColor: circleBg,
+                    border:          `1.5px solid ${circleBorder}`,
+                    color:           circleFg,
+                    display:         'flex',
+                    alignItems:      'center',
+                    justifyContent:  'center',
+                    fontFamily:      'var(--font-mono)',
+                    fontSize:        '11px',
+                    letterSpacing:   '0.04em',
+                    flexShrink:      0,
+                  }}
+                >
+                  {reached ? (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M2 6.5l2.5 2.5L10 3.5" />
+                    </svg>
+                  ) : (
+                    stepNumber
+                  )}
+                </div>
+
+                {/* Label — hidden on very small screens for non-active steps to prevent overflow */}
+                <span
+                  className={active ? '' : 'hidden sm:block'}
+                  style={{
+                    marginTop:     8,
+                    fontFamily:    'var(--font-mono)',
+                    fontSize:      '10px',
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    color:         active ? 'var(--color-green)' : 'var(--color-text-muted)',
+                    fontWeight:    active ? 600 : 400,
+                    lineHeight:    1.3,
+                    overflow:      'hidden',
+                    wordBreak:     'break-word',
+                    maxWidth:      '100%',
+                  }}
+                >
+                  {label}
+                </span>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {failed && (
@@ -274,8 +279,8 @@ function FullBar({ step, failed }: { step: number; failed: boolean }) {
           className="mt-4"
           style={{
             fontFamily: 'var(--font-body)',
-            fontSize: '13px',
-            color: 'var(--color-orange)',
+            fontSize:   '13px',
+            color:      'var(--color-orange)',
             lineHeight: 1.5,
           }}
         >

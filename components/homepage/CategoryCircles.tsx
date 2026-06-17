@@ -3,16 +3,24 @@ import Link from 'next/link'
 
 const PH = 'https://cdn.thepossah.com/ui/placeholder.svg'
 
-const CATEGORIES = [
-  { label: 'SAREES',    href: '/women/sarees',     image: PH },
-  { label: 'LEHENGAS',  href: '/women/lehengas',   image: PH },
-  { label: 'CO-ORDS',   href: '/women/co-ords',    image: PH },
-  { label: 'DRESSES',   href: '/women/dresses',    image: PH },
-  { label: 'KURTA SETS',href: '/women/kurta-sets', image: PH },
-  { label: 'TOPS',      href: '/women/tops',       image: PH },
-]
+interface CategoryCirclesImages {
+  sarees?:     string | null
+  lehengas?:   string | null
+  co_ords?:    string | null
+  dresses?:    string | null
+  kurta_sets?: string | null
+  tops?:       string | null
+}
 
-export function CategoryCircles() {
+export function CategoryCircles({ images }: { images?: CategoryCirclesImages }) {
+  const CATEGORIES = [
+    { label: 'SAREES',     href: '/women/sarees',     image: images?.sarees     || PH },
+    { label: 'LEHENGAS',   href: '/women/lehengas',   image: images?.lehengas   || PH },
+    { label: 'CO-ORDS',    href: '/women/co-ords',    image: images?.co_ords    || PH },
+    { label: 'DRESSES',    href: '/women/dresses',    image: images?.dresses    || PH },
+    { label: 'KURTA SETS', href: '/women/kurta-sets', image: images?.kurta_sets || PH },
+    { label: 'TOPS',       href: '/women/tops',       image: images?.tops       || PH },
+  ]
   return (
     <section className="section-gap" aria-label="Shop by Category">
       <div className="container-site">

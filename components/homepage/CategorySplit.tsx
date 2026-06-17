@@ -1,14 +1,21 @@
 ﻿import Image from 'next/image'
 import Link from 'next/link'
 
-export function CategorySplit() {
+const PH = 'https://cdn.thepossah.com/ui/placeholder.svg'
+
+interface CategorySplitProps {
+  ethnicImage?:  string | null
+  westernImage?: string | null
+}
+
+export function CategorySplit({ ethnicImage, westernImage }: CategorySplitProps) {
   return (
     <section aria-label="Shop Ethnic and Western">
       <div className="grid grid-cols-1 md:grid-cols-2">
         {/* Ethnic */}
         <div className="relative group overflow-hidden" style={{ minHeight: '440px' }}>
           <Image
-            src="https://cdn.thepossah.com/ui/placeholder.svg"
+            src={ethnicImage || PH}
             alt="Ethnic — Sarees, Lehengas, Kurta Sets"
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
@@ -57,7 +64,7 @@ export function CategorySplit() {
         {/* Western */}
         <div className="relative group overflow-hidden" style={{ minHeight: '440px' }}>
           <Image
-            src="https://cdn.thepossah.com/ui/placeholder.svg"
+            src={westernImage || PH}
             alt="Western — Co-Ords, Dresses, Tops, Bottoms"
             fill
             className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"

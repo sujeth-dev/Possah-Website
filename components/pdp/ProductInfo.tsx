@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { formatPrice, whatsappUrl } from '@/lib/utils'
 import { useCartStore } from '@/lib/store/cartStore'
 import { useWishlistStore } from '@/lib/store/wishlistStore'
+import { useCartToastStore } from '@/lib/store/cartToastStore'
 import { AudioPlayer } from '@/components/ui/AudioPlayer'
 import { AccordionItem as Accordion, AccordionGroup } from '@/components/ui/Accordion'
 import { ShareDrawer } from './ShareDrawer'
@@ -44,7 +45,8 @@ interface ProductInfoProps {
 const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'Free Size', 'Made-to-Measure']
 
 export function ProductInfo({ product, variants }: ProductInfoProps) {
-  const addToCart = useCartStore((s) => s.addItem)
+  const addToCart  = useCartStore((s) => s.addItem)
+  const showToast  = useCartToastStore((s) => s.show)
   const { toggleItem, isInWishlist } = useWishlistStore()
 
   // Group variants by colour
@@ -115,6 +117,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
     })
     setAddedState('added')
     setTimeout(() => setAddedState('idle'), 2000)
+    showToast({ name: product.name, image: primaryImage, price: product.price })
     // GA4: add_to_cart
     trackAddToCart({
       id: product.id,
@@ -125,7 +128,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
       price: product.price,
       qty: 1,
     })
-  }, [selectedSize, selectedVariant, addToCart, product, primaryImage, selectedColour, colourMap, colourVariants])
+  }, [selectedSize, selectedVariant, addToCart, showToast, product, primaryImage, selectedColour, colourMap, colourVariants])
 
   const handleWishlist = () => {
     toggleItem({

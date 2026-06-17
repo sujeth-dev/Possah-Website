@@ -311,3 +311,37 @@
 :target {
   scroll-margin-top: 112px;
 }
+
+/* ── Add-to-cart toast ───────────────────────────────────────────────────── */
+
+/* Mobile (default): bottom-centre, slides up */
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.toast-position {
+  position:  fixed;
+  bottom:    24px;
+  left:      50%;
+  transform: translateX(-50%);
+  z-index:   60;
+  width:     min(360px, calc(100vw - 32px));
+  animation: toastSlideUp 0.28s cubic-bezier(0.25, 0, 0.25, 1) both;
+}
+
+/* Desktop (≥768px): top-right, slides down */
+@media (min-width: 768px) {
+  @keyframes toastSlideUp {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .toast-position {
+    bottom:    auto;
+    top:       24px;
+    right:     24px;
+    left:      auto;
+    transform: none;
+  }
+}
