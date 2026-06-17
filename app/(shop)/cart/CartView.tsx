@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store/cartStore'
@@ -35,6 +35,12 @@ export function CartView() {
   }
 
   const total = sub + shipping + (giftWrap ? GIFT_WRAP_COST : 0) - couponDiscount
+
+  // Clear stale promo error whenever cart contents or subtotal change
+  useEffect(() => {
+    if (couponError) setCouponError(null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length, sub])
 
   const validateCoupon = useCallback(async () => {
     if (!couponInput.trim()) return

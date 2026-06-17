@@ -94,8 +94,15 @@ export function AddressForm({ initial, onSave, onCancel, showDefaultToggle = tru
     }
   }
 
+  const onError = () => {
+    const firstKey = Object.keys(errors)[0]
+    if (firstKey) {
+      document.querySelector<HTMLElement>(`[name="${firstKey}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-4">
         <Field label="Label (e.g. Home)" error={errors.label?.message}>
           <input {...register('label')} type="text" placeholder="Home" style={inputStyle} />

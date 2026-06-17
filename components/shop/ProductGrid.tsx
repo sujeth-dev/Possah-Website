@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { ProductCard } from './ProductCard'
 import type { ProductCardData } from '@/app/(shop)/page'
 
@@ -63,7 +64,8 @@ export function ProductGrid({ products, loading = false, columns = 3 }: ProductG
             Nothing here yet — but she&rsquo;s on her way.
           </p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}>
-            Try adjusting your filters or browse all pieces.
+            Try adjusting your filters or{' '}
+            <Link href="/women" style={{ color: 'var(--color-green)', textDecoration: 'underline' }}>browse all pieces</Link>.
           </p>
         </div>
       </div>

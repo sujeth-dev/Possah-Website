@@ -40,7 +40,7 @@ const STEPS = [
 ]
 
 export default function MadeToMeasurePage() {
-  const waLink = whatsappUrl('+919876543210', 'Hi! I\'m interested in a Made-to-Measure piece from The Possah. Can you tell me more?')
+  const waLink = whatsappUrl('+919151512323', 'Hi! I\'m interested in a Made-to-Measure piece from The Possah. Can you tell me more?')
 
   return (
     <>

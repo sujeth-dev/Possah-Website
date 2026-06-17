@@ -326,7 +326,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
 
       {/* WhatsApp */}
       <a
-        href={whatsappUrl('+919876543210', `Hi! I'm interested in ${product.name}. Can you help me with more details?`)}
+        href={whatsappUrl('+919151512323', `Hi! I'm interested in ${product.name}. Can you help me with more details?`)}
         target="_blank" rel="noopener noreferrer"
         className="flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-70"
         style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text-muted)' }}

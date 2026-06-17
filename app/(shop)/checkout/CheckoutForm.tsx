@@ -18,12 +18,13 @@ import {
   EXPRESS_SHIPPING_COST as EXPRESS_COST,
   GIFT_WRAP_COST,
 } from '@/lib/constants'
+import { useSession } from 'next-auth/react'
 import { openRazorpayCheckout } from '@/lib/razorpay-client'
 
 // ─── Zod Schema ──────────────────────────────────────────────────────────────
 
 const checkoutSchema = z.object({
-  first_name: z.string().trim().min(2, 'First name too short').max(60)
+  first_name: z.string().trim().min(1, 'First name required').min(2, 'First name too short').max(60)
     .regex(/[a-zA-Z]/, 'Enter a valid first name'),
   last_name: z.string().trim().min(1, 'Last name required').max(60)
     .regex(/[a-zA-Z]/, 'Enter a valid last name'),
@@ -131,6 +132,7 @@ const inputErrorStyle: React.CSSProperties = {
 export function CheckoutForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { data: session } = useSession()
   const { items, subtotal, clearCart } = useCartStore()
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
@@ -170,6 +172,15 @@ export function CheckoutForm() {
         setSavedAddresses(d.addresses)
         const def = d.addresses.find((a: { is_default: boolean }) => a.is_default) ?? d.addresses[0]
         setSelectedAddressId(def.id)
+        const parts = def.full_name.trim().split(/\s+/)
+        setValue('first_name', parts[0] ?? '', { shouldValidate: false })
+        setValue('last_name', parts.slice(1).join(' ') || parts[0], { shouldValidate: false })
+        setValue('phone', def.phone, { shouldValidate: false })
+        setValue('address_line1', def.address_line1, { shouldValidate: false })
+        setValue('address_line2', def.address_line2 ?? '', { shouldValidate: false })
+        setValue('city', def.city, { shouldValidate: false })
+        setValue('state', def.state as CheckoutFields['state'], { shouldValidate: false })
+        setValue('pincode', def.pincode, { shouldValidate: false })
       })
       .catch(() => {})
   }, [])
@@ -229,6 +240,22 @@ export function CheckoutForm() {
   })
 
   const deliveryOption = watch('delivery_option')
+
+  // Pre-fill contact fields from session when no saved address / draft covers them
+  useEffect(() => {
+    if (!session?.user) return
+    if (session.user.email && !getValues('email')) {
+      setValue('email', session.user.email, { shouldValidate: false })
+    }
+    if (session.user.name && !getValues('first_name')) {
+      const parts = session.user.name.trim().split(/\s+/)
+      setValue('first_name', parts[0] ?? '', { shouldValidate: false })
+      if (!getValues('last_name') && parts.length > 1) {
+        setValue('last_name', parts.slice(1).join(' '), { shouldValidate: false })
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
 
   // localStorage draft — persist on change (must be after useForm)
   const formValues = watch()
