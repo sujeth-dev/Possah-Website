@@ -4,6 +4,27 @@ All notable changes to this project, newest first.
 
 ---
 
+## [Unreleased] — 2026-06-17 — Mobile Order Detail: Vertical Progress Tracker
+
+### Summary
+Order detail page on mobile was congested — 5 circles across a 375px screen left ~75px per column, making labels and the placed-date sub-label too cramped. Switched the order progress bar to a vertical step list on mobile (circle + label/desc per row), keeping the horizontal layout on desktop. Also increased padding on the progress section container and reduced the payment summary padding on mobile.
+
+### Bug Fixes
+
+#### Mobile Order Progress Bar — vertical layout
+- **< md breakpoint**: new `MobileFullBar` vertical tracker. Each step is a row: 28px circle (left) + label, optional placed date (step 1), optional status description (active step) on the right. A 1.5px connector line between circles fills the height dynamically.
+- **md+ breakpoint**: existing horizontal bar unchanged (`DesktopFullBar`).
+- Visual states carried over: active step ring, completed step 72% opacity, green connector for reached steps.
+- Progress bar container padding: `px-2` → `px-4` (more breathing room).
+- Payment summary padding: fixed `24px` → `p-4 sm:p-6` (16px mobile, 24px sm+).
+
+### Files Changed
+- `components/account/OrderProgressBar.tsx` — `MobileFullBar` + `DesktopFullBar` split from `FullBar`
+- `app/(shop)/account/orders/[orderNumber]/page.tsx` — padding tweaks
+- `scripts/verify/task2-mobile-ui.js` — updated checks (14/14)
+
+---
+
 ## [Unreleased] — 2026-06-17 — Post-Smoke-Test Round 2: Order Progress + Toast + Admin Error
 
 ### Summary

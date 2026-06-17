@@ -190,13 +190,115 @@ function formatShortDate(iso: string): string {
   } catch { return '' }
 }
 
-function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; placedAt?: string }) {
+// Mobile: vertical step list (circle left, label+desc right)
+function MobileFullBar({ step, failed, placedAt }: { step: number; failed: boolean; placedAt?: string }) {
   return (
-    <div
-      role="img"
-      aria-label={`Order progress: step ${step} of 5${failed ? ' (payment failed)' : ''}`}
-      style={{ width: '100%' }}
-    >
+    <div>
+      {STEPS.map((label, i) => {
+        const stepNumber    = i + 1
+        const reached       = stepNumber <= step
+        const active        = stepNumber === step
+        const isLast        = i === STEPS.length - 1
+        const isFailedFirst = failed && i === 0
+
+        const circleBg     = isFailedFirst ? 'var(--color-orange)' : reached ? 'var(--color-green)' : 'var(--color-bg)'
+        const circleBorder = isFailedFirst ? 'var(--color-orange)' : reached ? 'var(--color-green)' : 'var(--color-border)'
+        const circleFg     = reached ? 'var(--color-bg)' : 'var(--color-text-muted)'
+        const lineColor    = isFailedFirst ? 'var(--color-orange)' : reached ? 'var(--color-green)' : 'var(--color-border)'
+
+        return (
+          <div key={label} style={{ display: 'flex', gap: 14 }}>
+            {/* Left: circle + vertical connector */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div
+                aria-hidden="true"
+                style={{
+                  width:           CIRCLE_SIZE,
+                  height:          CIRCLE_SIZE,
+                  borderRadius:    '50%',
+                  backgroundColor: circleBg,
+                  border:          `1.5px solid ${circleBorder}`,
+                  color:           circleFg,
+                  display:         'flex',
+                  alignItems:      'center',
+                  justifyContent:  'center',
+                  fontFamily:      'var(--font-mono)',
+                  fontSize:        '11px',
+                  letterSpacing:   '0.04em',
+                  flexShrink:      0,
+                  boxShadow:       active ? '0 0 0 3px rgba(31,58,45,0.15)' : undefined,
+                  opacity:         reached && !active ? 0.72 : 1,
+                }}
+              >
+                {reached ? (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M2 6.5l2.5 2.5L10 3.5" />
+                  </svg>
+                ) : (
+                  stepNumber
+                )}
+              </div>
+              {!isLast && (
+                <div
+                  aria-hidden="true"
+                  style={{
+                    flex:            1,
+                    width:           1.5,
+                    minHeight:       20,
+                    backgroundColor: lineColor,
+                    opacity:         reached && !active ? 0.72 : 1,
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Right: label + optional date + optional status desc */}
+            <div style={{ flex: 1, paddingTop: 4, paddingBottom: isLast ? 0 : 16, minWidth: 0 }}>
+              <p style={{
+                fontFamily:    'var(--font-mono)',
+                fontSize:      active ? '11px' : '10px',
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color:         active ? 'var(--color-green)' : 'var(--color-text-muted)',
+                fontWeight:    active ? 600 : 400,
+                opacity:       reached && !active ? 0.8 : 1,
+                margin:        0,
+              }}>
+                {label}
+              </p>
+              {i === 0 && placedAt && (
+                <p style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize:   '11px',
+                  color:      'var(--color-text-muted)',
+                  margin:     '2px 0 0',
+                }}>
+                  {formatShortDate(placedAt)}
+                </p>
+              )}
+              {active && !failed && STATUS_DESC[step] && (
+                <p style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize:   '12px',
+                  color:      'var(--color-text-muted)',
+                  margin:     '3px 0 0',
+                  lineHeight: 1.4,
+                }}>
+                  {STATUS_DESC[step]}
+                </p>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Desktop: horizontal bar with circles + connecting line
+function DesktopFullBar({ step, failed, placedAt }: { step: number; failed: boolean; placedAt?: string }) {
+  return (
+    <>
       {/* Wrapper — position:relative so the connector bar can be absolute */}
       <div style={{ position: 'relative' }}>
 
@@ -258,9 +360,7 @@ function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; pl
                     fontSize:        '11px',
                     letterSpacing:   '0.04em',
                     flexShrink:      0,
-                    // Active step gets a soft halo so it's distinct from completed
                     boxShadow:       active ? '0 0 0 3px rgba(31,58,45,0.15)' : undefined,
-                    // Completed (past) steps are de-emphasised relative to current
                     opacity:         reached && !active ? 0.72 : 1,
                   }}
                 >
@@ -273,7 +373,6 @@ function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; pl
                   )}
                 </div>
 
-                {/* Step label — always visible; smaller font on non-active to prevent overflow */}
                 <span
                   style={{
                     marginTop:     6,
@@ -293,7 +392,6 @@ function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; pl
                   {label}
                 </span>
 
-                {/* Placed date — shown only under the first circle when available */}
                 {isPlaced && placedAt && (
                   <span
                     style={{
@@ -318,7 +416,6 @@ function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; pl
         </div>
       </div>
 
-      {/* Status description */}
       {!failed && STATUS_DESC[step] && (
         <p
           style={{
@@ -332,21 +429,43 @@ function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; pl
           {STATUS_DESC[step]}
         </p>
       )}
+    </>
+  )
+}
 
-      {failed && (
-        <p
-          role="alert"
-          style={{
-            marginTop:  14,
-            fontFamily: 'var(--font-body)',
-            fontSize:   '13px',
-            color:      'var(--color-orange)',
-            lineHeight: 1.5,
-          }}
-        >
-          Payment failed. Retry from the order list below.
-        </p>
-      )}
+function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; placedAt?: string }) {
+  const failedMsg = failed ? (
+    <p
+      role="alert"
+      style={{
+        marginTop:  14,
+        fontFamily: 'var(--font-body)',
+        fontSize:   '13px',
+        color:      'var(--color-orange)',
+        lineHeight: 1.5,
+      }}
+    >
+      Payment failed. Retry from the order list below.
+    </p>
+  ) : null
+
+  return (
+    <div
+      role="img"
+      aria-label={`Order progress: step ${step} of 5${failed ? ' (payment failed)' : ''}`}
+      style={{ width: '100%' }}
+    >
+      {/* Mobile (< md): vertical step list */}
+      <div className="md:hidden">
+        <MobileFullBar step={step} failed={failed} placedAt={placedAt} />
+        {failedMsg}
+      </div>
+
+      {/* Desktop (md+): horizontal bar */}
+      <div className="hidden md:block">
+        <DesktopFullBar step={step} failed={failed} placedAt={placedAt} />
+        {failedMsg}
+      </div>
     </div>
   )
 }

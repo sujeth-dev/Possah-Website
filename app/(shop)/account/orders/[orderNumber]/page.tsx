@@ -220,7 +220,7 @@ export default async function OrderDetailPage({
       {/* Progress bar */}
       <section
         aria-label="Order progress"
-        className="mb-10 px-2 py-6"
+        className="mb-10 px-4 py-6"
         style={{
           border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-card)',
@@ -434,11 +434,10 @@ export default async function OrderDetailPage({
         {/* ── Right column: payment summary ─────────────────────────── */}
         <aside
           aria-label="Payment summary"
-          className="flex flex-col gap-3 lg:sticky lg:top-[120px]"
+          className="flex flex-col gap-3 lg:sticky lg:top-[120px] p-4 sm:p-6"
           style={{
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-card)',
-            padding: 24,
             backgroundColor: 'var(--color-bg)',
           }}
         >

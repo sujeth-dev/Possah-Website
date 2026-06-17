@@ -114,7 +114,7 @@ if (progressBar.includes('boxShadow') && progressBar.includes('active ?')) {
 }
 
 if (progressBar.includes('STATUS_DESC')) {
-  pass('STATUS_DESC map present — status description shown below circles')
+  pass('STATUS_DESC map present — status description shown')
 } else {
   fail('STATUS_DESC map missing from OrderProgressBar')
 }
@@ -123,6 +123,18 @@ if (progressBar.includes('placedAt')) {
   pass('placedAt optional prop accepted — order date shown under Placed circle')
 } else {
   fail('placedAt prop missing from OrderProgressBar')
+}
+
+if (progressBar.includes('MobileFullBar')) {
+  pass('MobileFullBar function exists — vertical tracker for mobile')
+} else {
+  fail('MobileFullBar missing — mobile vertical tracker not implemented')
+}
+
+if (progressBar.includes('md:hidden') && progressBar.includes('hidden md:block')) {
+  pass('Breakpoint split: md:hidden (mobile vertical) + hidden md:block (desktop horizontal)')
+} else {
+  fail('Breakpoint split missing — mobile and desktop variants need md:hidden / hidden md:block wrappers')
 }
 
 // ── Summary ──────────────────────────────────────────────────────────────────
