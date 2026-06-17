@@ -78,8 +78,8 @@ const nextConfig = {
               `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} checkout.razorpay.com cdn.razorpay.com static.cloudflareinsights.com www.googletagmanager.com`,
               // Next.js inlines critical CSS
               "style-src 'self' 'unsafe-inline'",
-              // Images: self + R2 CDN + Supabase storage + Cloudinary (legacy)
-              "img-src 'self' data: blob: cdn.thepossah.com *.r2.dev *.supabase.co res.cloudinary.com",
+              // Images: self + R2 CDN + Supabase storage + Cloudinary (legacy) + GTM tracking pixel
+              "img-src 'self' data: blob: cdn.thepossah.com *.r2.dev *.supabase.co res.cloudinary.com www.googletagmanager.com",
               "font-src 'self' data:",
               // API calls: Supabase, Razorpay (all subdomains — lumberjack etc.), Google Analytics
               "connect-src 'self' *.supabase.co *.razorpay.com www.google-analytics.com www.googletagmanager.com",

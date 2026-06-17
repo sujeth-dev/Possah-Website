@@ -298,3 +298,34 @@ Complete routing overhaul for consistent URL namespace and future Men/Kids scali
 - `030_categories_gender.sql` — adds `gender` column to `categories`
 - `031_homepage_config_links.sql` — updates live `homepage_config` occasion tile links from `/shop/` to `/women/`
 
+---
+
+### Bug-fix sweep — June 17 2026 (NUANSE live audit)
+
+10 issues resolved from a live browser audit of thepossah.com. Full detail in [CHANGELOG.md](./CHANGELOG.md).
+
+**Auth routing:**
+- `/login`, `/register`, `/account/login`, `/account/register` all 404 → now redirect to `/auth/signin`
+
+**Checkout:**
+- Logged-in users get email + name pre-filled from session (via `fetch('/api/auth/session')` — no SessionProvider needed)
+- Default saved address now populates all form fields on page load (was visually selected but fields blank)
+- Empty first-name shows "First name required" instead of "First name too short"
+
+**Cart:**
+- Stale promo error cleared when cart qty or subtotal changes
+
+**WhatsApp:** `+919876543210` placeholder replaced with `+919151512323` in PDP and Made-to-Measure
+
+**Search:** Native browser X button hidden (CSS) — no more duplicate clear icons
+
+**UI:** "browse all pieces" on zero-results page is now a link to `/women`
+
+**Forms:** Address form scrolls to first error field on failed submit
+
+**CSP:** `www.googletagmanager.com` added to `img-src` (was blocking GTM tracking pixels)
+
+**Still open (data / product decisions):**
+- Saffron Yellow swatch black → update `colour_hex` in `product_variants` table in Supabase
+- Express Delivery shows FREE above ₹2500 → product decision: should express always charge?
+

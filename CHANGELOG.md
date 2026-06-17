@@ -4,6 +4,68 @@ All notable changes to this project, newest first.
 
 ---
 
+## [Unreleased] — 2026-06-17 — NUANSE Bug Report: 10 Fixes + CSP Patch
+
+### Summary
+Live browser audit (NUANSE, June 2026) identified 16 issues across the storefront. 10 fixes shipped across three commits; remaining items are either data-layer fixes (Saffron Yellow swatch hex in DB), product decisions (express delivery pricing), or deferred UX enhancements (wishlist login gate, sign-out prominence).
+
+### Bug Fixes
+
+#### Routing
+- **`/login` → `/auth/signin`** — `/login` and `/account/login` both returned 404. Created redirect pages at both paths.
+- **`/register` → `/auth/signin`** — same fix for `/register` and `/account/register`.
+
+#### Checkout
+- **Session pre-fill** — logged-in users now have email and name pre-populated from session on checkout load (fetches `/api/auth/session`; no SessionProvider dependency).
+- **Saved address pre-fill on load** — default saved address was visually selected on page load but form fields stayed empty. Fixed by calling `setValue` in the mount effect alongside `setSelectedAddressId`.
+- **First name validation** — empty first name field showed "First name too short". Zod schema now checks `min(1, 'required')` before `min(2, 'too short')`.
+
+#### Cart
+- **Stale promo error** — invalid coupon error message persisted after changing item quantity or subtotal. Cleared via `useEffect` on `items.length` and `sub`.
+
+#### WhatsApp
+- **Placeholder number** — `+919876543210` replaced with `+919151512323` in PDP and Made-to-Measure pages.
+
+#### Search
+- **Duplicate X button** — browser-native search cancel button (`-webkit-search-cancel-button`) now hidden via CSS; only the custom clear button remains.
+- **"Browse all pieces" link** — zero-results state text now links to `/women` instead of being plain text.
+
+#### Forms
+- **Address form scroll** — submitting an empty address form now scrolls to and focuses the first invalid field via RHF `onError` callback.
+
+#### Security / CSP
+- **GTM tracking pixel** — `www.googletagmanager.com` added to `img-src` directive, fixing CSP violation when GTM fires pixel requests.
+
+### Console errors noted but not actionable from our code
+- `lumberjack.razorpay.com` CORS — Razorpay's own telemetry endpoint. Their server does not set `Access-Control-Allow-Origin`. Doesn't affect payment flow.
+- sardine.ai accelerometer/devicemotion — Razorpay's fraud detection iframe. We don't control the iframe's `allow=` attribute. Harmless.
+- `localhost:37857` mixed content — sardine.ai device fingerprinting probing local ports. Expected behaviour.
+
+### Files Changed
+- `next.config.mjs` — CSP `img-src` patch
+- `app/(shop)/login/page.tsx` — new
+- `app/(shop)/register/page.tsx` — new
+- `app/(shop)/account/login/page.tsx` — new
+- `app/(shop)/account/register/page.tsx` — new
+- `app/(shop)/checkout/CheckoutForm.tsx` — session pre-fill, address load fix, validation fix
+- `app/(shop)/cart/CartView.tsx` — promo error clear
+- `components/pdp/ProductInfo.tsx` — WhatsApp number
+- `app/(shop)/made-to-measure/page.tsx` — WhatsApp number
+- `styles/globals.css` — search cancel button CSS
+- `components/shop/ProductGrid.tsx` — browse all pieces link
+- `components/account/AddressForm.tsx` — scroll to first error
+- `tests/e2e/bug-fixes-june2026.spec.ts` — new Playwright verification suite (10 tests)
+
+### Still Open (deferred)
+| # | Issue | Reason deferred |
+|---|-------|----------------|
+| #7 | Saffron Yellow swatch shows black | `colour_hex` DB field has wrong value — fix directly in Supabase `product_variants` table |
+| #9 | Express Delivery shows FREE above ₹2500 | Intentional code behaviour; product decision needed on whether Express should always charge |
+| #4 | Wishlist works without login | Deferred by user |
+| #5 | Sign Out button too subtle | Deferred by user |
+
+---
+
 ## [Unreleased] — 2026-06-17 — Sticky Add to Bag Bar on Mobile PDP
 
 ### Summary
