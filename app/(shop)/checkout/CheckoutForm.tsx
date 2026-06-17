@@ -18,7 +18,6 @@ import {
   EXPRESS_SHIPPING_COST as EXPRESS_COST,
   GIFT_WRAP_COST,
 } from '@/lib/constants'
-import { useSession } from 'next-auth/react'
 import { openRazorpayCheckout } from '@/lib/razorpay-client'
 
 // ─── Zod Schema ──────────────────────────────────────────────────────────────
@@ -132,7 +131,13 @@ const inputErrorStyle: React.CSSProperties = {
 export function CheckoutForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
+  const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.user) setSessionUser(d.user) })
+      .catch(() => {})
+  }, [])
   const { items, subtotal, clearCart } = useCartStore()
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
@@ -243,19 +248,19 @@ export function CheckoutForm() {
 
   // Pre-fill contact fields from session when no saved address / draft covers them
   useEffect(() => {
-    if (!session?.user) return
-    if (session.user.email && !getValues('email')) {
-      setValue('email', session.user.email, { shouldValidate: false })
+    if (!sessionUser) return
+    if (sessionUser.email && !getValues('email')) {
+      setValue('email', sessionUser.email, { shouldValidate: false })
     }
-    if (session.user.name && !getValues('first_name')) {
-      const parts = session.user.name.trim().split(/\s+/)
+    if (sessionUser.name && !getValues('first_name')) {
+      const parts = sessionUser.name.trim().split(/\s+/)
       setValue('first_name', parts[0] ?? '', { shouldValidate: false })
       if (!getValues('last_name') && parts.length > 1) {
         setValue('last_name', parts.slice(1).join(' '), { shouldValidate: false })
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session])
+  }, [sessionUser])
 
   // localStorage draft — persist on change (must be after useForm)
   const formValues = watch()
