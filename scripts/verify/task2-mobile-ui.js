@@ -1,10 +1,13 @@
 /**
- * Task 2 Verification Script — Mobile UI Fixes
+ * Task 2 Verification Script — Mobile UI Fixes (Round 2 updated)
  *
  * Tests (static DOM analysis — no browser required):
  *   1. SortBar: mobile layout uses two-row structure
  *   2. OrderProgressBar FullBar: connecting bar uses position:absolute not negative margin
- *   3. OrderProgressBar labels: non-active labels have hidden sm:block class
+ *   3. OrderProgressBar: active step has ring/halo (boxShadow)
+ *   4. OrderProgressBar: all labels always visible (no hidden sm:block)
+ *   5. OrderProgressBar: STATUS_DESC map present
+ *   6. OrderProgressBar: placedAt optional prop accepted
  *
  * Usage:
  *   node scripts/verify/task2-mobile-ui.js
@@ -92,16 +95,34 @@ if (progressBar.includes('CIRCLE_SIZE / 2') || progressBar.includes('top:       
   }
 }
 
-if (progressBar.includes("'hidden sm:block'")) {
-  pass('Non-active step labels hidden below sm: breakpoint (prevents overflow on 280px screens)')
+if (!progressBar.includes("'hidden sm:block'")) {
+  pass('All step labels always visible — hidden sm:block removed (labels use 8px font to prevent overflow)')
 } else {
-  fail("Non-active labels should use className={active ? '' : 'hidden sm:block'}")
+  fail("'hidden sm:block' still present — non-active labels should be visible at all screen sizes")
 }
 
 if (progressBar.includes("overflow:      'hidden'") || progressBar.includes("overflow: 'hidden'")) {
   pass('Label overflow: hidden prevents text bleed')
 } else {
   fail("Label span should have overflow: 'hidden'")
+}
+
+if (progressBar.includes('boxShadow') && progressBar.includes('active ?')) {
+  pass('Active step circle has box-shadow ring (visual halo to distinguish current from completed)')
+} else {
+  fail('Active step circle missing boxShadow ring indicator')
+}
+
+if (progressBar.includes('STATUS_DESC')) {
+  pass('STATUS_DESC map present — status description shown below circles')
+} else {
+  fail('STATUS_DESC map missing from OrderProgressBar')
+}
+
+if (progressBar.includes('placedAt')) {
+  pass('placedAt optional prop accepted — order date shown under Placed circle')
+} else {
+  fail('placedAt prop missing from OrderProgressBar')
 }
 
 // ── Summary ──────────────────────────────────────────────────────────────────

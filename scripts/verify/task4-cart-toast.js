@@ -91,10 +91,10 @@ if (toast) {
   } else {
     fail('clearTimeout missing — rapid re-adds would stack timers')
   }
-  if (toast.includes('4000')) {
-    pass('Auto-dismiss delay is 4000ms')
+  if (toast.includes('6000')) {
+    pass('Auto-dismiss delay is 6000ms')
   } else {
-    fail('Auto-dismiss delay not found or not 4000ms')
+    fail('Auto-dismiss delay not found or not 6000ms (was upgraded from 4000ms)')
   }
   if (toast.includes('toast-position')) {
     pass('Uses .toast-position CSS class for responsive positioning')
@@ -154,10 +154,15 @@ if (css) {
   } else {
     fail('.toast-position class missing from globals.css')
   }
-  if (css.includes('min-width: 768px') && css.includes('.toast-position')) {
-    pass('Responsive: desktop overrides .toast-position to top-right')
+  if (css.includes('toastSlideUpRight')) {
+    pass('toastSlideUpRight keyframe defined for desktop slide-up-from-right animation')
   } else {
-    fail('Desktop .toast-position override (top-right) missing')
+    fail('toastSlideUpRight keyframe missing from globals.css')
+  }
+  if (css.includes('bottom:    80px') || css.includes('bottom: 80px')) {
+    pass('Desktop toast repositioned to bottom-right (bottom: 80px, right: 32px)')
+  } else {
+    fail('Desktop toast should use bottom: 80px (near Add to Bag button area)')
   }
 }
 

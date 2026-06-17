@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useCartToastStore } from '@/lib/store/cartToastStore'
 import { formatPrice } from '@/lib/utils'
 
-const AUTO_DISMISS_MS = 4000
+const AUTO_DISMISS_MS = 6000
 
 export function AddedToBagToast() {
   const { item, hide } = useCartToastStore()

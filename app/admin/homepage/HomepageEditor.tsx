@@ -149,12 +149,28 @@ function Field({ label: lbl, value, onChange, placeholder, type = 'text' }: {
 
 function SaveRow({ isPending, saved, error }: { isPending: boolean; saved: boolean; error: string | null }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '16px' }}>
-      <button type="submit" disabled={isPending} style={{ ...saveBtn, opacity: isPending ? 0.7 : 1, cursor: isPending ? 'wait' : 'pointer' }}>
-        {isPending ? 'Saving…' : 'Save Changes'}
-      </button>
-      {saved  && <span style={{ fontSize: '12px', color: '#16A34A', fontFamily: 'var(--font-body)', fontWeight: '500' }}>✓ Saved</span>}
-      {error  && <span style={{ fontSize: '12px', color: '#DC2626', fontFamily: 'var(--font-body)' }}>{error}</span>}
+    <div style={{ marginTop: '16px' }}>
+      {error && (
+        <div style={{
+          background:   'rgba(192,57,43,0.08)',
+          border:       '1px solid rgba(192,57,43,0.4)',
+          color:        '#9B3A3A',
+          borderRadius: '6px',
+          padding:      '10px 14px',
+          fontFamily:   'var(--font-body)',
+          fontSize:     '13px',
+          lineHeight:   1.5,
+          marginBottom: 10,
+        }}>
+          Save failed: {error}
+        </div>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button type="submit" disabled={isPending} style={{ ...saveBtn, opacity: isPending ? 0.7 : 1, cursor: isPending ? 'wait' : 'pointer' }}>
+          {isPending ? 'Saving…' : 'Save Changes'}
+        </button>
+        {saved && <span style={{ fontSize: '12px', color: '#16A34A', fontFamily: 'var(--font-body)', fontWeight: '500' }}>✓ Saved</span>}
+      </div>
     </div>
   )
 }

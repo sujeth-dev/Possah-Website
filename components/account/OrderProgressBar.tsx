@@ -40,6 +40,7 @@ interface OrderProgressBarProps {
   paymentStatus: PaymentStatus | string
   fulfillmentStatus: FulfillmentStatus | string
   size?: 'mini' | 'full'
+  placedAt?: string
 }
 
 const STEPS = ['Placed', 'Confirmed', 'Processing', 'Shipped', 'Delivered'] as const
@@ -99,6 +100,7 @@ export function OrderProgressBar({
   paymentStatus,
   fulfillmentStatus,
   size = 'mini',
+  placedAt,
 }: OrderProgressBarProps) {
   // Special terminal states — replace the step bar entirely
   if (fulfillmentStatus === 'cancelled') {
@@ -111,7 +113,7 @@ export function OrderProgressBar({
   const { step, failed } = currentStep(paymentStatus, fulfillmentStatus)
 
   if (size === 'mini') return <MiniBar step={step} failed={failed} />
-  return <FullBar step={step} failed={failed} />
+  return <FullBar step={step} failed={failed} placedAt={placedAt} />
 }
 
 // ── Mini variant ────────────────────────────────────────────────────────────
@@ -171,7 +173,24 @@ function MiniBar({ step, failed }: { step: number; failed: boolean }) {
 
 const CIRCLE_SIZE = 28
 
-function FullBar({ step, failed }: { step: number; failed: boolean }) {
+const STATUS_DESC: Record<number, string> = {
+  1: 'Order received — awaiting payment confirmation.',
+  2: 'Payment confirmed — your order is being prepared.',
+  3: 'Your order is being processed and packed.',
+  4: 'Your order has been shipped and is on its way.',
+  5: 'Your order has been delivered. Thank you!',
+}
+
+function formatShortDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString('en-IN', {
+      day: '2-digit', month: 'short',
+      hour: '2-digit', minute: '2-digit', hour12: true,
+    })
+  } catch { return '' }
+}
+
+function FullBar({ step, failed, placedAt }: { step: number; failed: boolean; placedAt?: string }) {
   return (
     <div
       role="img"
@@ -186,9 +205,9 @@ function FullBar({ step, failed }: { step: number; failed: boolean }) {
           aria-hidden="true"
           style={{
             position:        'absolute',
-            top:             CIRCLE_SIZE / 2,   // 14px — vertical centre of the 28px circles
-            left:            CIRCLE_SIZE / 2,   // inset so bar starts at first circle centre
-            right:           CIRCLE_SIZE / 2,   // inset so bar ends at last circle centre
+            top:             CIRCLE_SIZE / 2,
+            left:            CIRCLE_SIZE / 2,
+            right:           CIRCLE_SIZE / 2,
             height:          1.5,
             backgroundColor: 'var(--color-border)',
             zIndex:          0,
@@ -207,10 +226,12 @@ function FullBar({ step, failed }: { step: number; failed: boolean }) {
         {/* Steps row — z-index 1 so circles sit above the bar */}
         <div className="relative flex items-start justify-between" style={{ zIndex: 1 }}>
           {STEPS.map((label, i) => {
-            const stepNumber   = i + 1
-            const reached      = stepNumber <= step
-            const active       = stepNumber === step
+            const stepNumber    = i + 1
+            const reached       = stepNumber <= step
+            const active        = stepNumber === step
             const isFailedFirst = failed && i === 0
+            const isPlaced      = i === 0
+
             const circleBg     = isFailedFirst ? 'var(--color-orange)' : reached ? 'var(--color-green)' : 'var(--color-bg)'
             const circleBorder = isFailedFirst ? 'var(--color-orange)' : reached ? 'var(--color-green)' : 'var(--color-border)'
             const circleFg     = reached ? 'var(--color-bg)' : 'var(--color-text-muted)'
@@ -237,6 +258,10 @@ function FullBar({ step, failed }: { step: number; failed: boolean }) {
                     fontSize:        '11px',
                     letterSpacing:   '0.04em',
                     flexShrink:      0,
+                    // Active step gets a soft halo so it's distinct from completed
+                    boxShadow:       active ? '0 0 0 3px rgba(31,58,45,0.15)' : undefined,
+                    // Completed (past) steps are de-emphasised relative to current
+                    opacity:         reached && !active ? 0.72 : 1,
                   }}
                 >
                   {reached ? (
@@ -248,36 +273,71 @@ function FullBar({ step, failed }: { step: number; failed: boolean }) {
                   )}
                 </div>
 
-                {/* Label — hidden on very small screens for non-active steps to prevent overflow */}
+                {/* Step label — always visible; smaller font on non-active to prevent overflow */}
                 <span
-                  className={active ? '' : 'hidden sm:block'}
                   style={{
-                    marginTop:     8,
+                    marginTop:     6,
                     fontFamily:    'var(--font-mono)',
-                    fontSize:      '10px',
-                    letterSpacing: '0.16em',
+                    fontSize:      active ? '10px' : '8px',
+                    letterSpacing: active ? '0.16em' : '0.10em',
                     textTransform: 'uppercase',
                     color:         active ? 'var(--color-green)' : 'var(--color-text-muted)',
                     fontWeight:    active ? 600 : 400,
                     lineHeight:    1.3,
                     overflow:      'hidden',
-                    wordBreak:     'break-word',
+                    textOverflow:  'ellipsis',
+                    whiteSpace:    'nowrap',
                     maxWidth:      '100%',
                   }}
                 >
                   {label}
                 </span>
+
+                {/* Placed date — shown only under the first circle when available */}
+                {isPlaced && placedAt && (
+                  <span
+                    style={{
+                      marginTop:     2,
+                      fontFamily:    'var(--font-body)',
+                      fontSize:      '9px',
+                      color:         'var(--color-text-muted)',
+                      lineHeight:    1.2,
+                      overflow:      'hidden',
+                      textOverflow:  'ellipsis',
+                      whiteSpace:    'nowrap',
+                      maxWidth:      '100%',
+                      opacity:       0.7,
+                    }}
+                  >
+                    {formatShortDate(placedAt)}
+                  </span>
+                )}
               </div>
             )
           })}
         </div>
       </div>
 
+      {/* Status description */}
+      {!failed && STATUS_DESC[step] && (
+        <p
+          style={{
+            marginTop:  14,
+            fontFamily: 'var(--font-body)',
+            fontSize:   '13px',
+            color:      'var(--color-text-muted)',
+            lineHeight: 1.5,
+          }}
+        >
+          {STATUS_DESC[step]}
+        </p>
+      )}
+
       {failed && (
         <p
           role="alert"
-          className="mt-4"
           style={{
+            marginTop:  14,
             fontFamily: 'var(--font-body)',
             fontSize:   '13px',
             color:      'var(--color-orange)',

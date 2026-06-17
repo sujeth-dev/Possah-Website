@@ -330,18 +330,19 @@
   animation: toastSlideUp 0.28s cubic-bezier(0.25, 0, 0.25, 1) both;
 }
 
-/* Desktop (≥768px): top-right, slides down */
-@media (min-width: 768px) {
-  @keyframes toastSlideUp {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+/* Desktop (≥768px): bottom-right, slides up */
+@keyframes toastSlideUpRight {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
+@media (min-width: 768px) {
   .toast-position {
-    bottom:    auto;
-    top:       24px;
-    right:     24px;
+    bottom:    80px;
+    top:       auto;
+    right:     32px;
     left:      auto;
     transform: none;
+    animation: toastSlideUpRight 0.28s cubic-bezier(0.25, 0, 0.25, 1) both;
   }
 }

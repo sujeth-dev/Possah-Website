@@ -4,6 +4,43 @@ All notable changes to this project, newest first.
 
 ---
 
+## [Unreleased] — 2026-06-17 — Post-Smoke-Test Round 2: Order Progress + Toast + Admin Error
+
+### Summary
+Three follow-up fixes after smoke testing: order progress bar now clearly shows completed/current/pending states with all labels visible and a status description; cart toast relocated to bottom-right on desktop and persists 6s; admin save failures now surface as an unmissable red banner.
+
+### Bug Fixes
+
+#### Order Progress Bar — visual clarity
+- **Before/after states**: Active step gets a soft halo (`box-shadow` ring); completed steps are 72% opacity — users can now clearly tell "done" vs "now" vs "upcoming"
+- **All labels visible at all screen sizes**: Removed `hidden sm:block` from non-active labels; non-active labels use 8px font (down from 10px) to fit even on 280px screens
+- **Status description**: One-line contextual message added below the circles (e.g. "Your order has been shipped and is on its way.")
+- **Placed date**: Order creation date shown as a sub-label under the "Placed" circle
+- `components/account/OrderProgressBar.tsx` — ring, opacity, always-visible labels, `STATUS_DESC` map, `placedAt` prop, `formatShortDate` helper
+- `app/(shop)/account/orders/[orderNumber]/page.tsx` — passes `placedAt={order.created_at}`
+
+#### Cart Toast — desktop position + persistence
+- Desktop: repositioned from top-right to **bottom-right** (`bottom: 80px; right: 32px`) — near the "Add to Bag" button area
+- Desktop animation: new `toastSlideUpRight` keyframe (slides up from below, no translateX)
+- Duration: 4s → **6s** auto-dismiss
+- `components/ui/AddedToBagToast.tsx` — `AUTO_DISMISS_MS` 4000 → 6000
+- `styles/globals.css` — `toastSlideUpRight` keyframe + desktop media query override
+
+#### Admin Homepage — prominent save-error banner
+When a save fails (e.g. DB columns missing, network error), a full-width red banner now appears above the save button — previously the error was a small inline span that was easy to miss.
+- `app/admin/homepage/HomepageEditor.tsx` — `SaveRow` upgraded to full banner
+
+### Files Changed
+- `components/account/OrderProgressBar.tsx`
+- `app/(shop)/account/orders/[orderNumber]/page.tsx`
+- `components/ui/AddedToBagToast.tsx`
+- `styles/globals.css`
+- `app/admin/homepage/HomepageEditor.tsx`
+- `scripts/verify/task2-mobile-ui.js` *(updated checks)*
+- `scripts/verify/task4-cart-toast.js` *(updated checks)*
+
+---
+
 ## [Unreleased] — 2026-06-17 — Admin Image CRUD + Mobile Fixes + Cart Toast
 
 ### Summary

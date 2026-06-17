@@ -230,6 +230,7 @@ export default async function OrderDetailPage({
           paymentStatus={order.payment_status}
           fulfillmentStatus={order.fulfillment_status}
           size="full"
+          placedAt={order.created_at}
         />
       </section>
 
