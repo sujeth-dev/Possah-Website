@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { formatPrice, whatsappUrl } from '@/lib/utils'
 import { useCartStore } from '@/lib/store/cartStore'
@@ -73,6 +73,8 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
     .map((v) => v.size)
 
   const selectedVariant = colourVariants.find((v) => v.size === selectedSize) ?? null
+  const sizeRef = useRef<HTMLDivElement>(null)
+
   const inWishlist = isInWishlist(product.id)
   const primaryImage = product.images[0]?.url ?? 'https://cdn.thepossah.com/ui/placeholder.svg'
   const showAudio = (product.is_new_arrival || product.is_top_selling) && !!product.audio_url
@@ -95,7 +97,11 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
   }
 
   const handleAddToCart = useCallback(() => {
-    if (!selectedSize) { setSizeError(true); return }
+    if (!selectedSize) {
+      setSizeError(true)
+      sizeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
     if (!selectedVariant) return
 
     addToCart({
@@ -142,7 +148,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-24 md:pb-0">
       {/* Badges */}
       <div className="flex items-center gap-2 flex-wrap">
         {product.sub_line && (
@@ -216,7 +222,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
       )}
 
       {/* Size selector */}
-      <div className="flex flex-col gap-3">
+      <div ref={sizeRef} className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
             SIZE
@@ -275,8 +281,8 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
         )}
       </div>
 
-      {/* Add to cart + wishlist */}
-      <div className="flex gap-3 pt-2">
+      {/* Add to cart + wishlist — desktop only; mobile uses sticky bar below */}
+      <div className="hidden md:flex gap-3 pt-2">
         <button
           onClick={handleAddToCart}
           disabled={addedState === 'added'}
@@ -360,6 +366,65 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
           </div>
         </Accordion>
       </AccordionGroup>
+
+      {/* Mobile-only sticky Add to Bag bar */}
+      <div
+        className="md:hidden fixed bottom-0 inset-x-0 z-50"
+        style={{
+          backgroundColor: 'var(--color-bg)',
+          borderTop:       '1px solid var(--color-border)',
+          padding:         '12px 16px',
+          paddingBottom:   'max(12px, env(safe-area-inset-bottom, 12px))',
+        }}
+      >
+        <div className="flex gap-3">
+          <button
+            onClick={handleAddToCart}
+            disabled={addedState === 'added'}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 transition-all duration-200"
+            style={{
+              backgroundColor: addedState === 'added' ? 'var(--color-text-muted)' : 'var(--color-green)',
+              color:           'var(--color-white)',
+              fontFamily:      'var(--font-mono)',
+              fontSize:        '11px',
+              letterSpacing:   '0.18em',
+              textTransform:   'uppercase',
+              borderRadius:    'var(--radius-btn)',
+              border:          'none',
+            }}
+            aria-live="polite"
+          >
+            {addedState === 'added' ? (
+              <>
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M1 5l4 4L13 1" />
+                </svg>
+                Added to Bag
+              </>
+            ) : 'Add to Bag'}
+          </button>
+
+          <button
+            onClick={handleWishlist}
+            className="flex items-center justify-center transition-all duration-200 hover:opacity-70"
+            style={{
+              width:           56,
+              height:          56,
+              flexShrink:      0,
+              border:          '1.5px solid var(--color-border)',
+              borderRadius:    'var(--radius-btn)',
+              backgroundColor: 'transparent',
+              cursor:          'pointer',
+            }}
+            aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+            aria-pressed={inWishlist}
+          >
+            <svg width="18" height="16" viewBox="0 0 18 16" fill={inWishlist ? 'var(--color-rose)' : 'none'} stroke={inWishlist ? 'var(--color-rose)' : 'var(--color-text)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 14.5S1.5 10 1.5 4.5a3.5 3.5 0 0 1 7-0.5 3.5 3.5 0 0 1 7 .5C15.5 10 9 14.5 9 14.5z" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

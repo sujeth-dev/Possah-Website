@@ -4,6 +4,28 @@ All notable changes to this project, newest first.
 
 ---
 
+## [Unreleased] — 2026-06-17 — Sticky Add to Bag Bar on Mobile PDP
+
+### Summary
+On mobile, the PDP gallery fills the first screen with no CTA visible. Added a fixed `position: sticky` green bar at the bottom of the viewport that persists through all scroll positions — from the gallery above down to the last accordion. Tapping without a size selected scrolls the size selector into view and shows the error. Tapping with a size adds to cart and triggers the "Go to Bag" toast.
+
+### New Features
+
+#### Mobile PDP — sticky Add to Bag bar
+- Fixed bar (`position: fixed; bottom: 0; inset-x: 0; z-index: 50`) visible at all scroll positions on mobile
+- Matches desktop "Added to Bag" check-mark feedback state after add
+- Wishlist heart button alongside Add to Bag — matches inline desktop row
+- `env(safe-area-inset-bottom, 12px)` padding — home indicator bar on iOS never overlaps the button
+- Tapping without size selection: `scrollIntoView({ behavior: 'smooth', block: 'center' })` scrolls size grid into view + shows error message
+- Inline button row (`<div className="flex gap-3 pt-2">`) hidden on mobile with `hidden md:flex` — sticky bar replaces it
+- Outer `ProductInfo` div gets `pb-24 md:pb-0` — last accordion not hidden behind the bar
+
+### Files Changed
+- `components/pdp/ProductInfo.tsx` — useRef, scroll-to-size, sticky bar, hide inline row, pb-24
+- `scripts/verify/task4-cart-toast.js` — 5 new checks (25/25 total)
+
+---
+
 ## [Unreleased] — 2026-06-17 — Mobile Order Detail: Vertical Progress Tracker
 
 ### Summary

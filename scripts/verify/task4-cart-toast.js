@@ -119,7 +119,7 @@ if (layout) {
   }
 }
 
-// ── 4. ProductInfo triggers toast ────────────────────────────────────────────
+// ── 4. ProductInfo triggers toast + sticky bar ───────────────────────────────
 console.log('\nProductInfo (components/pdp/ProductInfo.tsx)...')
 const productInfo = readSrc('components/pdp/ProductInfo.tsx')
 if (productInfo) {
@@ -137,6 +137,37 @@ if (productInfo) {
     pass('showToast receives name, image, and price')
   } else {
     fail('showToast may be missing required ToastItem fields')
+  }
+
+  // Sticky mobile CTA bar checks
+  if (productInfo.includes('md:hidden fixed bottom-0 inset-x-0 z-50')) {
+    pass('Sticky mobile bar: md:hidden fixed bottom-0 inset-x-0 z-50')
+  } else {
+    fail('Sticky mobile bar missing — expected "md:hidden fixed bottom-0 inset-x-0 z-50"')
+  }
+
+  if (productInfo.includes('hidden md:flex gap-3 pt-2')) {
+    pass('Inline button row hidden on mobile (hidden md:flex) — sticky bar takes over')
+  } else {
+    fail('Inline button row should use "hidden md:flex" so it is hidden on mobile')
+  }
+
+  if (productInfo.includes('pb-24 md:pb-0')) {
+    pass('Outer div has pb-24 md:pb-0 — prevents accordions hiding behind sticky bar')
+  } else {
+    fail('Outer div missing pb-24 md:pb-0 — content may be obscured by sticky bar')
+  }
+
+  if (productInfo.includes('sizeRef') && productInfo.includes('scrollIntoView')) {
+    pass('Size selector has ref — missing-size tap scrolls it into view')
+  } else {
+    fail('sizeRef / scrollIntoView missing — sticky bar size error needs scroll-to-selector')
+  }
+
+  if (productInfo.includes('env(safe-area-inset-bottom')) {
+    pass('iOS safe-area-inset-bottom applied — notch devices handled')
+  } else {
+    fail('env(safe-area-inset-bottom) missing from sticky bar — iOS notch not handled')
   }
 }
 
