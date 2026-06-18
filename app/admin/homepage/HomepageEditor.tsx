@@ -689,7 +689,11 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                 <ImageUploadField
                   label="Hero Image"
                   value={pageHeroes[key] ?? ''}
-                  onChange={v => setPageHeroes(h => ({ ...h, [key]: v || null }))}
+                  onChange={v => {
+                    // Guard: never save the placeholder SVG — treat it as empty
+                    const real = (v && !v.includes('/ui/placeholder.svg')) ? v : null
+                    setPageHeroes(h => ({ ...h, [key]: real }))
+                  }}
                   pathPrefix="uploads/editorial"
                 />
               </div>
