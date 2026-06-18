@@ -116,8 +116,25 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://thepossah.com/new-in' },
 }
 
+const HOMEPAGE_SINGLETON = '00000000-0000-0000-0000-000000000001'
+
+async function getPageHero(): Promise<string | null> {
+  try {
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from('homepage_config')
+      .select('page_heroes')
+      .eq('id', HOMEPAGE_SINGLETON)
+      .maybeSingle()
+    return (data?.page_heroes as { new_in_hero?: string | null } | null)?.new_in_hero ?? null
+  } catch { return null }
+}
+
 export default async function NewInPage({ searchParams }: PageProps) {
-  const { products, total, relatedProducts } = await getNewArrivals(searchParams)
+  const [{ products, total, relatedProducts }, heroImage] = await Promise.all([
+    getNewArrivals(searchParams),
+    getPageHero(),
+  ])
 
   const page    = parseInt(getString(searchParams.page) ?? '1', 10)
   const hasMore = page * PAGE_SIZE < total
@@ -143,16 +160,24 @@ export default async function NewInPage({ searchParams }: PageProps) {
         className="relative w-full flex items-end overflow-hidden"
         style={{
           minHeight: 'clamp(180px, 28vw, 360px)',
-          background: 'linear-gradient(135deg, var(--color-green) 0%, #0d2619 100%)',
+          background: heroImage ? undefined : 'linear-gradient(135deg, var(--color-green) 0%, #0d2619 100%)',
         }}
         aria-label="New In"
       >
-        {/* Decorative grain overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundSize: '200px' }}
-          aria-hidden="true"
-        />
+        {/* Background image (when configured) or decorative grain */}
+        {heroImage ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={heroImage} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-center" />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.65) 0%, transparent 60%)' }} aria-hidden="true" />
+          </>
+        ) : (
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundSize: '200px' }}
+            aria-hidden="true"
+          />
+        )}
         <div className="relative container-site pb-10 z-10">
           <p
             style={{

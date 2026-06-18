@@ -43,6 +43,14 @@ interface MtmCta {
   image_url?: string | null
 }
 
+interface PageHeroes {
+  women_hub_hero?:    string | null
+  new_in_hero?:       string | null
+  best_sellers_hero?: string | null
+  festive_hero?:      string | null
+  bridal_hero?:       string | null
+}
+
 interface HomepageConfig {
   hero_slides:       HeroSlide[]
   collection_banner: CollectionBanner | null
@@ -51,6 +59,7 @@ interface HomepageConfig {
   category_split?:   CategorySplit
   category_circles?: CategoryCircles
   mtm_cta?:          MtmCta
+  page_heroes?:      PageHeroes
 }
 
 interface Product {
@@ -71,6 +80,7 @@ const card: React.CSSProperties = {
   borderRadius:    '10px',
   padding:         '20px',
   marginBottom:    '16px',
+  scrollMarginTop: '60px',
 }
 const sectionTitle: React.CSSProperties = {
   fontFamily:    'var(--font-body)',
@@ -136,6 +146,17 @@ const removeBtn: React.CSSProperties = {
   cursor:          'pointer',
 }
 
+const TOC_SECTIONS = [
+  { id: 'hero-slides',       label: 'Hero' },
+  { id: 'category-split',    label: 'Split' },
+  { id: 'category-circles',  label: 'Circles' },
+  { id: 'new-arrivals',      label: 'New Arrivals' },
+  { id: 'collection-banner', label: 'Banner' },
+  { id: 'occasion-tiles',    label: 'Occasions' },
+  { id: 'mtm-cta',           label: 'MTM' },
+  { id: 'page-heroes',       label: 'Page Heroes' },
+]
+
 function Field({ label: lbl, value, onChange, placeholder, type = 'text' }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string
 }) {
@@ -183,19 +204,29 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   const [isPending, startTransition] = useTransition()
 
   // Hero slides
-  const [slides, setSlides]         = useState<HeroSlide[]>(initial.hero_slides ?? [])
+  const [slides, setSlides]           = useState<HeroSlide[]>(initial.hero_slides ?? [])
   const [slidesSaved, setSlidesSaved] = useState(false)
   const [slidesError, setSlidesError] = useState<string | null>(null)
 
-  // Collection banner
-  const [banner, setBanner]         = useState<CollectionBanner>(initial.collection_banner ?? EMPTY_BANNER)
-  const [bannerSaved, setBannerSaved] = useState(false)
-  const [bannerError, setBannerError] = useState<string | null>(null)
+  // Category Split (Ethnic / Western)
+  const [categorySplit, setCategorySplit] = useState<CategorySplit>(initial.category_split ?? {})
+  const [splitSaved, setSplitSaved]       = useState(false)
+  const [splitError, setSplitError]       = useState<string | null>(null)
+
+  // Category Circles (6 categories)
+  const [categoryCircles, setCategoryCircles] = useState<CategoryCircles>(initial.category_circles ?? {})
+  const [circlesSaved, setCirclesSaved]       = useState(false)
+  const [circlesError, setCirclesError]       = useState<string | null>(null)
 
   // New arrivals
   const [selectedIds, setSelectedIds] = useState<string[]>((initial.new_arrival_ids as string[]) ?? [])
   const [naSaved, setNaSaved]         = useState(false)
   const [naError, setNaError]         = useState<string | null>(null)
+
+  // Collection banner
+  const [banner, setBanner]           = useState<CollectionBanner>(initial.collection_banner ?? EMPTY_BANNER)
+  const [bannerSaved, setBannerSaved] = useState(false)
+  const [bannerError, setBannerError] = useState<string | null>(null)
 
   // Occasion tiles
   const [tiles, setTiles]           = useState<OccasionTile[]>(
@@ -206,20 +237,15 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   const [tilesSaved, setTilesSaved] = useState(false)
   const [tilesError, setTilesError] = useState<string | null>(null)
 
-  // Category Split (Ethnic / Western)
-  const [categorySplit, setCategorySplit]   = useState<CategorySplit>(initial.category_split ?? {})
-  const [splitSaved, setSplitSaved]         = useState(false)
-  const [splitError, setSplitError]         = useState<string | null>(null)
-
-  // Category Circles (6 categories)
-  const [categoryCircles, setCategoryCircles] = useState<CategoryCircles>(initial.category_circles ?? {})
-  const [circlesSaved, setCirclesSaved]       = useState(false)
-  const [circlesError, setCirclesError]       = useState<string | null>(null)
-
   // Made-to-Measure CTA
-  const [mtmCta, setMtmCta]         = useState<MtmCta>(initial.mtm_cta ?? {})
-  const [mtmSaved, setMtmSaved]     = useState(false)
-  const [mtmError, setMtmError]     = useState<string | null>(null)
+  const [mtmCta, setMtmCta]       = useState<MtmCta>(initial.mtm_cta ?? {})
+  const [mtmSaved, setMtmSaved]   = useState(false)
+  const [mtmError, setMtmError]   = useState<string | null>(null)
+
+  // Page Heroes (editorial pages)
+  const [pageHeroes, setPageHeroes]     = useState<PageHeroes>(initial.page_heroes ?? {})
+  const [heroesSaved, setHeroesSaved]   = useState(false)
+  const [heroesError, setHeroesError]   = useState<string | null>(null)
 
   async function patch(body: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> {
     const res = await fetch('/api/admin/homepage', {
@@ -243,36 +269,6 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
     })
   }
 
-  function saveBanner(e: React.FormEvent) {
-    e.preventDefault()
-    setBannerError(null); setBannerSaved(false)
-    startTransition(async () => {
-      const r = await patch({ collection_banner: banner })
-      if (!r.ok) { setBannerError(r.error ?? 'Failed'); return }
-      setBannerSaved(true); setTimeout(() => setBannerSaved(false), 2500); router.refresh()
-    })
-  }
-
-  function saveNewArrivals(e: React.FormEvent) {
-    e.preventDefault()
-    setNaError(null); setNaSaved(false)
-    startTransition(async () => {
-      const r = await patch({ new_arrival_ids: selectedIds })
-      if (!r.ok) { setNaError(r.error ?? 'Failed'); return }
-      setNaSaved(true); setTimeout(() => setNaSaved(false), 2500); router.refresh()
-    })
-  }
-
-  function saveTiles(e: React.FormEvent) {
-    e.preventDefault()
-    setTilesError(null); setTilesSaved(false)
-    startTransition(async () => {
-      const r = await patch({ occasion_tiles: tiles })
-      if (!r.ok) { setTilesError(r.error ?? 'Failed'); return }
-      setTilesSaved(true); setTimeout(() => setTilesSaved(false), 2500); router.refresh()
-    })
-  }
-
   function saveCategorySplit(e: React.FormEvent) {
     e.preventDefault()
     setSplitError(null); setSplitSaved(false)
@@ -293,6 +289,36 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
     })
   }
 
+  function saveNewArrivals(e: React.FormEvent) {
+    e.preventDefault()
+    setNaError(null); setNaSaved(false)
+    startTransition(async () => {
+      const r = await patch({ new_arrival_ids: selectedIds })
+      if (!r.ok) { setNaError(r.error ?? 'Failed'); return }
+      setNaSaved(true); setTimeout(() => setNaSaved(false), 2500); router.refresh()
+    })
+  }
+
+  function saveBanner(e: React.FormEvent) {
+    e.preventDefault()
+    setBannerError(null); setBannerSaved(false)
+    startTransition(async () => {
+      const r = await patch({ collection_banner: banner })
+      if (!r.ok) { setBannerError(r.error ?? 'Failed'); return }
+      setBannerSaved(true); setTimeout(() => setBannerSaved(false), 2500); router.refresh()
+    })
+  }
+
+  function saveTiles(e: React.FormEvent) {
+    e.preventDefault()
+    setTilesError(null); setTilesSaved(false)
+    startTransition(async () => {
+      const r = await patch({ occasion_tiles: tiles })
+      if (!r.ok) { setTilesError(r.error ?? 'Failed'); return }
+      setTilesSaved(true); setTimeout(() => setTilesSaved(false), 2500); router.refresh()
+    })
+  }
+
   function saveMtmCta(e: React.FormEvent) {
     e.preventDefault()
     setMtmError(null); setMtmSaved(false)
@@ -300,6 +326,16 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
       const r = await patch({ mtm_cta: mtmCta })
       if (!r.ok) { setMtmError(r.error ?? 'Failed'); return }
       setMtmSaved(true); setTimeout(() => setMtmSaved(false), 2500); router.refresh()
+    })
+  }
+
+  function savePageHeroes(e: React.FormEvent) {
+    e.preventDefault()
+    setHeroesError(null); setHeroesSaved(false)
+    startTransition(async () => {
+      const r = await patch({ page_heroes: pageHeroes })
+      if (!r.ok) { setHeroesError(r.error ?? 'Failed'); return }
+      setHeroesSaved(true); setTimeout(() => setHeroesSaved(false), 2500); router.refresh()
     })
   }
 
@@ -328,9 +364,51 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   return (
     <div>
 
-      {/* ── HERO SLIDES ──────────────────────────────────────────── */}
+      {/* ── TOC JUMP NAV ─────────────────────────────────────────── */}
+      <div style={{
+        display:         'flex',
+        flexWrap:        'wrap',
+        gap:             '6px',
+        marginBottom:    '20px',
+        padding:         '10px 14px',
+        backgroundColor: 'var(--color-surface)',
+        border:          '1px solid var(--color-border)',
+        borderRadius:    '8px',
+        position:        'sticky',
+        top:             0,
+        zIndex:          10,
+      }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', alignSelf: 'center', marginRight: '4px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          Jump to:
+        </span>
+        {TOC_SECTIONS.map(({ id, label: lbl }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            style={{
+              padding:         '4px 12px',
+              borderRadius:    '20px',
+              border:          '1px solid var(--color-border)',
+              backgroundColor: 'var(--color-bg)',
+              fontFamily:      'var(--font-body)',
+              fontSize:        '11px',
+              color:           'var(--color-text-muted)',
+              cursor:          'pointer',
+              letterSpacing:   '0.02em',
+              transition:      'all 0.1s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-green)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-green)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-muted)' }}
+          >
+            {lbl}
+          </button>
+        ))}
+      </div>
+
+      {/* ── 1. HERO SLIDES ───────────────────────────────────────── */}
       <form onSubmit={saveSlides}>
-        <div style={card}>
+        <div id="hero-slides" style={card}>
           <p style={sectionTitle}>Hero Slides</p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
             Full-width homepage hero. Autoplays. Drag to reorder using the ↑↓ buttons.
@@ -346,10 +424,10 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
             <div
               key={i}
               style={{
-                border:       '1px solid var(--color-border)',
-                borderRadius: '8px',
-                padding:      '14px',
-                marginBottom: '10px',
+                border:          '1px solid var(--color-border)',
+                borderRadius:    '8px',
+                padding:         '14px',
+                marginBottom:    '10px',
                 backgroundColor: 'var(--color-bg)',
               }}
             >
@@ -386,23 +464,77 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
         </div>
       </form>
 
-      {/* ── COLLECTION BANNER ──────────────────────────────────── */}
-      <form onSubmit={saveBanner}>
-        <div style={card}>
-          <p style={sectionTitle}>Collection Banner</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <ImageUploadField label="Image" value={banner.image_url} onChange={v => setBanner(b => ({ ...b, image_url: v }))} pathPrefix="uploads/homepage/banner" />
-            <Field label="Headline"  value={banner.headline}  onChange={v => setBanner(b => ({ ...b, headline: v }))}  placeholder="The New Edit" />
-            <Field label="Subtitle"  value={banner.subtitle}  onChange={v => setBanner(b => ({ ...b, subtitle: v }))}  placeholder="Optional" />
-            <Field label="CTA Link"  value={banner.cta_link}  onChange={v => setBanner(b => ({ ...b, cta_link: v }))}  placeholder="/shop" />
+      {/* ── 2. CATEGORY SPLIT (ETHNIC / WESTERN) ────────────────── */}
+      <form onSubmit={saveCategorySplit}>
+        <div id="category-split" style={card}>
+          <p style={sectionTitle}>Category Split — Ethnic &amp; Western</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
+            Full-width split banner below the hero. Two tall images side-by-side linking to Ethnic and Western shops.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>ETHNIC PANEL</p>
+              <ImageUploadField
+                label="Image"
+                value={categorySplit.ethnic_image ?? ''}
+                onChange={v => setCategorySplit(s => ({ ...s, ethnic_image: v }))}
+                pathPrefix="uploads/homepage/category-split"
+              />
+            </div>
+            <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>WESTERN PANEL</p>
+              <ImageUploadField
+                label="Image"
+                value={categorySplit.western_image ?? ''}
+                onChange={v => setCategorySplit(s => ({ ...s, western_image: v }))}
+                pathPrefix="uploads/homepage/category-split"
+              />
+            </div>
           </div>
-          <SaveRow isPending={isPending} saved={bannerSaved} error={bannerError} />
+          <SaveRow isPending={isPending} saved={splitSaved} error={splitError} />
         </div>
       </form>
 
-      {/* ── NEW ARRIVALS ────────────────────────────────────────── */}
+      {/* ── 3. CATEGORY CIRCLES ─────────────────────────────────── */}
+      <form onSubmit={saveCategoryCircles}>
+        <div id="category-circles" style={card}>
+          <p style={sectionTitle}>Category Circles (6 fixed)</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
+            Six circular category thumbnails. Labels and links are fixed — only images are configurable.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            {(
+              [
+                { key: 'sarees',     label: 'SAREES',     href: '/women/sarees'     },
+                { key: 'lehengas',   label: 'LEHENGAS',   href: '/women/lehengas'   },
+                { key: 'co_ords',    label: 'CO-ORDS',    href: '/women/co-ords'    },
+                { key: 'dresses',    label: 'DRESSES',    href: '/women/dresses'    },
+                { key: 'kurta_sets', label: 'KURTA SETS', href: '/women/kurta-sets' },
+                { key: 'tops',       label: 'TOPS',       href: '/women/tops'       },
+              ] as const
+            ).map(({ key, label: lbl, href }) => (
+              <div
+                key={key}
+                style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}
+              >
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>{lbl}</p>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>{href}</p>
+                <ImageUploadField
+                  label="Image"
+                  value={categoryCircles[key] ?? ''}
+                  onChange={v => setCategoryCircles(c => ({ ...c, [key]: v }))}
+                  pathPrefix="uploads/homepage/circles"
+                />
+              </div>
+            ))}
+          </div>
+          <SaveRow isPending={isPending} saved={circlesSaved} error={circlesError} />
+        </div>
+      </form>
+
+      {/* ── 4. NEW ARRIVALS ─────────────────────────────────────── */}
       <form onSubmit={saveNewArrivals}>
-        <div style={card}>
+        <div id="new-arrivals" style={card}>
           <p style={sectionTitle}>New Arrivals Grid</p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
             Select products that appear in the homepage New Arrivals section. Shown in selection order.
@@ -420,15 +552,15 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                   <label
                     key={p.id}
                     style={{
-                      display:      'flex',
-                      alignItems:   'center',
-                      gap:          '10px',
-                      padding:      '8px 12px',
-                      border:       `1px solid ${checked ? 'var(--color-gold)' : 'var(--color-border)'}`,
-                      borderRadius: '6px',
-                      cursor:       'pointer',
+                      display:         'flex',
+                      alignItems:      'center',
+                      gap:             '10px',
+                      padding:         '8px 12px',
+                      border:          `1px solid ${checked ? 'var(--color-gold)' : 'var(--color-border)'}`,
+                      borderRadius:    '6px',
+                      cursor:          'pointer',
                       backgroundColor: checked ? '#FFFBEB' : 'var(--color-bg)',
-                      transition:   'all 0.12s',
+                      transition:      'all 0.12s',
                     }}
                   >
                     <input
@@ -459,9 +591,26 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
         </div>
       </form>
 
-      {/* ── OCCASION TILES ──────────────────────────────────────── */}
+      {/* ── 5. COLLECTION BANNER ────────────────────────────────── */}
+      <form onSubmit={saveBanner}>
+        <div id="collection-banner" style={card}>
+          <p style={sectionTitle}>Collection Banner</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
+            Full-width editorial banner between New Arrivals and Occasion tiles.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <ImageUploadField label="Image" value={banner.image_url} onChange={v => setBanner(b => ({ ...b, image_url: v }))} pathPrefix="uploads/homepage/banner" />
+            <Field label="Headline"  value={banner.headline}  onChange={v => setBanner(b => ({ ...b, headline: v }))}  placeholder="The New Edit" />
+            <Field label="Subtitle"  value={banner.subtitle}  onChange={v => setBanner(b => ({ ...b, subtitle: v }))}  placeholder="Optional" />
+            <Field label="CTA Link"  value={banner.cta_link}  onChange={v => setBanner(b => ({ ...b, cta_link: v }))}  placeholder="/shop" />
+          </div>
+          <SaveRow isPending={isPending} saved={bannerSaved} error={bannerError} />
+        </div>
+      </form>
+
+      {/* ── 6. OCCASION TILES ───────────────────────────────────── */}
       <form onSubmit={saveTiles}>
-        <div style={card}>
+        <div id="occasion-tiles" style={card}>
           <p style={sectionTitle}>Occasion Tiles (8 fixed)</p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
             8 occasion tiles on the homepage. All 8 must be filled.
@@ -472,9 +621,9 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
               <div
                 key={i}
                 style={{
-                  border:       '1px solid var(--color-border)',
-                  borderRadius: '8px',
-                  padding:      '12px',
+                  border:          '1px solid var(--color-border)',
+                  borderRadius:    '8px',
+                  padding:         '12px',
                   backgroundColor: 'var(--color-bg)',
                 }}
               >
@@ -483,8 +632,8 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <ImageUploadField label="Image" value={tile.image_url ?? ''} onChange={v => updateTile(i, 'image_url', v)} pathPrefix="uploads/homepage/occasions" />
-                  <Field label="Label"     value={tile.label}           onChange={v => updateTile(i, 'label', v)}     placeholder="Wedding" />
-                  <Field label="Link"      value={tile.link}            onChange={v => updateTile(i, 'link', v)}      placeholder="/shop?occasion=wedding" />
+                  <Field label="Label"     value={tile.label}  onChange={v => updateTile(i, 'label', v)} placeholder="Wedding" />
+                  <Field label="Link"      value={tile.link}   onChange={v => updateTile(i, 'link', v)}  placeholder="/shop?occasion=wedding" />
                 </div>
               </div>
             ))}
@@ -494,77 +643,9 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
         </div>
       </form>
 
-      {/* ── CATEGORY SPLIT (ETHNIC / WESTERN) ───────────────────── */}
-      <form onSubmit={saveCategorySplit}>
-        <div style={card}>
-          <p style={sectionTitle}>Category Split — Ethnic &amp; Western</p>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
-            Full-width split banner below the hero. Two tall images side-by-side linking to Ethnic and Western shops.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>ETHNIC PANEL</p>
-              <ImageUploadField
-                label="Image"
-                value={categorySplit.ethnic_image ?? ''}
-                onChange={v => setCategorySplit(s => ({ ...s, ethnic_image: v }))}
-                pathPrefix="uploads/homepage/category-split"
-              />
-            </div>
-            <div style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>WESTERN PANEL</p>
-              <ImageUploadField
-                label="Image"
-                value={categorySplit.western_image ?? ''}
-                onChange={v => setCategorySplit(s => ({ ...s, western_image: v }))}
-                pathPrefix="uploads/homepage/category-split"
-              />
-            </div>
-          </div>
-          <SaveRow isPending={isPending} saved={splitSaved} error={splitError} />
-        </div>
-      </form>
-
-      {/* ── CATEGORY CIRCLES ────────────────────────────────────────── */}
-      <form onSubmit={saveCategoryCircles}>
-        <div style={card}>
-          <p style={sectionTitle}>Category Circles (6 fixed)</p>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
-            Six circular category thumbnails. Labels and links are fixed — only images are configurable.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {(
-              [
-                { key: 'sarees',     label: 'SAREES',     href: '/women/sarees'     },
-                { key: 'lehengas',   label: 'LEHENGAS',   href: '/women/lehengas'   },
-                { key: 'co_ords',    label: 'CO-ORDS',    href: '/women/co-ords'    },
-                { key: 'dresses',    label: 'DRESSES',    href: '/women/dresses'    },
-                { key: 'kurta_sets', label: 'KURTA SETS', href: '/women/kurta-sets' },
-                { key: 'tops',       label: 'TOPS',       href: '/women/tops'       },
-              ] as const
-            ).map(({ key, label, href }) => (
-              <div
-                key={key}
-                style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}
-              >
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>{label}</p>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>{href}</p>
-                <ImageUploadField
-                  label="Image"
-                  value={categoryCircles[key] ?? ''}
-                  onChange={v => setCategoryCircles(c => ({ ...c, [key]: v }))}
-                  pathPrefix="uploads/homepage/circles"
-                />
-              </div>
-            ))}
-          </div>
-          <SaveRow isPending={isPending} saved={circlesSaved} error={circlesError} />
-        </div>
-      </form>
-
-      {/* ── MADE-TO-MEASURE CTA ─────────────────────────────────────── */}
+      {/* ── 7. MADE-TO-MEASURE CTA ──────────────────────────────── */}
       <form onSubmit={saveMtmCta}>
-        <div style={card}>
+        <div id="mtm-cta" style={card}>
           <p style={sectionTitle}>Made-to-Measure CTA</p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
             Right-side image for the Made-to-Measure section near the bottom of the homepage.
@@ -578,6 +659,44 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
             />
           </div>
           <SaveRow isPending={isPending} saved={mtmSaved} error={mtmError} />
+        </div>
+      </form>
+
+      {/* ── 8. PAGE HEROES (editorial collection pages) ─────────── */}
+      <form onSubmit={savePageHeroes}>
+        <div id="page-heroes" style={card}>
+          <p style={sectionTitle}>Page Heroes — Collection &amp; Editorial</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+            Hero banner images for collection and editorial pages. Leave blank to use the default gradient/placeholder.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            {(
+              [
+                { key: 'women_hub_hero',    label: 'WOMEN HUB',    page: '/women'        },
+                { key: 'new_in_hero',       label: 'NEW IN',       page: '/new-in'       },
+                { key: 'best_sellers_hero', label: 'BEST SELLERS', page: '/best-sellers' },
+                { key: 'festive_hero',      label: 'FESTIVE',      page: '/festive'      },
+                { key: 'bridal_hero',       label: 'BRIDAL',       page: '/bridal'       },
+              ] as const
+            ).map(({ key, label: lbl, page }) => (
+              <div
+                key={key}
+                style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}
+              >
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>{lbl}</p>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>{page}</p>
+                <ImageUploadField
+                  label="Hero Image"
+                  value={pageHeroes[key] ?? ''}
+                  onChange={v => setPageHeroes(h => ({ ...h, [key]: v || null }))}
+                  pathPrefix="uploads/editorial"
+                />
+              </div>
+            ))}
+          </div>
+
+          <SaveRow isPending={isPending} saved={heroesSaved} error={heroesError} />
         </div>
       </form>
     </div>

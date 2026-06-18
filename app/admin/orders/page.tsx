@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { FulfillmentBadge, PaymentBadge } from '@/components/admin/FulfillmentBadge'
 import { formatPrice } from '@/lib/utils'
+import { DateQuickFilters } from './DateQuickFilters'
 
 export const metadata: Metadata = { title: 'Orders' }
 export const dynamic = 'force-dynamic'
@@ -252,6 +254,11 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
             Search
           </button>
         </form>
+
+        {/* Quick date presets */}
+        <Suspense fallback={null}>
+          <DateQuickFilters />
+        </Suspense>
 
         {/* Date range */}
         <form method="GET" action="/admin/orders" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>

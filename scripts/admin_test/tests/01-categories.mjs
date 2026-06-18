@@ -78,5 +78,17 @@ export async function run(ctx) {
     }
   }
 
+  // ── SITE REFLECTION — verify live pages still render after CRUD + revalidation ─
+  // The categories API calls revalidatePath('/', 'layout') on every mutation.
+  // This step checks that the live pages respond correctly after the cache is cleared.
+  {
+    const pages = ['/women', '/new-in', '/best-sellers']
+    for (const page of pages) {
+      const res = await api('GET', page)
+      A.ok('SITE REFLECTION', `${page} returns 200 after category change`, res.status === 200,
+        `Page ${page} returned ${res.status}. Revalidation or rendering may be broken.`)
+    }
+  }
+
   return A.results
 }

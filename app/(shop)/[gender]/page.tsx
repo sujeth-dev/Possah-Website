@@ -46,6 +46,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+const HOMEPAGE_SINGLETON = '00000000-0000-0000-0000-000000000001'
+
+async function getGenderHubHero(gender: string): Promise<string | null> {
+  if (gender !== 'women') return null
+  try {
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from('homepage_config')
+      .select('page_heroes')
+      .eq('id', HOMEPAGE_SINGLETON)
+      .maybeSingle()
+    return (data?.page_heroes as { women_hub_hero?: string | null } | null)?.women_hub_hero ?? null
+  } catch { return null }
+}
+
 async function getNewArrivalsPreview(gender: string): Promise<ProductCardData[]> {
   try {
     const supabase = createPublicClient()
@@ -187,9 +202,10 @@ export default async function GenderHubPage({ params }: PageProps) {
 
   const genderLabel = params.gender.charAt(0).toUpperCase() + params.gender.slice(1)
 
-  const [newArrivals, categories] = await Promise.all([
+  const [newArrivals, categories, hubHero] = await Promise.all([
     getNewArrivalsPreview(params.gender),
     getCategoryData(params.gender),
+    getGenderHubHero(params.gender),
   ])
 
   const heroImageMap = Object.fromEntries(categories.map((c) => [c.slug, c.hero_image_url]))
@@ -239,7 +255,7 @@ export default async function GenderHubPage({ params }: PageProps) {
         aria-label={`${genderLabel} — The Possah`}
       >
         <Image
-          src="https://cdn.thepossah.com/ui/placeholder.svg"
+          src={hubHero || 'https://cdn.thepossah.com/ui/placeholder.svg'}
           alt={`The Possah ${genderLabel}`}
           fill
           priority

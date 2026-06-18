@@ -20,6 +20,7 @@ interface DashboardStats {
   lowStockItems: number
   abandonedLast7d: number      // Pending/failed orders in last 7 days — checkout intent that did not pay
   abandonedValueLast7d: number // Stored total of those attempts
+  activeCoupons: number        // Active coupon codes available right now
 }
 
 interface RecentOrder {
@@ -49,6 +50,7 @@ async function getDashboardData(): Promise<{
       lowStockItems: 0,
       abandonedLast7d: 0,
       abandonedValueLast7d: 0,
+      activeCoupons: 0,
     },
     recentOrders: [],
   }
@@ -72,6 +74,7 @@ async function getDashboardData(): Promise<{
       lowStockRes,
       recentOrdersRes,
       abandonedRes,
+      activeCouponsRes,
     ] = await Promise.all([
       // Orders + revenue today — PAID ONLY. Unpaid attempts (pending/failed)
       // never roll into revenue; that's tracked in `abandonedLast7d` instead.
@@ -119,6 +122,12 @@ async function getDashboardData(): Promise<{
         .in('payment_status', ['pending', 'failed'])
         .neq('fulfillment_status', 'cancelled')
         .gte('created_at', sevenDaysAgo),
+
+      // Active coupon codes right now
+      supabase
+        .from('coupons')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', true),
     ])
 
     const todayOrders = todayOrdersRes.data ?? []
@@ -130,6 +139,7 @@ async function getDashboardData(): Promise<{
     const abandonedOrders = abandonedRes.data ?? []
     const abandonedLast7d = abandonedOrders.length
     const abandonedValueLast7d = abandonedOrders.reduce((sum, o) => sum + (o.total ?? 0), 0)
+    const activeCoupons = activeCouponsRes.count ?? 0
 
     const recentOrders: RecentOrder[] = (recentOrdersRes.data ?? []).map((o) => {
       // line_items is a JSON array — count items
@@ -162,6 +172,7 @@ async function getDashboardData(): Promise<{
         lowStockItems,
         abandonedLast7d,
         abandonedValueLast7d,
+        activeCoupons,
       },
       recentOrders,
     }
@@ -213,7 +224,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-10">
         <AdminStatCard
           label="Orders Today"
           value={stats.ordersToday}
@@ -255,6 +266,13 @@ export default async function AdminDashboardPage() {
           subLabel="1–3 units remaining"
           accent={stats.lowStockItems > 0 ? 'warning' : 'default'}
           icon={<IconAlert />}
+        />
+        <AdminStatCard
+          label="Active Coupons"
+          value={stats.activeCoupons}
+          subLabel="Live discount codes"
+          accent="default"
+          icon={<IconTag />}
         />
       </div>
 
@@ -525,6 +543,15 @@ function IconCart() {
       <path d="M2 3h2l1.5 9.5a1.5 1.5 0 0 0 1.5 1.3h6a1.5 1.5 0 0 0 1.5-1.2L16 6H5" />
       <circle cx="7" cy="16" r="0.9" />
       <circle cx="13" cy="16" r="0.9" />
+    </svg>
+  )
+}
+
+function IconTag() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9.5 2H3a1 1 0 0 0-1 1v6.5a1 1 0 0 0 .3.7l7 7a1 1 0 0 0 1.4 0l6-6a1 1 0 0 0 0-1.4l-7-7A1 1 0 0 0 9.5 2z" />
+      <circle cx="5.5" cy="5.5" r="1" />
     </svg>
   )
 }

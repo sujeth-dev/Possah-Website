@@ -85,13 +85,30 @@ async function getFestiveProducts(occasion: string | null): Promise<ProductCardD
   }
 }
 
+const HOMEPAGE_SINGLETON = '00000000-0000-0000-0000-000000000001'
+
+async function getPageHero(): Promise<string | null> {
+  try {
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from('homepage_config')
+      .select('page_heroes')
+      .eq('id', HOMEPAGE_SINGLETON)
+      .maybeSingle()
+    return (data?.page_heroes as { festive_hero?: string | null } | null)?.festive_hero ?? null
+  } catch { return null }
+}
+
 export default async function FestivePage({
   searchParams,
 }: {
   searchParams: { occasion?: string }
 }) {
   const activeOccasion = searchParams.occasion ?? null
-  const products = await getFestiveProducts(activeOccasion)
+  const [products, heroImage] = await Promise.all([
+    getFestiveProducts(activeOccasion),
+    getPageHero(),
+  ])
 
   return (
     <>
@@ -101,7 +118,7 @@ export default async function FestivePage({
         style={{ minHeight: 'clamp(280px, 40vw, 520px)' }}
       >
         <ImageWithFallback
-          src="https://cdn.thepossah.com/ui/placeholder.svg"
+          src={heroImage || PH}
           alt="The Possah Festive"
           fill
           priority

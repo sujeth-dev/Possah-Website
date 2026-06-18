@@ -43,6 +43,14 @@ const MtmCtaSchema = z.object({
   image_url: z.string().url().optional().nullable(),
 })
 
+const PageHeroesSchema = z.object({
+  women_hub_hero:    z.string().url().optional().nullable(),
+  new_in_hero:       z.string().url().optional().nullable(),
+  best_sellers_hero: z.string().url().optional().nullable(),
+  festive_hero:      z.string().url().optional().nullable(),
+  bridal_hero:       z.string().url().optional().nullable(),
+})
+
 const HomepageUpdateSchema = z.object({
   hero_slides:       z.array(HeroSlideSchema).optional(),
   collection_banner: z.union([CollectionBannerSchema, z.null(), z.record(z.unknown())]).optional(),
@@ -51,6 +59,7 @@ const HomepageUpdateSchema = z.object({
   category_split:    z.union([CategorySplitSchema, z.null(), z.record(z.unknown())]).optional(),
   category_circles:  z.union([CategoryCirclesSchema, z.null(), z.record(z.unknown())]).optional(),
   mtm_cta:           z.union([MtmCtaSchema, z.null(), z.record(z.unknown())]).optional(),
+  page_heroes:       z.union([PageHeroesSchema, z.null(), z.record(z.unknown())]).optional(),
 })
 
 const SINGLETON_ID = '00000000-0000-0000-0000-000000000001'
@@ -107,6 +116,7 @@ export async function PATCH(request: NextRequest) {
     if (parsed.data.category_split    !== undefined) updates.category_split    = parsed.data.category_split    ?? {}
     if (parsed.data.category_circles  !== undefined) updates.category_circles  = parsed.data.category_circles  ?? {}
     if (parsed.data.mtm_cta           !== undefined) updates.mtm_cta           = parsed.data.mtm_cta           ?? {}
+    if (parsed.data.page_heroes       !== undefined) updates.page_heroes       = parsed.data.page_heroes       ?? {}
 
     if (Object.keys(updates).length === 0) return NextResponse.json({ ok: true })
 
@@ -118,6 +128,11 @@ export async function PATCH(request: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     revalidatePath('/', 'layout')
     revalidatePath('/journal', 'layout')
+    revalidatePath('/festive', 'page')
+    revalidatePath('/bridal', 'page')
+    revalidatePath('/new-in', 'page')
+    revalidatePath('/best-sellers', 'page')
+    revalidatePath('/women', 'page')
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

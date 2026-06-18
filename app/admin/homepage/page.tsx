@@ -34,6 +34,13 @@ interface HomepageConfig {
   category_split?:   { ethnic_image?: string; western_image?: string }
   category_circles?: { sarees?: string; lehengas?: string; co_ords?: string; dresses?: string; kurta_sets?: string; tops?: string }
   mtm_cta?:          { image_url?: string }
+  page_heroes?:      {
+    women_hub_hero?:    string | null
+    new_in_hero?:       string | null
+    best_sellers_hero?: string | null
+    festive_hero?:      string | null
+    bridal_hero?:       string | null
+  }
 }
 
 // Must stay in sync with the constant in app/api/admin/homepage/route.ts
@@ -52,6 +59,7 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
     category_split:   {},
     category_circles: {},
     mtm_cta:          {},
+    page_heroes:      {},
   }
 
   try {
@@ -90,6 +98,7 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
       category_split:   (data.category_split   as HomepageConfig['category_split'])   ?? {},
       category_circles: (data.category_circles as HomepageConfig['category_circles']) ?? {},
       mtm_cta:          (data.mtm_cta          as HomepageConfig['mtm_cta'])          ?? {},
+      page_heroes:      (data.page_heroes      as HomepageConfig['page_heroes'])      ?? {},
     }
   } catch {
     return defaults

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { createPublicClient } from '@/lib/supabase/public'
 import { FilterSidebar } from '@/components/shop/FilterSidebar'
@@ -117,8 +118,25 @@ async function getBestSellers(searchParams: Record<string, string | string[] | u
   }
 }
 
+const HOMEPAGE_SINGLETON = '00000000-0000-0000-0000-000000000001'
+
+async function getPageHero(): Promise<string | null> {
+  try {
+    const supabase = createPublicClient()
+    const { data } = await supabase
+      .from('homepage_config')
+      .select('page_heroes')
+      .eq('id', HOMEPAGE_SINGLETON)
+      .maybeSingle()
+    return (data?.page_heroes as { best_sellers_hero?: string | null } | null)?.best_sellers_hero ?? null
+  } catch { return null }
+}
+
 export default async function BestSellersPage({ searchParams }: PageProps) {
-  const { products, total, relatedProducts } = await getBestSellers(searchParams)
+  const [{ products, total, relatedProducts }, heroImage] = await Promise.all([
+    getBestSellers(searchParams),
+    getPageHero(),
+  ])
 
   return (
     <>
@@ -137,10 +155,24 @@ export default async function BestSellersPage({ searchParams }: PageProps) {
         }}
       />
 
+      {/* Hero image (when configured in admin) */}
+      {heroImage && (
+        <div className="relative w-full overflow-hidden flex items-end" style={{ minHeight: 'clamp(220px, 32vw, 440px)' }}>
+          <Image src={heroImage} alt="Best Sellers" fill priority className="object-cover object-center" sizes="100vw" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(15,25,18,0.6) 0%, transparent 60%)' }} aria-hidden="true" />
+          <div className="relative container-site pb-12 z-10">
+            <p className="section-label" style={{ color: 'rgba(244,236,223,0.7)', marginBottom: 8 }}>THE POSSAH</p>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 6vw, 80px)', fontWeight: '400', color: 'var(--color-white)', lineHeight: 1 }}>
+              Best Sellers
+            </h1>
+          </div>
+        </div>
+      )}
+
       {/* Page header */}
       <div
         className="container-site pt-12 pb-8"
-        style={{ borderBottom: '1px solid var(--color-border)' }}
+        style={{ borderBottom: '1px solid var(--color-border)', display: heroImage ? 'none' : undefined }}
       >
         <p className="section-label mb-3">THE POSSAH</p>
         <h1

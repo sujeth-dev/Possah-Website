@@ -337,6 +337,71 @@ export function ProductForm({ initialData, categories, mode }: ProductFormProps)
           </div>
         )}
 
+        {/* ── TOP ACTION BAR (iOS: visible without scrolling) ── */}
+        <div
+          className="flex items-center justify-between"
+          style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px' }}
+        >
+          <button
+            type="button"
+            onClick={() => router.back()}
+            disabled={saving}
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '13px',
+              color: 'var(--color-text-muted)',
+              background: 'none',
+              border: 'none',
+              cursor: saving ? 'not-allowed' : 'pointer',
+              padding: 0,
+              opacity: saving ? 0.5 : 1,
+            }}
+          >
+            ← Cancel
+          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-5 py-2.5 hover:opacity-90 transition-opacity"
+              style={{
+                border: '1px solid var(--color-green)',
+                borderRadius: 'var(--radius-btn)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-green)',
+                fontFamily: 'var(--font-body)',
+                fontSize: '12px',
+                fontWeight: '500',
+                letterSpacing: '0.06em',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                opacity: saving ? 0.6 : 1,
+              }}
+            >
+              {saving ? 'Saving…' : 'Save as Draft'}
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => handleSubmit(e, true)}
+              className="px-5 py-2.5 hover:opacity-90 transition-opacity"
+              style={{
+                backgroundColor: 'var(--color-green)',
+                color: 'var(--color-bg)',
+                border: 'none',
+                borderRadius: 'var(--radius-btn)',
+                fontFamily: 'var(--font-body)',
+                fontSize: '12px',
+                fontWeight: '500',
+                letterSpacing: '0.06em',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                opacity: saving ? 0.6 : 1,
+              }}
+            >
+              {saving ? 'Saving…' : 'Publish'}
+            </button>
+          </div>
+        </div>
+
         {/* ── BASIC INFO ── */}
         <FormSection title="Basic Info">
           <div className="grid md:grid-cols-2 gap-5">
