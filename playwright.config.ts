@@ -26,12 +26,13 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.CI
+  // Skip auto-starting when PLAYWRIGHT_BASE_URL is set (caller provides own server)
+  webServer: process.env.CI || process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
         command: 'npm run dev',
         url: 'http://localhost:3000',
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true,
         timeout: 120 * 1000,
       },
 })

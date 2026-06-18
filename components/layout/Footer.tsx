@@ -195,7 +195,7 @@ export function Footer() {
               <a
                 href="mailto:hello@thepossah.com"
                 className="block mt-2 hover:opacity-80 transition-opacity"
-                style={{ color: 'var(--color-bg)', textDecoration: 'none', opacity: 0.85 }}
+                style={{ color: 'var(--color-bg)', textDecoration: 'underline', opacity: 0.85 }}
               >
                 hello@thepossah.com
               </a>

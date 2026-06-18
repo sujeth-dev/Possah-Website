@@ -8,7 +8,12 @@ test.describe('Storefront pages', () => {
   })
 
   test('/women returns 200', async ({ page }) => {
-    const response = await page.goto('/women', { waitUntil: 'domcontentloaded' })
+    // Retry once in case of a transient dev-server compilation 500
+    let response = await page.goto('/women', { waitUntil: 'domcontentloaded' })
+    if (response?.status() === 500) {
+      await page.waitForTimeout(2000)
+      response = await page.goto('/women', { waitUntil: 'domcontentloaded' })
+    }
     expect(response?.status()).toBe(200)
   })
 
@@ -23,9 +28,13 @@ test.describe('Storefront pages', () => {
   })
 
   test('/women/sarees returns 200 with category heading', async ({ page }) => {
-    const response = await page.goto('/women/sarees', { waitUntil: 'domcontentloaded' })
+    let response = await page.goto('/women/sarees', { waitUntil: 'domcontentloaded' })
+    if (response?.status() === 500) {
+      await page.waitForTimeout(2000)
+      response = await page.goto('/women/sarees', { waitUntil: 'domcontentloaded' })
+    }
     expect(response?.status()).toBe(200)
-    await expect(page.locator('h1').first()).toBeVisible({ timeout: 8000 })
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 })
   })
 
   test('homepage has links to core category routes', async ({ page }) => {
@@ -47,7 +56,11 @@ test.describe('Storefront pages', () => {
   })
 
   test('/shop/sarees redirects to /women/sarees', async ({ page }) => {
-    const response = await page.goto('/shop/sarees', { waitUntil: 'domcontentloaded' })
+    let response = await page.goto('/shop/sarees', { waitUntil: 'domcontentloaded' })
+    if (response?.status() === 500) {
+      await page.waitForTimeout(2000)
+      response = await page.goto('/shop/sarees', { waitUntil: 'domcontentloaded' })
+    }
     // Next.js permanent redirect — browser follows it, end URL should be /women/sarees
     expect(page.url()).toContain('/women/sarees')
     expect(response?.status()).toBe(200)

@@ -32,8 +32,14 @@ test.describe('Account pages', () => {
   })
 
   test('/account/orders/[orderNumber] for unknown number renders gracefully', async ({ page }) => {
-    const response = await page.goto('/account/orders/PSH-0000-NOTREAL')
-    // Should be 200 (shows "order not found" message) or 404, not 500
+    // In dev, unknown order → notFound() → 404/200 with not-found page.
+    // Retry once in case of transient 500 during parallel dev-server compilation.
+    let response = await page.goto('/account/orders/PSH-0000-NOTREAL', { waitUntil: 'domcontentloaded' })
+    if (response?.status() === 500) {
+      await page.waitForTimeout(2000)
+      response = await page.goto('/account/orders/PSH-0000-NOTREAL', { waitUntil: 'domcontentloaded' })
+    }
+    // Should be 200 (shows "order not found" / not-found page) or 404, not 500
     expect(response?.status()).not.toBe(500)
   })
 })

@@ -9,8 +9,9 @@ test.describe('Search', () => {
   })
 
   test('/search?q=silk shows results or empty state', async ({ page }) => {
-    // Mock the search API so the test is DB-independent
-    await page.route('/api/search*', async (route) => {
+    // Mock the search API so the test is DB-independent.
+    // Use RegExp so it matches the full URL regardless of origin.
+    await page.route(/\/api\/search/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -34,8 +35,12 @@ test.describe('Search', () => {
       })
     })
 
-    await page.goto('/search?q=silk', { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(2000)
+    // Navigate and wait for the mocked API response concurrently
+    const [, ] = await Promise.all([
+      page.waitForResponse(/\/api\/search/, { timeout: 10000 }),
+      page.goto('/search?q=silk', { waitUntil: 'domcontentloaded' }),
+    ])
+    await page.waitForTimeout(500) // allow React state update to render
 
     // Mocked result should appear
     await expect(page.getByText('Ivory Silk Saree')).toBeVisible({ timeout: 8000 })
@@ -54,7 +59,7 @@ test.describe('Search', () => {
   test('navigating to /search?q= shows mocked results', async ({ page }) => {
     // The SearchView useEffect fires doSearch when the URL has a q param —
     // this is the common path from the header search bar.
-    await page.route('/api/search*', async (route) => {
+    await page.route(/\/api\/search/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -78,8 +83,11 @@ test.describe('Search', () => {
       })
     })
 
-    await page.goto('/search?q=lehenga', { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(1500)
+    const [, ] = await Promise.all([
+      page.waitForResponse(/\/api\/search/, { timeout: 10000 }),
+      page.goto('/search?q=lehenga', { waitUntil: 'domcontentloaded' }),
+    ])
+    await page.waitForTimeout(500)
 
     // Mocked result should appear in the product grid
     await expect(page.getByText('Black Lehenga')).toBeVisible({ timeout: 8000 })
