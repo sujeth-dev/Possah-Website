@@ -28,17 +28,18 @@ npm run typecheck    # tsc --noEmit
 npm test             # Vitest unit tests (81 tests)
 npm run test:api     # admin API test suite
 npm run test:payment # payment flow test suite (104 tests)
-npm run test:e2e     # Playwright E2E (50 tests — needs dev server running)
+npm run test:e2e     # Playwright E2E (106 tests — Playwright manages dev server)
 ```
 
 **Test loop before every deploy (in order):**
 ```
-1. npm run typecheck   → 0 errors
-2. npm run lint        → 0 errors (1 pre-existing warning OK)
-3. npm test            → 81/81
-4. npm run test:payment → 104/104
-5. npm run build       → 0 errors
-6. npm run test:e2e    → 50/50
+1. npm run typecheck        → 0 errors
+2. npm run lint             → 0 errors (1 pre-existing warning OK)
+3. npm test                 → 81/81
+4. npm run test:payment     → 104/104
+5. npm run build            → 0 errors
+6. npm run test:api         → 181/181 (needs dev server: NODE_ENV=development npm run dev)
+7. npx playwright test      → all green (Playwright starts its own dev server)
 ```
 
 ---
@@ -69,7 +70,7 @@ npm run test:e2e     # Playwright E2E (50 tests — needs dev server running)
 Run all migrations in order, then seeds:
 
 ```
-supabase/migrations/001 → 029   run once each, in order
+supabase/migrations/001 → 033   run once each, in order
 seeds/seed_categories.sql       run after migrations
 seeds/seed_homepage_config.sql  run after seed_categories
 ```
@@ -79,6 +80,8 @@ Key migrations:
 - `026` — addresses default + unique constraint
 - `028` — order status history table (audit trail for shipped/delivered emails)
 - `029` — stock decrement guard (atomic, runs exactly once per paid order)
+- `032` — homepage_config: category_split, category_circles, mtm_cta columns
+- `033` — homepage_config: page_heroes JSONB column (editorial page hero images)
 
 Real product data (42 products) is managed by the pipeline — not SQL seeds.
 See [`Possah_Data_Operations_Plan.md`](./Possah_Data_Operations_Plan.md).
@@ -105,6 +108,10 @@ For upload paths, dimensions, and per-page replacement locations → **[`docs/im
 - Product gallery: click-to-zoom fullscreen lightbox with swipe + keyboard nav
 - Coupons: applied in cart persist into checkout via Zustand store (no re-entry needed)
 - Logo: header reads `public/images/logo.png` + `public/images/name.png` side-by-side — drop files to activate
+- **Homepage editor:** sections in visual order + sticky TOC jump nav + editorial page heroes (women/new-in/best-sellers/festive/bridal configurable from `/admin/homepage`)
+- **Orders quick filter:** Today / This Week / This Month preset buttons on `/admin/orders`
+- **Dashboard:** 7-card layout including Active Coupons count
+- **Product form:** Save/Publish buttons visible at top (iOS fix)
 
 ### Phase 1 shipped (2026-06-11)
 

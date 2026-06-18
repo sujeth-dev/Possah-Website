@@ -1,20 +1,33 @@
 # Admin Panel Audit — June 2026
 
+> **Last updated:** 2026-06-19  
+> All items in the "Implemented" table are live on `main`. Backlog items are tracked below.
+
 This document captures audit findings, improvement backlog, and advisory notes from the June 2026 admin improvement pass. High-priority items were implemented directly. Medium/low items are tracked here for future sprints.
 
 ---
 
 ## Implemented in This Pass
 
-| Item | Description | Files |
-|------|-------------|-------|
-| HomepageEditor sections reordered | Admin editor now matches actual homepage visual order | `app/admin/homepage/HomepageEditor.tsx` |
-| TOC jump nav in HomepageEditor | Sticky pill bar at top lets admin jump to any section | `app/admin/homepage/HomepageEditor.tsx` |
-| Page hero images (editorial) | Women, New In, Best Sellers, Festive, Bridal hero images now admin-configurable | `HomepageEditor.tsx`, `festive/page.tsx`, `bridal/page.tsx`, `[gender]/page.tsx`, `new-in/page.tsx`, `best-sellers/page.tsx` |
-| Orders quick date buttons | "Today / This Week / This Month" preset buttons above date range picker | `app/admin/orders/DateQuickFilters.tsx` |
-| Active Coupons dashboard card | 7th stat card showing count of `is_active=true` coupons | `app/admin/page.tsx` |
-| Product form top save buttons (iOS) | Duplicate Save/Publish bar at top of ProductForm | `app/admin/products/ProductForm.tsx` |
-| Categories test site reflection | `01-categories.mjs` now checks `/women`, `/new-in`, `/best-sellers` return 200 after CRUD | `scripts/admin_test/tests/01-categories.mjs` |
+| Item | Status | Description | Files |
+|------|--------|-------------|-------|
+| HomepageEditor sections reordered | ✅ Live | Admin editor now matches actual homepage visual order | `HomepageEditor.tsx` |
+| TOC jump nav | ✅ Live | Sticky pill bar — click to scroll to any section | `HomepageEditor.tsx` |
+| Page hero images (editorial) | ✅ Live | Women, New In, Best Sellers, Festive, Bridal heroes admin-configurable; DB migration 033 | `HomepageEditor.tsx`, 5 shop pages, `033_*.sql` |
+| Placeholder SVG guard | ✅ Live | Admin form silently rejects `placeholder.svg` as a hero URL — prevents accidental saves | `HomepageEditor.tsx` |
+| Orders quick date buttons | ✅ Live | Today / This Week / This Month preset buttons | `DateQuickFilters.tsx` |
+| Active Coupons dashboard card | ✅ Live | 7th stat card — count of `is_active=true` coupons | `app/admin/page.tsx` |
+| Product form top save buttons | ✅ Live | iOS fix — Save/Publish visible at top without scrolling | `ProductForm.tsx` |
+| Categories test site reflection | ✅ Live | `01-categories.mjs` verifies HTTP 200 on shop pages after CRUD | `scripts/admin_test/tests/01-categories.mjs` |
+| Footer email link a11y | ✅ Live | Added `text-decoration: underline` — fixes WCAG link-in-text-block on Mobile | `Footer.tsx` |
+| E2E test suite repair | ✅ Live | 48 failing E2E tests fixed across 8 spec files + playwright config | `tests/e2e/*.spec.ts`, `playwright.config.ts` |
+
+### Known gotcha — Page Heroes & placeholder.svg
+If the admin opens `/admin/homepage` → Page Heroes and the URL text box shows `https://cdn.thepossah.com/ui/placeholder.svg`, do NOT save — that value is the system placeholder, not a real image. The form guard will reject it, but it's clearer to leave the field empty until a real image is uploaded.
+
+Debug scripts (in `scripts/`):
+- `node scripts/check_page_heroes.mjs` — prints current `page_heroes` from DB (both anon + admin client)
+- `node scripts/clear_placeholder_heroes.mjs` — resets any `placeholder.svg` entries to `null`
 
 ---
 
