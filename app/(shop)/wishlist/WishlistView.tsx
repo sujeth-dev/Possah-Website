@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useWishlistStore } from '@/lib/store/wishlistStore'
 import { useCartStore } from '@/lib/store/cartStore'
 import { formatPrice } from '@/lib/utils'
@@ -12,7 +13,12 @@ export function WishlistView() {
 
   if (items.length === 0) {
     return (
-      <div className="container-site py-24 flex flex-col items-center gap-6 text-center">
+      <motion.div
+        className="container-site py-24 flex flex-col items-center gap-6 text-center"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.25, 0, 0.25, 1] }}
+      >
         <svg width="56" height="48" viewBox="0 0 56 48" fill="none" stroke="var(--color-border)" strokeWidth="1.5">
           <path d="M28 44S6 30 6 14a11 11 0 0 1 22-2 11 11 0 0 1 22 2c0 16-22 30-22 30z" />
         </svg>
@@ -47,7 +53,7 @@ export function WishlistView() {
         >
           Explore The Edit
         </Link>
-      </div>
+      </motion.div>
     )
   }
 
@@ -84,8 +90,18 @@ export function WishlistView() {
 
       {/* Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10" role="list" aria-label="Wishlist items">
+        <AnimatePresence initial={false}>
         {items.map((item) => (
-          <div key={`${item.productId}-${item.variantId ?? 'default'}`} role="listitem" className="flex flex-col gap-3">
+          <motion.div
+            key={`${item.productId}-${item.variantId ?? 'default'}`}
+            role="listitem"
+            className="flex flex-col gap-3"
+            layout
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.2, ease: [0.25, 0, 0.25, 1] }}
+          >
             {/* Image */}
             <Link href={item.slug} className="block relative overflow-hidden" style={{ aspectRatio: '3/4', borderRadius: 'var(--radius-card)', backgroundColor: 'var(--color-border)' }}>
               <Image
@@ -158,8 +174,9 @@ export function WishlistView() {
             >
               Move to Bag
             </button>
-          </div>
+          </motion.div>
         ))}
+        </AnimatePresence>
       </div>
     </div>
   )

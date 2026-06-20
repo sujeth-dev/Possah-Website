@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ProductCardData } from '@/app/(shop)/page'
 import { ProductCard } from '@/components/shop/ProductCard'
+import { AnimatedGrid, AnimatedGridItem } from '@/components/shop/AnimatedGrid'
 
 interface NewArrivalsProps {
   products: ProductCardData[]
@@ -46,11 +47,13 @@ export function NewArrivals({ products }: NewArrivalsProps) {
 
         {/* Grid — 2 col mobile, 6 col desktop (2 rows) */}
         {displayed.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-8 md:gap-y-12">
+          <AnimatedGrid className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-8 md:gap-y-12">
             {displayed.map((product, i) => (
-              <ProductCard key={product.id} product={product} priority={i < 4} />
+              <AnimatedGridItem key={product.id}>
+                <ProductCard product={product} priority={i < 4} />
+              </AnimatedGridItem>
             ))}
-          </div>
+          </AnimatedGrid>
         ) : (
           /* Empty state */
           <div

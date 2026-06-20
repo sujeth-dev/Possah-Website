@@ -8,6 +8,7 @@ import { CollectionBanner } from '@/components/homepage/CollectionBanner'
 import { OccasionGrid } from '@/components/homepage/OccasionGrid'
 import { MtmCta } from '@/components/homepage/MtmCta'
 import { parseJson } from '@/lib/utils'
+import { Reveal } from '@/components/ui/Reveal'
 
 export const revalidate = 3600
 
@@ -279,12 +280,12 @@ export default async function HomePage() {
       />
 
       <HeroSlider slides={heroSlides} />
-      <CategorySplit ethnicImage={categorySplitImages.ethnicImage} westernImage={categorySplitImages.westernImage} />
-      <CategoryCircles images={categoryCirclesImages} />
-      <NewArrivals products={newArrivalProducts} />
-      <CollectionBanner data={collectionBanner} />
-      <OccasionGrid tiles={occasionTiles} />
-      <MtmCta imageUrl={mtmCtaImage} />
+      <Reveal><CategorySplit ethnicImage={categorySplitImages.ethnicImage} westernImage={categorySplitImages.westernImage} /></Reveal>
+      <Reveal delay={0.05}><CategoryCircles images={categoryCirclesImages} /></Reveal>
+      <Reveal><NewArrivals products={newArrivalProducts} /></Reveal>
+      <Reveal><CollectionBanner data={collectionBanner} /></Reveal>
+      <Reveal delay={0.05}><OccasionGrid tiles={occasionTiles} /></Reveal>
+      <Reveal><MtmCta imageUrl={mtmCtaImage} /></Reveal>
     </>
   )
 }
