@@ -1,6 +1,6 @@
 # Admin Panel Audit — June 2026
 
-> **Last updated:** 2026-06-19  
+> **Last updated:** 2026-06-20  
 > All items in the "Implemented" table are live on `main`. Backlog items are tracked below.
 
 This document captures audit findings, improvement backlog, and advisory notes from the June 2026 admin improvement pass. High-priority items were implemented directly. Medium/low items are tracked here for future sprints.
@@ -21,6 +21,11 @@ This document captures audit findings, improvement backlog, and advisory notes f
 | Categories test site reflection | ✅ Live | `01-categories.mjs` verifies HTTP 200 on shop pages after CRUD | `scripts/admin_test/tests/01-categories.mjs` |
 | Footer email link a11y | ✅ Live | Added `text-decoration: underline` — fixes WCAG link-in-text-block on Mobile | `Footer.tsx` |
 | E2E test suite repair | ✅ Live | 48 failing E2E tests fixed across 8 spec files + playwright config | `tests/e2e/*.spec.ts`, `playwright.config.ts` |
+| Products list OOS fix | ✅ Live | OOS label now uses sum of variant stock_qty (was always reading product-level field = 0) | `app/admin/products/page.tsx` |
+| ProductForm variant OOS badge | ✅ Live | Red "Out of Stock" badge on variant rows with stock_qty = 0 in product edit form | `app/admin/products/ProductForm.tsx` |
+| New Arrivals picker sort | ✅ Live | Selected products float to top (gold), unselected sorted A–Z in the admin homepage picker | `app/admin/homepage/HomepageEditor.tsx` |
+| BucketPicker type=button fix | ✅ Live | Close ✕, Upload New, Retry buttons now have type="button" — fixes Page Heroes upload flow | `app/admin/products/BucketPicker.tsx` |
+| Checkout Razorpay preload warning | ✅ Live | Removed redundant inline Razorpay script tag (was causing DevTools preload warning) | `app/(shop)/checkout/CheckoutForm.tsx` |
 
 ### Known gotcha — Page Heroes & placeholder.svg
 If the admin opens `/admin/homepage` → Page Heroes and the URL text box shows `https://cdn.thepossah.com/ui/placeholder.svg`, do NOT save — that value is the system placeholder, not a real image. The form guard will reject it, but it's clearer to leave the field empty until a real image is uploaded.
