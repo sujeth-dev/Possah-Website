@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useCallback, useTransition, useMemo } from 'react'
+import { useState, useCallback, useTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ProductGrid } from '@/components/shop/ProductGrid'
-import { useCartStore } from '@/lib/store/cartStore'
 import type { ProductCardData } from '@/app/(shop)/page'
 
 const PAGE_SIZE = 24
@@ -14,7 +13,6 @@ interface CategoryListingProps {
   categorySlug: string
   topSellingOnly?: boolean
   newInOnly?: boolean
-  cartAwareSort?: boolean
 }
 
 export function CategoryListing({
@@ -23,7 +21,6 @@ export function CategoryListing({
   categorySlug,
   topSellingOnly = false,
   newInOnly = false,
-  cartAwareSort = false,
 }: CategoryListingProps) {
   const searchParams = useSearchParams()
   const [products, setProducts]     = useState<ProductCardData[]>(initialProducts)
@@ -32,20 +29,8 @@ export function CategoryListing({
   const [loading, setLoading]       = useState(false)
   const [error, setError]           = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const cartItems = useCartStore((s) => s.items)
 
   const hasMore = loadedTotal < total
-
-  const displayProducts = useMemo(() => {
-    if (!cartAwareSort || cartItems.length === 0) return products
-    return [...products].sort((a, b) => {
-      const aIn = cartItems.some((i) => i.productId === a.id)
-      const bIn = cartItems.some((i) => i.productId === b.id)
-      if (aIn && !bIn) return -1
-      if (!aIn && bIn) return 1
-      return a.name.localeCompare(b.name)
-    })
-  }, [products, cartItems, cartAwareSort])
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return
@@ -92,7 +77,7 @@ export function CategoryListing({
 
   return (
     <>
-      <ProductGrid products={displayProducts} loading={isPending} columns={3} />
+      <ProductGrid products={products} loading={isPending} columns={3} />
 
       {/* Show More */}
       {hasMore && (

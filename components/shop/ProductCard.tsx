@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { useWishlistStore } from '@/lib/store/wishlistStore'
-import { useCartStore } from '@/lib/store/cartStore'
 import { formatPrice } from '@/lib/utils'
 import type { ProductCardData } from '@/app/(shop)/page'
 
@@ -19,12 +18,10 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const [hovered, setHovered] = useState(false)
   const router = useRouter()
   const { toggleItem, isInWishlist } = useWishlistStore()
-  const cartItems = useCartStore((s) => s.items)
 
   const primaryImage = product.images[0]
   const hoverImage = product.images[1] ?? product.images[0]
   const inWishlist = isInWishlist(product.id)
-  const inCart = cartItems.some((i) => i.productId === product.id)
   const productHref = `/${product.category_gender ?? 'women'}/${product.category_slug ?? 'women'}/${product.slug}`
 
   const handleQuickAdd = (e: React.MouseEvent) => {
@@ -85,24 +82,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {product.is_new_arrival && <Badge variant="new" />}
           {product.compare_price && product.compare_price > product.price && (
             <Badge variant="sale" />
-          )}
-          {inCart && (
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: '3px',
-              padding: '2px 6px',
-              backgroundColor: 'var(--color-green)',
-              color: '#fff',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '8px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              borderRadius: '3px',
-            }}>
-              <svg width="7" height="6" viewBox="0 0 7 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                <path d="M1 3l1.5 1.5L6 1" />
-              </svg>
-              In Bag
-            </span>
           )}
         </div>
 

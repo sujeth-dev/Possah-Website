@@ -250,7 +250,6 @@ export default async function NewInPage({ searchParams }: PageProps) {
               categorySlug=""
               topSellingOnly={false}
               newInOnly
-              cartAwareSort
             />
           </div>
         </div>
