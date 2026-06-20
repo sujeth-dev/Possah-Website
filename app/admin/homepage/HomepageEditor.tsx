@@ -554,7 +554,15 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
             </p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '320px', overflowY: 'auto' }}>
-              {products.map((p) => {
+              {[...products]
+                .sort((a, b) => {
+                  const aIn = selectedIds.includes(a.id)
+                  const bIn = selectedIds.includes(b.id)
+                  if (aIn && !bIn) return -1
+                  if (!aIn && bIn) return 1
+                  return a.name.localeCompare(b.name)
+                })
+                .map((p) => {
                 const checked = selectedIds.includes(p.id)
                 return (
                   <label

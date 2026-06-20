@@ -48,7 +48,6 @@ const SORT_OPTIONS = [
   { value: 'name_asc',   label: 'Name A–Z' },
   { value: 'price_asc',  label: 'Price low–high' },
   { value: 'price_desc', label: 'Price high–low' },
-  { value: 'stock_asc',  label: 'Stock low–high' },
 ]
 
 async function getProducts(search: string, page: number, category: string, sort: string): Promise<{
@@ -64,9 +63,10 @@ async function getProducts(search: string, page: number, category: string, sort:
     let query = supabase
       .from('products')
       .select(`
-        id, name, slug, price, compare_price, stock_qty, is_active, is_new_arrival, created_at, category_id,
+        id, name, slug, price, compare_price, is_active, is_new_arrival, created_at, category_id,
         categories:category_id ( name, slug ),
-        product_images ( url, position )
+        product_images ( url, position ),
+        product_variants ( stock_qty )
       `, { count: 'exact' })
       .range(offset, offset + perPage - 1)
 
@@ -77,7 +77,6 @@ async function getProducts(search: string, page: number, category: string, sort:
       case 'name_asc':   query = query.order('name', { ascending: true }); break
       case 'price_asc':  query = query.order('price', { ascending: true }); break
       case 'price_desc': query = query.order('price', { ascending: false }); break
-      case 'stock_asc':  query = query.order('stock_qty', { ascending: true }); break
       default:           query = query.order('created_at', { ascending: false })
     }
 
@@ -91,13 +90,15 @@ async function getProducts(search: string, page: number, category: string, sort:
       const cat = Array.isArray(p.categories) ? p.categories[0] : p.categories
       const imgs = (p.product_images as { url: string; position: number }[] | null) ?? []
       imgs.sort((a, b) => a.position - b.position)
+      const variants = (p.product_variants as { stock_qty: number }[] | null) ?? []
+      const totalStock = variants.reduce((sum, v) => sum + (v.stock_qty ?? 0), 0)
       return {
         id:            p.id,
         name:          p.name,
         slug:          p.slug,
         price:         p.price,
         compare_price: p.compare_price,
-        stock_qty:     p.stock_qty,
+        stock_qty:     totalStock,
         is_active:     p.is_active,
         is_new_arrival: p.is_new_arrival,
         created_at:    p.created_at,
