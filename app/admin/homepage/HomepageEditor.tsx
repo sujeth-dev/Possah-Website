@@ -63,9 +63,10 @@ interface HomepageConfig {
 }
 
 interface Product {
-  id:   string
-  name: string
-  slug: string
+  id:             string
+  name:           string
+  slug:           string
+  is_new_arrival: boolean
 }
 
 interface HomepageEditorProps {
@@ -226,8 +227,12 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   const [circlesSaved, setCirclesSaved]       = useState(false)
   const [circlesError, setCirclesError]       = useState<string | null>(null)
 
-  // New arrivals
-  const [selectedIds, setSelectedIds] = useState<string[]>((initial.new_arrival_ids as string[]) ?? [])
+  // New arrivals — if admin has never curated (new_arrival_ids empty), pre-select the is_new_arrival=true products
+  // so the admin can see what's currently live on site
+  const curatedIds = (initial.new_arrival_ids as string[]) ?? []
+  const [selectedIds, setSelectedIds] = useState<string[]>(
+    curatedIds.length > 0 ? curatedIds : products.filter(p => p.is_new_arrival).map(p => p.id)
+  )
   const [naSaved, setNaSaved]         = useState(false)
   const [naError, setNaError]         = useState<string | null>(null)
 
@@ -345,6 +350,11 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
       if (!r.ok) { setHeroesError(r.error ?? 'Failed'); return }
       setHeroesSaved(true); setTimeout(() => setHeroesSaved(false), 2500); router.refresh()
     })
+  }
+
+  function setHeroUrl(heroKey: keyof PageHeroes, url: string) {
+    const val = (url && !url.includes('/ui/placeholder.svg')) ? url : null
+    setPageHeroes(prev => { const next = { ...prev }; next[heroKey] = val; return next })
   }
 
   function updateSlide(i: number, field: keyof HeroSlide, val: string) {
@@ -588,6 +598,11 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-text)', flex: 1 }}>
                       {p.name}
                     </span>
+                    {p.is_new_arrival && (
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-green)', border: '1px solid var(--color-green)', borderRadius: '3px', padding: '1px 5px', flexShrink: 0 }}>
+                        Live
+                      </span>
+                    )}
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
                       {p.slug}
                     </span>
@@ -697,10 +712,7 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                 <ImageUploadField
                   label="Hero Image"
                   value={pageHeroes[key] ?? ''}
-                  onChange={(url) => {
-                    const val = (url && !url.includes('/ui/placeholder.svg')) ? url : null
-                    setPageHeroes((prev) => ({ ...prev, [key]: val }))
-                  }}
+                  onChange={(url) => setHeroUrl(key, url)}
                   pathPrefix="uploads/editorial"
                 />
               </div>
