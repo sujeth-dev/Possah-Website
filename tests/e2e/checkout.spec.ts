@@ -55,8 +55,10 @@ test.describe('Checkout flow', () => {
     const payButton = page.getByRole('button', { name: /pay/i })
     await payButton.click()
 
-    // Validation errors should appear (Zod message: min 2 chars)
-    await expect(page.getByText(/first name too short/i)).toBeVisible()
+    // Validation errors should appear (empty → "First name required"; 1 char → "First name too short")
+    await expect(
+      page.getByText(/first name required/i).or(page.getByText(/first name too short/i))
+    ).toBeVisible()
   })
 
   test('checkout form accepts valid inputs and opens Razorpay modal', async ({ page }) => {

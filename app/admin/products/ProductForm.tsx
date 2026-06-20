@@ -1075,6 +1075,23 @@ function VariantRow({ variant, index, allSizes, onChange, onRemove, canRemove }:
         title="Stock quantity"
         style={{ ...inputStyle, width: 80, flexShrink: 0 }}
       />
+      {variant.stock_qty === 0 && (
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '9px',
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: '#DC2626',
+          backgroundColor: '#FEF2F2',
+          border: '1px solid #FCA5A5',
+          borderRadius: '4px',
+          padding: '2px 6px',
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+        }}>
+          Out of Stock
+        </span>
+      )}
 
       {/* Remove */}
       {canRemove && (

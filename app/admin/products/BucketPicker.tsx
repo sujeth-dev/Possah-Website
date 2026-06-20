@@ -147,6 +147,7 @@ export function BucketPicker({ onSelect, onClose }: BucketPickerProps) {
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-text-muted)', margin: '2px 0 0' }}>Pick an existing image or upload a new one</p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 4 }}
             className="hover:opacity-60 transition-opacity"
@@ -172,6 +173,7 @@ export function BucketPicker({ onSelect, onClose }: BucketPickerProps) {
           {/* Upload new */}
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} style={{ display: 'none' }} />
           <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             style={{
@@ -224,7 +226,7 @@ export function BucketPicker({ onSelect, onClose }: BucketPickerProps) {
           {fetchError && !loading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px' }}>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-error)' }}>{fetchError}</p>
-              <button onClick={fetchFiles} style={{ padding: '6px 14px', borderRadius: 'var(--radius-btn)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg)', fontFamily: 'var(--font-body)', fontSize: '12px', cursor: 'pointer' }}>
+              <button type="button" onClick={fetchFiles} style={{ padding: '6px 14px', borderRadius: 'var(--radius-btn)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg)', fontFamily: 'var(--font-body)', fontSize: '12px', cursor: 'pointer' }}>
                 Retry
               </button>
             </div>

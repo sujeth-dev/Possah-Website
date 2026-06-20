@@ -481,9 +481,6 @@ export function CheckoutForm() {
 
   return (
     <>
-      {/* Razorpay script */}
-      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
-
       <div className="container-site py-10 pb-20">
         <Link
           href="/cart"

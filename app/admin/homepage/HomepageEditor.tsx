@@ -157,6 +157,14 @@ const TOC_SECTIONS = [
   { id: 'page-heroes',       label: 'Page Heroes' },
 ]
 
+const PAGE_HERO_DEFS: Array<{ key: keyof PageHeroes; label: string; page: string }> = [
+  { key: 'women_hub_hero',    label: 'WOMEN HUB',    page: '/women'        },
+  { key: 'new_in_hero',       label: 'NEW IN',       page: '/new-in'       },
+  { key: 'best_sellers_hero', label: 'BEST SELLERS', page: '/best-sellers' },
+  { key: 'festive_hero',      label: 'FESTIVE',      page: '/festive'      },
+  { key: 'bridal_hero',       label: 'BRIDAL',       page: '/bridal'       },
+]
+
 function Field({ label: lbl, value, onChange, placeholder, type = 'text' }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string
 }) {
@@ -671,15 +679,7 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {(
-              [
-                { key: 'women_hub_hero',    label: 'WOMEN HUB',    page: '/women'        },
-                { key: 'new_in_hero',       label: 'NEW IN',       page: '/new-in'       },
-                { key: 'best_sellers_hero', label: 'BEST SELLERS', page: '/best-sellers' },
-                { key: 'festive_hero',      label: 'FESTIVE',      page: '/festive'      },
-                { key: 'bridal_hero',       label: 'BRIDAL',       page: '/bridal'       },
-              ] as const
-            ).map(({ key, label: lbl, page }) => (
+            {PAGE_HERO_DEFS.map(({ key, label: lbl, page }) => (
               <div
                 key={key}
                 style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '12px', backgroundColor: 'var(--color-bg)' }}
@@ -689,10 +689,9 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
                 <ImageUploadField
                   label="Hero Image"
                   value={pageHeroes[key] ?? ''}
-                  onChange={v => {
-                    // Guard: never save the placeholder SVG — treat it as empty
-                    const real = (v && !v.includes('/ui/placeholder.svg')) ? v : null
-                    setPageHeroes(h => ({ ...h, [key]: real }))
+                  onChange={(url) => {
+                    const val = (url && !url.includes('/ui/placeholder.svg')) ? url : null
+                    setPageHeroes((prev) => ({ ...prev, [key]: val }))
                   }}
                   pathPrefix="uploads/editorial"
                 />
