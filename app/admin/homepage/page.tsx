@@ -110,7 +110,7 @@ async function getActiveProducts() {
     const supabase = createAdminClient()
     const { data } = await supabase
       .from('products')
-      .select('id, name, slug')
+      .select('id, name, slug, is_new_arrival')
       .eq('is_active', true)
       .order('name')
     return data ?? []
