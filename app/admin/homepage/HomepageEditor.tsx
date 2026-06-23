@@ -13,10 +13,11 @@ interface HeroSlide {
 }
 
 interface CollectionBanner {
-  image_url: string
-  headline:  string
-  subtitle:  string
-  cta_link:  string
+  image_url:  string
+  headline:   string
+  subtitle:   string
+  cta_label?: string
+  cta_link:   string
 }
 
 interface OccasionTile {
@@ -206,7 +207,7 @@ function SaveRow({ isPending, saved, error }: { isPending: boolean; saved: boole
 }
 
 const EMPTY_SLIDE: HeroSlide = { image_url: '', headline: '', sub_headline: '', cta_label: 'Shop Now', cta_link: '/women' }
-const EMPTY_BANNER: CollectionBanner = { image_url: '', headline: '', subtitle: '', cta_link: '/women' }
+const EMPTY_BANNER: CollectionBanner = { image_url: '', headline: '', subtitle: '', cta_label: 'Shop Now', cta_link: '/women' }
 
 export function HomepageEditor({ initial, products }: HomepageEditorProps) {
   const router = useRouter()
@@ -326,7 +327,8 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
     e.preventDefault()
     setTilesError(null); setTilesSaved(false)
     startTransition(async () => {
-      const r = await patch({ occasion_tiles: tiles })
+      const cleanedTiles = tiles.map(t => ({ ...t, image_url: t.image_url || null }))
+      const r = await patch({ occasion_tiles: cleanedTiles })
       if (!r.ok) { setTilesError(r.error ?? 'Failed'); return }
       setTilesSaved(true); setTimeout(() => setTilesSaved(false), 2500); router.refresh()
     })
@@ -631,9 +633,10 @@ export function HomepageEditor({ initial, products }: HomepageEditorProps) {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <ImageUploadField label="Image" value={banner.image_url} onChange={v => setBanner(b => ({ ...b, image_url: v }))} pathPrefix="uploads/homepage/banner" />
-            <Field label="Headline"  value={banner.headline}  onChange={v => setBanner(b => ({ ...b, headline: v }))}  placeholder="The New Edit" />
-            <Field label="Subtitle"  value={banner.subtitle}  onChange={v => setBanner(b => ({ ...b, subtitle: v }))}  placeholder="Optional" />
-            <Field label="CTA Link"  value={banner.cta_link}  onChange={v => setBanner(b => ({ ...b, cta_link: v }))}  placeholder="/shop" />
+            <Field label="Headline"   value={banner.headline}          onChange={v => setBanner(b => ({ ...b, headline: v }))}   placeholder="The New Edit" />
+            <Field label="Subtitle"   value={banner.subtitle}          onChange={v => setBanner(b => ({ ...b, subtitle: v }))}   placeholder="Optional" />
+            <Field label="CTA Label"  value={banner.cta_label ?? ''}   onChange={v => setBanner(b => ({ ...b, cta_label: v }))}  placeholder="Shop Now" />
+            <Field label="CTA Link"   value={banner.cta_link}          onChange={v => setBanner(b => ({ ...b, cta_link: v }))}   placeholder="/shop" />
           </div>
           <SaveRow isPending={isPending} saved={bannerSaved} error={bannerError} />
         </div>

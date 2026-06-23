@@ -16,6 +16,7 @@ const CollectionBannerSchema = z.object({
   image_url: z.string().url(),
   headline:  z.string().max(120),
   subtitle:  z.string().max(200).optional().nullable(),
+  cta_label: z.string().max(50).optional().nullable(),
   cta_link:  z.string().max(200),
 })
 

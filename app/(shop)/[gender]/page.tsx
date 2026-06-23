@@ -251,7 +251,10 @@ export default async function GenderHubPage({ params }: PageProps) {
       {/* Hero */}
       <div
         className="relative w-full overflow-hidden flex items-end"
-        style={{ minHeight: 'clamp(300px, 42vw, 560px)' }}
+        style={{
+          minHeight: 'clamp(300px, 42vw, 560px)',
+          background: 'linear-gradient(135deg, #1a3326 0%, #2c4a35 50%, #0d1f17 100%)',
+        }}
         aria-label={`${genderLabel} — The Possah`}
       >
         <Image
@@ -261,11 +264,6 @@ export default async function GenderHubPage({ params }: PageProps) {
           priority
           className="object-cover object-center"
           sizes="100vw"
-        />
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, #1a3326 0%, #2c4a35 50%, #0d1f17 100%)' }}
-          aria-hidden="true"
         />
         <div
           className="absolute inset-0"
