@@ -43,16 +43,6 @@ const STATIC_LOOKBOOKS: Lookbook[] = [
     hero_image: PH,
     concept_text: 'The festive palette, reinterpreted.',
   },
-  {
-    id: '3',
-    collection_name: 'The Everyday Drape',
-    season: 'Everyday',
-    year: 2024,
-    theme_word: 'Ease',
-    chapter_number: 3,
-    hero_image: PH,
-    concept_text: 'Linen, cotton, and the beauty of not trying too hard.',
-  },
 ]
 
 async function getLookbooks(): Promise<Lookbook[]> {
@@ -86,18 +76,30 @@ export default async function LookbookPage() {
             color: 'var(--color-text)',
             letterSpacing: '-0.01em',
             lineHeight: 1,
+            marginBottom: 16,
           }}
         >
           Lookbook
         </h1>
+        <p
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: 'clamp(14px, 1.5vw, 17px)',
+            color: 'var(--color-text-muted)',
+            lineHeight: 1.65,
+            maxWidth: 480,
+          }}
+        >
+          Seasonal editorials. Each chapter is a world — styled with intention, shot with care.
+        </p>
       </div>
 
       <div className="container-site py-12 pb-24">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 gap-6 lg:gap-10">
           {lookbooks.map((lb, i) => (
             <Link
               key={lb.id}
-              href={`/lookbook/${lb.id}`}
+              href={`/lookbook/${lb.chapter_number}`}
               className="group relative overflow-hidden block"
               style={{
                 borderRadius: 'var(--radius-card)',
