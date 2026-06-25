@@ -14,10 +14,11 @@ interface HeroSlide {
 }
 
 interface CollectionBanner {
-  image_url: string
-  headline:  string
-  subtitle:  string
-  cta_link:  string
+  image_url:  string
+  headline:   string
+  subtitle:   string
+  cta_label?: string
+  cta_link:   string
 }
 
 interface OccasionTile {
@@ -84,6 +85,7 @@ async function getHomepageConfig(): Promise<HomepageConfig> {
         image_url: rawBanner.image_url || rawBanner.image   || '',
         headline:  rawBanner.headline  || '',
         subtitle:  rawBanner.subtitle  || '',
+        cta_label: rawBanner.cta_label || '',
         cta_link:  rawBanner.cta_link  || rawBanner.ctaLink || '',
       } : null,
       new_arrival_ids: (data.new_arrival_ids as string[]) ?? [],

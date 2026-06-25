@@ -4,6 +4,40 @@ All notable changes to this project, newest first.
 
 ---
 
+## [Unreleased] — 2026-06-23 — Admin Homepage: Occasion Tiles Save Fix, Women Hub Hero Visibility, Collection Banner CTA Label
+
+### Summary
+Three admin homepage image upload/reflection bugs fixed. Occasion Tiles saves no longer fail when any tile is missing an image. The Women Hub `/women` hero image is now visible (was hidden by a fully-opaque overlay div). Collection Banner now supports a configurable CTA label field end-to-end.
+
+---
+
+### Bug Fixes
+
+#### Admin: Occasion Tiles — Save Fails When Any Tile Has No Image
+`saveTiles()` was patching all 8 tiles as-is. Empty tiles carry `image_url: ''`, which Zod's `z.string().url()` rejects (empty string is neither a URL, `null`, nor `undefined`). The entire section returned 422 "Validation failed" if even one tile had no image uploaded.
+
+**Fix:** Coerce `image_url: ''` → `null` before patching. Zod's `.nullable()` accepts `null`, so partial tile sets now save correctly.
+
+- `app/admin/homepage/HomepageEditor.tsx` — `saveTiles`: map tiles to `{ ...t, image_url: t.image_url || null }`
+
+#### Admin: Women Hub `/women` — Hero Image Hidden by Opaque Overlay
+The Women Hub hero `<Image>` was completely hidden behind a fully-opaque `<div className="absolute inset-0">` with a solid hex-colour gradient (`linear-gradient(135deg, #1a3326…)`) placed on top of it in the DOM. Admins could upload and save a hero image, but `/women` always displayed the solid green background.
+
+**Fix:** Moved the solid gradient to the parent container's `background` CSS property (CSS fallback — only visible when no image renders), and removed the covering `<div>`. The existing semi-transparent text-legibility overlay (`rgba(…)`) was left in place.
+
+- `app/(shop)/[gender]/page.tsx` — parent container gets `background` style; solid overlay div removed
+
+#### Admin: Collection Banner — CTA Label Field Added
+The public homepage already read `raw.cta_label ?? 'Shop Now'`, but the field was never saved by the admin. `CollectionBannerSchema` stripped unknown keys via Zod, the editor form had no input for it, and the server-side loader didn't map it — so the button text was permanently "Shop Now".
+
+**Fix:** Added `cta_label` to all three layers: Zod schema, admin editor interface + form UI, and server-side loader mapping.
+
+- `app/api/admin/homepage/route.ts` — `cta_label: z.string().max(50).optional().nullable()` in `CollectionBannerSchema`
+- `app/admin/homepage/HomepageEditor.tsx` — `cta_label?` on interface, `cta_label: 'Shop Now'` in `EMPTY_BANNER`, CTA Label `<Field>` in banner form
+- `app/admin/homepage/page.tsx` — `cta_label?` on interface, `cta_label: rawBanner.cta_label || ''` in loader
+
+---
+
 ## [Unreleased] — 2026-06-20 — Admin Fixes: OOS Display, New Arrivals Sort, Page Heroes Upload, Checkout Cleanup
 
 ### Summary

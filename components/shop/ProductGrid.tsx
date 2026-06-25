@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ProductCard } from './ProductCard'
+import { AnimatedGrid, AnimatedGridItem } from './AnimatedGrid'
 import type { ProductCardData } from '@/app/(shop)/page'
 
 interface ProductGridProps {
@@ -73,12 +74,12 @@ export function ProductGrid({ products, loading = false, columns = 3 }: ProductG
   }
 
   return (
-    <div className={`grid ${gridClass} gap-x-4 gap-y-10`} role="list" aria-label="Products">
+    <AnimatedGrid className={`grid ${gridClass} gap-x-4 gap-y-10`} role="list" aria-label="Products">
       {products.map((product, i) => (
-        <div key={product.id} role="listitem">
+        <AnimatedGridItem key={product.id} role="listitem">
           <ProductCard product={product} priority={i < 4} />
-        </div>
+        </AnimatedGridItem>
       ))}
-    </div>
+    </AnimatedGrid>
   )
 }

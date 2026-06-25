@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useCartStore } from '@/lib/store/cartStore'
 import { useCouponStore } from '@/lib/store/couponStore'
 import { formatPrice, calculateDiscount } from '@/lib/utils'
@@ -74,7 +75,12 @@ export function CartView() {
   // Empty cart
   if (count === 0) {
     return (
-      <div className="container-site py-24 flex flex-col items-center gap-6 text-center">
+      <motion.div
+        className="container-site py-24 flex flex-col items-center gap-6 text-center"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.25, 0, 0.25, 1] }}
+      >
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="var(--color-border)" strokeWidth="1.5">
           <path d="M12 8h40l8 16H4L12 8z" />
           <rect x="4" y="24" width="56" height="34" rx="2" />
@@ -111,7 +117,7 @@ export function CartView() {
         >
           Explore The Edit
         </Link>
-      </div>
+      </motion.div>
     )
   }
 
@@ -145,11 +151,17 @@ export function CartView() {
       <div className="grid lg:grid-cols-[1fr_380px] gap-10 xl:gap-16 items-start">
         {/* Cart line items */}
         <div className="flex flex-col gap-0">
+          <AnimatePresence initial={false}>
           {items.map((item) => (
-            <div
+            <motion.div
               key={`${item.productId}-${item.variantId}`}
               className="flex gap-4 py-6 border-b"
               style={{ borderColor: 'var(--color-border)' }}
+              layout
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16, height: 0, paddingTop: 0, paddingBottom: 0, marginBottom: 0, overflow: 'hidden' }}
+              transition={{ duration: 0.22, ease: [0.25, 0, 0.25, 1] }}
             >
               {/* Product image */}
               <Link href={item.slug} className="flex-shrink-0 block" tabIndex={-1} aria-hidden="true">
@@ -269,18 +281,19 @@ export function CartView() {
                     role="group"
                     aria-label="Quantity"
                   >
-                    <button
+                    <motion.button
                       onClick={() => {
                         if (item.qty <= 1) removeItem(item.productId, item.variantId)
                         else updateQty(item.productId, item.variantId, item.qty - 1)
                       }}
+                      whileTap={{ scale: 0.85 }}
                       className="flex items-center justify-center w-8 h-8 hover:opacity-60 transition-opacity duration-150"
                       aria-label="Decrease quantity"
                     >
                       <svg width="10" height="2" viewBox="0 0 10 2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M1 1h8" />
                       </svg>
-                    </button>
+                    </motion.button>
                     <span
                       className="w-8 text-center"
                       style={{
@@ -292,15 +305,16 @@ export function CartView() {
                     >
                       {item.qty}
                     </span>
-                    <button
+                    <motion.button
                       onClick={() => updateQty(item.productId, item.variantId, item.qty + 1)}
+                      whileTap={{ scale: 0.85 }}
                       className="flex items-center justify-center w-8 h-8 hover:opacity-60 transition-opacity duration-150"
                       aria-label="Increase quantity"
                     >
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M5 1v8M1 5h8" />
                       </svg>
-                    </button>
+                    </motion.button>
                   </div>
 
                   <span
@@ -315,8 +329,9 @@ export function CartView() {
                   </span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
 
           {/* The Possah Promise strip */}
           <div
@@ -461,18 +476,20 @@ export function CartView() {
                 </button>
               </div>
             )}
-            {couponError && (
-              <p
-                role="alert"
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '12px',
-                  color: 'var(--color-rose)',
-                }}
-              >
-                {couponError}
-              </p>
-            )}
+            <AnimatePresence>
+              {couponError && (
+                <motion.p
+                  role="alert"
+                  style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--color-rose)' }}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {couponError}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Gift wrap toggle */}

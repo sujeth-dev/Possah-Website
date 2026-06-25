@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { formatPrice, whatsappUrl } from '@/lib/utils'
 import { useCartStore } from '@/lib/store/cartStore'
@@ -283,9 +284,10 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
 
       {/* Add to cart + wishlist — desktop only; mobile uses sticky bar below */}
       <div className="hidden md:flex gap-3 pt-2">
-        <button
+        <motion.button
           onClick={handleAddToCart}
           disabled={addedState === 'added'}
+          whileTap={{ scale: 0.97 }}
           className="flex-1 flex items-center justify-center gap-2 py-4 transition-all duration-200"
           style={{
             backgroundColor: addedState === 'added' ? 'var(--color-text-muted)' : 'var(--color-green)',
@@ -301,10 +303,11 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
               Added to Bag
             </>
           ) : 'Add to Bag'}
-        </button>
+        </motion.button>
 
-        <button
+        <motion.button
           onClick={handleWishlist}
+          whileTap={{ scale: 0.92 }}
           className="flex items-center justify-center w-14 h-[56px] transition-all duration-200 hover:opacity-70"
           style={{ border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-btn)', backgroundColor: 'transparent' }}
           aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -313,7 +316,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
           <svg width="18" height="16" viewBox="0 0 18 16" fill={inWishlist ? 'var(--color-rose)' : 'none'} stroke={inWishlist ? 'var(--color-rose)' : 'var(--color-text)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 14.5S1.5 10 1.5 4.5a3.5 3.5 0 0 1 7-0.5 3.5 3.5 0 0 1 7 .5C15.5 10 9 14.5 9 14.5z" />
           </svg>
-        </button>
+        </motion.button>
       </div>
 
       {/* Share */}
@@ -378,9 +381,10 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
         }}
       >
         <div className="flex gap-3">
-          <button
+          <motion.button
             onClick={handleAddToCart}
             disabled={addedState === 'added'}
+            whileTap={{ scale: 0.97 }}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 transition-all duration-200"
             style={{
               backgroundColor: addedState === 'added' ? 'var(--color-text-muted)' : 'var(--color-green)',
@@ -402,10 +406,11 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
                 Added to Bag
               </>
             ) : 'Add to Bag'}
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
             onClick={handleWishlist}
+            whileTap={{ scale: 0.92 }}
             className="flex items-center justify-center transition-all duration-200 hover:opacity-70"
             style={{
               width:           56,
@@ -422,7 +427,7 @@ export function ProductInfo({ product, variants }: ProductInfoProps) {
             <svg width="18" height="16" viewBox="0 0 18 16" fill={inWishlist ? 'var(--color-rose)' : 'none'} stroke={inWishlist ? 'var(--color-rose)' : 'var(--color-text)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 14.5S1.5 10 1.5 4.5a3.5 3.5 0 0 1 7-0.5 3.5 3.5 0 0 1 7 .5C15.5 10 9 14.5 9 14.5z" />
             </svg>
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>

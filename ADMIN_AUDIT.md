@@ -1,6 +1,6 @@
 # Admin Panel Audit — June 2026
 
-> **Last updated:** 2026-06-20  
+> **Last updated:** 2026-06-23  
 > All items in the "Implemented" table are live on `main`. Backlog items are tracked below.
 
 This document captures audit findings, improvement backlog, and advisory notes from the June 2026 admin improvement pass. High-priority items were implemented directly. Medium/low items are tracked here for future sprints.
@@ -26,6 +26,9 @@ This document captures audit findings, improvement backlog, and advisory notes f
 | New Arrivals picker sort | ✅ Live | Selected products float to top (gold), unselected sorted A–Z in the admin homepage picker | `app/admin/homepage/HomepageEditor.tsx` |
 | BucketPicker type=button fix | ✅ Live | Close ✕, Upload New, Retry buttons now have type="button" — fixes Page Heroes upload flow | `app/admin/products/BucketPicker.tsx` |
 | Checkout Razorpay preload warning | ✅ Live | Removed redundant inline Razorpay script tag (was causing DevTools preload warning) | `app/(shop)/checkout/CheckoutForm.tsx` |
+| Occasion Tiles save fix | ✅ Live | Empty `image_url: ''` coerced to `null` in `saveTiles()` — partial tile sets no longer return 422 Validation failed | `app/admin/homepage/HomepageEditor.tsx` |
+| Women Hub hero visibility fix | ✅ Live | Removed fully-opaque overlay div that was covering the hero `<Image>` on `/women` | `app/(shop)/[gender]/page.tsx` |
+| Collection Banner CTA label | ✅ Live | `cta_label` field wired end-to-end: Zod schema, admin form input, server loader | `route.ts`, `HomepageEditor.tsx`, `page.tsx` (admin) |
 
 ### Known gotcha — Page Heroes & placeholder.svg
 If the admin opens `/admin/homepage` → Page Heroes and the URL text box shows `https://cdn.thepossah.com/ui/placeholder.svg`, do NOT save — that value is the system placeholder, not a real image. The form guard will reject it, but it's clearer to leave the field empty until a real image is uploaded.
