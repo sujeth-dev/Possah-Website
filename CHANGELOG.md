@@ -4,6 +4,38 @@ All notable changes to this project, newest first.
 
 ---
 
+## [Unreleased] — 2026-06-25 — Lookbook Detail Page, DB Seeding, Branch Consolidation
+
+### Summary
+Built the lookbook detail page (`/lookbook/[chapter]`), seeded the database with placeholder images so all pages are visible on the deployed site, merged `feat/animations` into `main`, and produced the images-needed doc for the photography brief.
+
+### New Features
+
+#### Lookbook — Detail Page (`/lookbook/[chapter]`)
+Full editorial detail page per lookbook. Shows a full-bleed hero, concept text in display type, and a 2-col "The Looks" grid. Each look shows its styled image with a "Look 01" label badge; if a product is linked it shows the product name, price, and a "Shop Look" CTA linking to the PDP. Handles empty looks gracefully ("being curated" message). Back nav and "Shop The Collection" CTA at the footer.
+
+- `app/(shop)/lookbook/[chapter]/page.tsx` — new detail route, looks up by `chapter_number` (clean URLs: `/lookbook/1`, `/lookbook/4`)
+- `app/(shop)/lookbook/page.tsx` — index updated: 2-col grid, subtitle added, links updated to `chapter_number`
+- `supabase/migrations/033_lookbook_slug.sql` — slug column migration (apply in Supabase dashboard)
+
+#### Database — Placeholder Images Seeded
+All sections that were invisible due to missing DB images are now seeded with the branded CDN placeholder SVG so every page renders on the deployed site.
+
+- **Homepage occasion tiles** — all 8 tiles seeded with `cdn.thepossah.com/ui/placeholder.svg`
+- **Lookbook "Possah Spring '26" (ch. 4)** — hero image fixed, 2 looks seeded (Botanical Grace Midi, Dusty Rose Flare Dress)
+- **Lookbook "The Quiet Ceremony" (ch. 1)** — new entry created, hero + 2 looks seeded (Crimson Edge Dress, Lavender Periwinkle Dress)
+
+### Docs
+
+- `docs/IMAGE_NEEDED.md` — updated with lookbook detail page image requirements
+- `docs/Possah_Images_Needed.docx` — regenerated Word doc (~55 images, shareable photography brief)
+
+### Housekeeping
+
+- Merged `feat/animations` → `main`; `feat/animations` branch deleted
+
+---
+
 ## [Unreleased] — 2026-06-23 — Admin Homepage: Occasion Tiles Save Fix, Women Hub Hero Visibility, Collection Banner CTA Label
 
 ### Summary
